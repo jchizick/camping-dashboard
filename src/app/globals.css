@@ -1243,7 +1243,7 @@ img {
 
 .readiness-card__ring {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.1rem;
   background: var(--col-glass-bg);
   border: 2px solid;
@@ -1278,11 +1278,14 @@ img {
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .readiness-card__score-pct {
   font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1;
+  transform: translateY(0.2rem);
 }
 
 .readiness-card__label {
