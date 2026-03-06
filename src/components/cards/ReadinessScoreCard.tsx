@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { ReadinessScore } from '@/types';
 import GlassCard from '@/components/ui/GlassCard';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -32,14 +32,59 @@ function overallClass(score: number): string {
 }
 
 export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProps) {
+    const [isVisible, setIsVisible] = useState(false);
+    const ringRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (ringRef.current) {
+            observer.observe(ringRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    const size = 90;
+    const strokeWidth = 2;
+    const radius = Math.floor((size - strokeWidth) / 2);
+    const circumference = Math.round(radius * 2 * Math.PI);
+    const dashOffset = isVisible ? circumference - (readiness.overall / 100) * circumference : circumference;
+
     return (
         <GlassCard className="readiness-card">
             <SectionHeader title="Mission Readiness" icon="🎯" />
 
             <div className="readiness-card__hero">
-                <div className={`readiness-card__ring ${overallClass(readiness.overall)}`}>
-                    <span className="readiness-card__score">{readiness.overall}</span>
-                    <span className="readiness-card__score-pct">%</span>
+                <div ref={ringRef} className={`readiness-card__ring ${overallClass(readiness.overall)}`}>
+                    <svg className="readiness-card__svg" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                        <circle
+                            className="readiness-card__track"
+                            cx={size / 2} cy={size / 2} r={radius}
+                            fill="transparent" strokeWidth={strokeWidth}
+                        />
+                        <circle
+                            className="readiness-card__progress"
+                            cx={size / 2} cy={size / 2} r={radius}
+                            fill="transparent" stroke="currentColor"
+                            strokeWidth={strokeWidth}
+                            strokeDasharray={circumference}
+                            strokeDashoffset={dashOffset}
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                    <div className="readiness-card__content">
+                        <span className="readiness-card__score">{readiness.overall}</span>
+                        <span className="readiness-card__score-pct">%</span>
+                    </div>
                 </div>
                 <div className="readiness-card__label-block">
                     <p className="readiness-card__label">{readiness.label}</p>

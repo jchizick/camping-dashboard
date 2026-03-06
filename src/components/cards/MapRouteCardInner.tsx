@@ -72,9 +72,9 @@ export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {
             attributionControl={false}
         >
             <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                opacity={0.92}
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                opacity={0.85}
             />
             <FitBounds positions={route} />
             <Marker position={launch} icon={launchIcon}>
