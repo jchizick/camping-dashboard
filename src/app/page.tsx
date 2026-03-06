@@ -149,7 +149,6 @@ export default function TripDashboardPage() {
             <MapRouteCard trip={data.trip} />
           </div>
           <div className="dashboard__col dashboard__col--sidebar">
-            <CountdownCard trip={data.trip} />
             <WeatherCard weather={data.currentWeather} astro={data.astro} />
           </div>
         </div>

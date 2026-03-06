@@ -32,12 +32,6 @@ export default function HeroHeader({
         return () => clearInterval(id);
     }, []);
 
-    const readinessColor =
-        readiness.overall >= 90 ? 'hero__readiness--locked' :
-            readiness.overall >= 75 ? 'hero__readiness--ready' :
-                readiness.overall >= 50 ? 'hero__readiness--attention' :
-                    'hero__readiness--not-ready';
-
     return (
         <header className="hero">
             <div className="hero__bg-overlay" />
@@ -104,11 +98,6 @@ export default function HeroHeader({
                     <span className="hero__conditions-wind">💨 {weather.wind_kph} km/h</span>
                     <span className="hero__conditions-divider">·</span>
                     <span className="hero__conditions-sunset">🌅 Sunset {weather.sunset_time}</span>
-                </div>
-
-                <div className={`hero__readiness ${readinessColor}`}>
-                    <span className="hero__readiness-score">{readiness.overall}%</span>
-                    <span className="hero__readiness-label">{readiness.label}</span>
                 </div>
             </div>
         </header>
