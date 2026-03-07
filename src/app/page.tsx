@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { GearItem, ThemeOverride } from '@/types';
+import type { GearItem, ThemeOverride, DashboardData } from '@/types';
 import { mockDashboardData } from '@/lib/mockData';
+import { fetchDashboardData } from '@/lib/fetchDashboard';
+import { supabase } from '@/lib/supabase';
 import {
   getTripCountdown,
   getThemeModeFromTime,
@@ -31,19 +33,47 @@ import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
 
 export default function TripDashboardPage() {
-  // ── Server/mock data (in Phase 2 this becomes a Supabase fetch) ──
-  const data = mockDashboardData;
+  // ── Server data: load from Supabase, fall back to mock ───────────
+  const [data, setData] = useState<DashboardData>(mockDashboardData);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    fetchDashboardData().then((dashboardData) => {
+      setData(dashboardData);
+      setGear(dashboardData.gear);
+      setIsLoaded(true);
+    });
+  }, []);
 
   // ── Local UI state (never mixed with server data) ────────────────
   const [themeOverride, setThemeOverride] = useState<ThemeOverride>(
     data.settings.manual_theme_override
   );
-  const [gear, setGear] = useState<GearItem[]>(data.gear);
+  const [gear, setGear] = useState<GearItem[]>(mockDashboardData.gear);
   const [countdown, setCountdown] = useState(() => getTripCountdown(data.trip.start_date));
   const [isMounted, setIsMounted] = useState(false);
 
+  // Supabase gear toggle: optimistic update + write-back
+  const toggleGearItem = async (id: string) => {
+    const item = gear.find(g => g.id === id);
+    if (!item) return;
+    const newPacked = !item.packed;
+    // Optimistic update
+    setGear(prev => prev.map(g => g.id === id ? { ...g, packed: newPacked } : g));
+    // Write-back to Supabase
+    const { error } = await supabase.from('gear_items').update({ packed: newPacked }).eq('id', id);
+    if (error) {
+      // Revert on failure
+      console.error('[toggleGear] Supabase write failed, reverting:', error.message);
+      setGear(prev => prev.map(g => g.id === id ? { ...g, packed: item.packed } : g));
+    }
+  };
+
   // Hydration guard — prevent SSR/client time mismatch
   useEffect(() => { setIsMounted(true); }, []);
+
+  // Unused: isLoaded could be used for a loading state
+  void isLoaded;
 
   // Live countdown ticker
   useEffect(() => {
@@ -108,11 +138,12 @@ export default function TripDashboardPage() {
     });
   }
 
+
   function handleGearToggle(id: string) {
-    setGear((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, packed: !g.packed } : g))
-    );
+    // Calls Supabase write-back with optimistic UI update
+    toggleGearItem(id);
   }
+
 
   // ── Active alerts count ───────────────────────────────────────────
   const activeAlertsCount = data.alerts.filter((a) => a.is_active).length;
