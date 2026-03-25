@@ -19,6 +19,19 @@ interface GearChecklistCardProps {
 
 type FilterMode = 'all' | 'needed' | 'critical';
 
+// Explicit category display order — Extras always last
+const CATEGORY_ORDER = [
+    'Shelter',
+    'Navigation',
+    'Cooking',
+    'Safety',
+    'Clothing',
+    'Lighting',
+    'Camp',
+    'Admin',
+    'Extras',
+];
+
 export default function GearChecklistCard({ gear, onToggle, onAdd, onUpdate, onDelete }: GearChecklistCardProps) {
     const [filter, setFilter] = useState<FilterMode>('all');
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -112,7 +125,16 @@ export default function GearChecklistCard({ gear, onToggle, onAdd, onUpdate, onD
             })()}
 
             <div className="gear-card__list">
-                {Object.entries(grouped).map(([category, items]) => (
+                {Object.entries(grouped)
+                    .sort(([a], [b]) => {
+                        const ai = CATEGORY_ORDER.indexOf(a);
+                        const bi = CATEGORY_ORDER.indexOf(b);
+                        // Known categories follow the order list; unknowns sort alphabetically before Extras
+                        const aIdx = ai === -1 ? CATEGORY_ORDER.indexOf('Extras') - 0.5 : ai;
+                        const bIdx = bi === -1 ? CATEGORY_ORDER.indexOf('Extras') - 0.5 : bi;
+                        return aIdx - bIdx;
+                    })
+                    .map(([category, items]) => (
                     <div key={category} className="gear-card__category">
                         <button
                             className="gear-card__category-header"

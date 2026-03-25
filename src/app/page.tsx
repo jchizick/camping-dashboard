@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, ThemeOverride, DashboardData } from '@/types';
-import { mockDashboardData } from '@/lib/mockData';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, ThemeOverride, DashboardData, OfflineStatus, ParkIntel } from '@/types';
 import { fetchDashboardData } from '@/lib/fetchDashboard';
 import {
   // Gear
@@ -15,6 +14,10 @@ import {
   createCrewMember, updateCrewMember, deleteCrewMember,
   // Alerts
   createAlert, deleteAlert,
+  // Offline
+  updateOfflineStatus,
+  // Park Intel
+  updateParkIntel,
 } from '@/lib/mutations';
 import {
   getTripCountdown,
@@ -44,29 +47,53 @@ import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
 
 export default function TripDashboardPage() {
-  // ── Server data: load from Supabase, fall back to mock ───────────
-  const [data, setData] = useState<DashboardData>(mockDashboardData);
-  const [isLoaded, setIsLoaded] = useState(false);
-  void isLoaded;
-
-  // ── User-authored state slices ───────────────────────────────────
-  const [gear, setGear] = useState<GearItem[]>(mockDashboardData.gear);
-  const [meals, setMeals] = useState<Meal[]>(mockDashboardData.meals);
-  const [timeline, setTimeline] = useState<TimelineEvent[]>(mockDashboardData.timeline);
-  const [crew, setCrew] = useState<CrewMember[]>(mockDashboardData.crew);
-  const [alerts, setAlerts] = useState<Alert[]>(mockDashboardData.alerts);
+  const [initialData, setInitialData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchDashboardData().then((dashboardData) => {
-      setData(dashboardData);
-      setGear(dashboardData.gear);
-      setMeals(dashboardData.meals);
-      setTimeline(dashboardData.timeline);
-      setCrew(dashboardData.crew);
-      setAlerts(dashboardData.alerts);
-      setIsLoaded(true);
-    });
+    fetchDashboardData()
+      .then((dashboardData) => {
+        setInitialData(dashboardData);
+      })
+      .catch((err) => {
+        console.error('Fetch failed:', err);
+        setError(err.message || 'Failed to connect to Supabase database. Please try again.');
+      });
   }, []);
+
+  if (error) {
+    return (
+      <main className="dashboard theme-night" style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2 style={{ color: '#ffb74d' }}>System Initialization Error</h2>
+        <p style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</p>
+      </main>
+    );
+  }
+
+  if (!initialData) {
+    return (
+      <main className="dashboard theme-night" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ width: '40px', height: '40px', border: '3px solid rgba(255,183,77,0.3)', borderTopColor: '#ffb74d', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
+          <h2 style={{ color: '#ffb74d', letterSpacing: '2px', textTransform: 'uppercase', margin: 0, fontSize: '1.2rem' }}>Initializing Mission Control...</h2>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </main>
+    );
+  }
+
+  return <DashboardContent data={initialData} />;
+}
+
+function DashboardContent({ data }: { data: DashboardData }) {
+  // ── User-authored state slices ───────────────────────────────────
+  const [gear, setGear] = useState<GearItem[]>(data.gear);
+  const [meals, setMeals] = useState<Meal[]>(data.meals);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>(data.timeline);
+  const [crew, setCrew] = useState<CrewMember[]>(data.crew);
+  const [alerts, setAlerts] = useState<Alert[]>(data.alerts);
+  const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>(data.offlineStatus);
+  const [parkIntel, setParkIntel] = useState<ParkIntel>(data.parkIntel);
 
   // ── Local UI state ────────────────────────────────────────────────
   const [themeOverride, setThemeOverride] = useState<ThemeOverride>(
@@ -101,7 +128,7 @@ export default function TripDashboardPage() {
 
   const gearReadiness = useMemo(() => calculateGearReadiness(gear), [gear]);
   const mealReadiness = useMemo(() => calculateMealCompleteness(meals, tripDays), [meals, tripDays]);
-  const offlineReadiness = useMemo(() => calculateOfflineReadiness(data.offlineStatus), [data.offlineStatus]);
+  const offlineReadiness = useMemo(() => calculateOfflineReadiness(offlineStatus), [offlineStatus]);
   const timelineReadiness = useMemo(() => calculateTimelineCompleteness(timeline, tripDays), [timeline, tripDays]);
   const weatherReadiness = useMemo(() => calculateWeatherPreparedness(data.currentWeather, data.forecast), [data.currentWeather, data.forecast]);
 
@@ -151,8 +178,8 @@ export default function TripDashboardPage() {
   }
 
   // ── Meal mutations ────────────────────────────────────────────────
-  async function handleMealAdd(meal: Omit<Meal, 'id' | 'trip_id'>) {
-    const { data: newMeal, error } = await createMeal(meal);
+  async function handleMealAdd(item: Omit<Meal, 'id' | 'trip_id'>) {
+    const { data: newMeal, error } = await createMeal(item);
     if (error || !newMeal) { console.error('[createMeal]', error?.message); throw error; }
     setMeals(prev => [...prev, newMeal as Meal]);
   }
@@ -208,8 +235,8 @@ export default function TripDashboardPage() {
   }
 
   // ── Alert mutations ───────────────────────────────────────────────
-  async function handleAlertAdd(data: { title: string; body: string; severity: Alert['severity']; source: string; is_active: boolean }) {
-    const { data: newAlert, error } = await createAlert(data);
+  async function handleAlertAdd(alertData: { title: string; body: string; severity: Alert['severity']; source: string; is_active: boolean }) {
+    const { data: newAlert, error } = await createAlert(alertData);
     if (error || !newAlert) { console.error('[createAlert]', error?.message); throw error; }
     setAlerts(prev => [newAlert as Alert, ...prev]);
   }
@@ -218,6 +245,34 @@ export default function TripDashboardPage() {
     const { error } = await deleteAlert(id);
     if (error) { console.error('[deleteAlert]', error.message); throw error; }
     setAlerts(prev => prev.filter(a => a.id !== id));
+  }
+
+  // ── Park Intel mutations ──────────────────────────────────────────
+  async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'id' | 'trip_id' | 'updated_at'>>) {
+    const prev = parkIntel;
+    setParkIntel(current => ({ ...current, ...patch }));
+    const { error } = await updateParkIntel(parkIntel.id, patch);
+    if (error) {
+      console.error('[updateParkIntel] Supabase write failed, reverting:', error.message);
+      setParkIntel(prev);
+    }
+  }
+
+  // ── Offline mutations ─────────────────────────────────────────────
+  async function handleOfflineToggle(key: keyof OfflineStatus) {
+    const current = offlineStatus[key];
+    if (typeof current !== 'boolean') return;
+    const newValue = !current;
+    
+    setOfflineStatus(prev => ({ ...prev, [key]: newValue }));
+    
+    const patch = { [key]: newValue };
+    const { error } = await updateOfflineStatus(offlineStatus.id, patch);
+    
+    if (error) {
+      console.error('[updateOfflineStatus] Supabase write failed, reverting:', error.message);
+      setOfflineStatus(prev => ({ ...prev, [key]: current }));
+    }
   }
 
   return (
@@ -291,7 +346,7 @@ export default function TripDashboardPage() {
         {/* ── Row D: Park Intel + Alerts ─── */}
         <div className="dashboard__row dashboard__row--intel">
           <div className="dashboard__col dashboard__col--park">
-            <ParkIntelCard intel={data.parkIntel} />
+            <ParkIntelCard intel={parkIntel} onUpdate={handleParkIntelUpdate} />
           </div>
           <div className="dashboard__col dashboard__col--alerts">
             <AlertsCard
@@ -328,7 +383,7 @@ export default function TripDashboardPage() {
             )}
             {data.settings.show_offline && (
               <div className="dashboard__col">
-                <OfflineVaultCard status={data.offlineStatus} />
+                <OfflineVaultCard status={offlineStatus} onToggle={handleOfflineToggle} />
               </div>
             )}
           </div>
@@ -351,3 +406,4 @@ export default function TripDashboardPage() {
     </main>
   );
 }
+

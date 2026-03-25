@@ -116,7 +116,14 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                                 {i < dayEvents.length - 1 && <div className="timeline-card__event-connector" />}
                             </div>
                             <div className="timeline-card__event-content">
-                                <p className="timeline-card__event-title">{event.title}</p>
+                                <p className="timeline-card__event-title">
+                                    {event.title}
+                                    {event.phase && event.phase !== 'None' && (
+                                        <span className={`status-pill status-pill--sm timeline-card__phase timeline-card__phase--${event.phase.toLowerCase()}`}>
+                                            {event.phase}
+                                        </span>
+                                    )}
+                                </p>
                                 {event.details && (
                                     <p className="timeline-card__event-details">{event.details}</p>
                                 )}

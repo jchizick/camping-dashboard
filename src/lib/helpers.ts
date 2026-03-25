@@ -20,7 +20,9 @@ import type {
 // ─── Countdown ────────────────────────────────────────────
 export function getTripCountdown(startDate: string): CountdownResult {
     const now = Date.now();
-    const target = new Date(startDate).getTime();
+    // Append T12:00:00 to avoid UTC-midnight parsing (which would be prev-day in EDT/EST).
+    // Targeting local noon ensures the countdown reflects the correct calendar date.
+    const target = new Date(`${startDate}T12:00:00`).getTime();
     const diff = target - now;
 
     if (diff <= 0) {
@@ -178,7 +180,7 @@ export function formatTripDates(startDate: string, endDate: string): string {
 export function getTripDays(startDate: string, endDate: string): number {
     const start = new Date(startDate).getTime();
     const end = new Date(endDate).getTime();
-    return Math.ceil((end - start) / 86400000) + 1;
+    return Math.ceil((end - start) / 86400000);
 }
 
 export function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<string, T[]> {

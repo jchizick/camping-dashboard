@@ -9,6 +9,7 @@ import ProgressBar from '@/components/ui/ProgressBar';
 
 interface OfflineVaultCardProps {
     status: OfflineStatus;
+    onToggle?: (key: keyof OfflineStatus) => void;
 }
 
 const checks = [
@@ -19,7 +20,7 @@ const checks = [
     { key: 'emergency_contact_ready' as const, label: 'Emergency Contact', icon: '🆘' },
 ];
 
-export default function OfflineVaultCard({ status }: OfflineVaultCardProps) {
+export default function OfflineVaultCard({ status, onToggle }: OfflineVaultCardProps) {
     const readiness = calculateOfflineReadiness(status);
 
     return (
@@ -36,7 +37,20 @@ export default function OfflineVaultCard({ status }: OfflineVaultCardProps) {
                 {checks.map(({ key, label, icon }) => {
                     const done = status[key];
                     return (
-                        <div key={key} className={`offline-card__check ${done ? 'offline-card__check--done' : 'offline-card__check--missing'}`}>
+                        <div 
+                            key={key} 
+                            onClick={onToggle ? () => onToggle(key) : undefined}
+                            className={`offline-card__check ${done ? 'offline-card__check--done' : 'offline-card__check--missing'} ${onToggle ? 'offline-card__check--interactive' : ''}`}
+                            role={onToggle ? 'button' : undefined}
+                            tabIndex={onToggle ? 0 : undefined}
+                            onKeyDown={onToggle ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    onToggle(key);
+                                }
+                            } : undefined}
+                            style={onToggle ? { cursor: 'pointer' } : undefined}
+                        >
                             <span className="offline-card__check-icon">{icon}</span>
                             <span className="offline-card__check-label">{label}</span>
                             <span className="offline-card__check-status">{done ? '✓' : '○'}</span>

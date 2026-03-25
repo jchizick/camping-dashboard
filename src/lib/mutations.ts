@@ -5,7 +5,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus } from '@/types';
 
 const TRIP_ID = 'trip-maple-lake-001';
 
@@ -161,4 +161,30 @@ export async function deactivateAlert(id: string) {
 
 export async function deleteAlert(id: string) {
     return supabase.from('alerts').delete().eq('id', id);
+}
+
+// ─── Park Intel ───────────────────────────────────────────────
+
+export async function updateParkIntel(
+    id: string,
+    patch: Partial<import('@/types').ParkIntel>
+) {
+    return supabase
+        .from('park_intel')
+        .update(patch)
+        .eq('id', id)
+        .select()
+        .single();
+}
+
+// ─── Offline Status ──────────────────────────────────────────
+
+export async function updateOfflineStatus(
+    id: string,
+    patch: Partial<Omit<OfflineStatus, 'id' | 'trip_id'>>
+) {
+    return supabase
+        .from('offline_status')
+        .update(patch)
+        .eq('id', id);
 }

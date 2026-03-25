@@ -21,6 +21,7 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
         title: '',
         details: '',
         sort_order: nextSortOrder,
+        phase: 'None' as const,
     };
 
     const [form, setForm] = useState(initialEvent ?? defaultForm);
@@ -109,6 +110,22 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
                         rows={3}
                         placeholder="Optional details or notes…"
                     />
+                </div>
+
+                <div className="crud-form__field">
+                    <label className="crud-form__label" htmlFor="event-phase">Phase Tag</label>
+                    <select
+                        id="event-phase"
+                        className="crud-form__select"
+                        value={form.phase || 'None'}
+                        onChange={(e) => set('phase', e.target.value as TimelineEvent['phase'])}
+                    >
+                        <option value="None">None</option>
+                        <option value="Transit">Transit</option>
+                        <option value="Setup">Setup</option>
+                        <option value="Sustain">Sustain</option>
+                        <option value="Leisure">Leisure</option>
+                    </select>
                 </div>
 
                 <div className="crud-form__field">

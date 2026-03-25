@@ -941,6 +941,70 @@ img {
   color: var(--col-text-secondary);
 }
 
+/* ── WeatherCard: Dev Refresh (visible only in ?dev=true mode) ── */
+.weather-card__dev-refresh {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--col-glass-border);
+}
+
+.weather-card__refresh-btn {
+  flex: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--col-glass-border);
+  background: var(--col-glass-bg);
+  color: var(--col-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.weather-card__refresh-btn:hover:not(:disabled) {
+  border-color: var(--col-accent);
+  color: var(--col-accent);
+  background: var(--col-accent-dim);
+}
+
+.weather-card__refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.weather-card__refresh-btn--loading {
+  opacity: 0.6;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.weather-card__refresh-btn--success {
+  border-color: var(--col-success);
+  color: var(--col-success);
+  background: var(--col-success-dim);
+}
+
+.weather-card__refresh-btn--error {
+  border-color: var(--col-danger);
+  color: var(--col-danger);
+  background: var(--col-danger-dim);
+}
+
+.weather-card__dev-badge {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  background: var(--col-warning-dim);
+  border: 1px solid var(--col-warning);
+  color: var(--col-warning);
+  flex-shrink: 0;
+}
+
 /* ── ForecastCard ───────────────────────────────────────── */
 .forecast-card__strip {
   display: flex;
@@ -1194,6 +1258,40 @@ img {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--col-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.timeline-card__phase {
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+}
+
+.timeline-card__phase--transit {
+  background: var(--col-info-dim);
+  color: var(--col-info);
+  border: 1px solid hsla(210, 70%, 60%, 0.3);
+}
+
+.timeline-card__phase--setup {
+  background: var(--col-warning-dim);
+  color: var(--col-warning);
+  border: 1px solid hsla(38, 90%, 55%, 0.3);
+}
+
+.timeline-card__phase--sustain {
+  background: var(--col-success-dim);
+  color: var(--col-success);
+  border: 1px solid hsla(155, 55%, 45%, 0.3);
+}
+
+.timeline-card__phase--leisure {
+  background: var(--col-accent-dim);
+  color: var(--col-accent);
+  border: 1px solid hsla(42, 65%, 58%, 0.3);
 }
 
 .timeline-card__event-details {
@@ -1569,6 +1667,15 @@ img {
   border-radius: 8px;
   border: 1px solid var(--col-glass-border);
   transition: all var(--transition-base);
+}
+
+.offline-card__check--interactive {
+  cursor: pointer;
+}
+
+.offline-card__check--interactive:hover {
+  background: var(--col-glass-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--col-glass-border-hover, var(--col-accent-dim));
 }
 
 .offline-card__check--done {

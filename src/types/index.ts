@@ -44,7 +44,7 @@ export interface WeatherCurrent {
   sunset_time: string;   // "HH:MM"
   sunrise_time: string;  // "HH:MM"
   moonset_time: string;
-  moonrise_time: string;
+  visibility: number;
   condition_label: string;
   icon: string;
   updated_at: string;
@@ -74,6 +74,8 @@ export interface GearItem {
   weight_kg: number;
 }
 
+export type TimelinePhase = 'Transit' | 'Setup' | 'Sustain' | 'Leisure' | 'None';
+
 export interface TimelineEvent {
   id: string;
   trip_id: string;
@@ -82,6 +84,7 @@ export interface TimelineEvent {
   title: string;
   details: string;
   sort_order: number;
+  phase?: TimelinePhase;
 }
 
 export interface Meal {

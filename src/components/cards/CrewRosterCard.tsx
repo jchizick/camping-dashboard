@@ -26,6 +26,27 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
         return acc;
     }, {});
 
+    const totalLoad = crew.reduce((acc, m) => acc + (m.load_weight_kg || 0), 0);
+    const splitPercentages = crew.map(m => totalLoad > 0 ? Math.round(((m.load_weight_kg || 0) / totalLoad) * 100) : 0);
+    const splitText = splitPercentages.length > 0 ? splitPercentages.join('% / ') + '%' : 'N/A';
+    
+    const maxDeviationPercent = totalLoad > 0 
+        ? Math.max(...splitPercentages.map(p => Math.abs(p - (100 / crew.length))))
+        : 0;
+        
+    let balanceStatus = "Optimal Balance";
+    let statusColor = "#4CAF95";
+    if (totalLoad === 0) {
+        balanceStatus = "No Load Data";
+        statusColor = "var(--text-muted)";
+    } else if (maxDeviationPercent >= 20) {
+        balanceStatus = "Major Imbalance";
+        statusColor = "#ef4444";
+    } else if (maxDeviationPercent >= 10) {
+        balanceStatus = "Slight Imbalance";
+        statusColor = "#f59e0b";
+    }
+
     function openAdd() {
         setEditingMember(undefined);
         setSheetOpen(true);
@@ -57,13 +78,12 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
     return (
         <GlassCard className="crew-card">
             <SectionHeader
-                title="Crew Roster"
+                title="Mission Crew"
                 icon="🧑‍🤝‍🧑"
-                subtitle={`${crew.length} paddlers`}
+                subtitle={`${crew.length}-Person Expedition`}
                 onAdd={onAdd ? openAdd : undefined}
                 addLabel="Add crew member"
             />
-
 
             {pendingDeleteId && (() => {
                 const member = crew.find(m => m.id === pendingDeleteId);
@@ -84,7 +104,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                         className="crew-card__canoe-header"
                         style={{ borderColor: canoeColors[parseInt(canoeNum) - 1] }}
                     >
-                        <span>🛶 Canoe {canoeNum}</span>
+                        <span>⛺ Shelter System (Shared)</span>
                     </div>
                     {members.map((member) => (
                         <div key={member.id} className="crew-card__member">
@@ -133,6 +153,65 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
 
             {crew.length === 0 && (
                 <p className="crew-card__empty">No crew members yet</p>
+            )}
+
+            {crew.length > 0 && (
+                <div className="crew-card__load-balance" style={{
+                    margin: '1.5rem 1rem 0 1rem',
+                    paddingTop: '1rem',
+                    borderTop: '1px solid rgba(255,255,255,0.1)',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Load Balance ⚖️</span>
+                    </div>
+                    
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 1fr', 
+                        gap: '1rem',
+                        fontSize: '0.875rem',
+                        marginBottom: '1rem'
+                    }}>
+                        <div>
+                            <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Total Load</div>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem' }}>{Math.round(totalLoad)} kg</div>
+                        </div>
+                        <div>
+                            <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Distribution</div>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem' }}>{splitText}</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            fontSize: '0.875rem',
+                            marginBottom: '0.5rem'
+                        }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
+                            <span style={{ color: statusColor, fontWeight: 500 }}>{balanceStatus}</span>
+                        </div>
+                        <div style={{ 
+                            display: 'flex', 
+                            height: '10px', 
+                            borderRadius: '5px', 
+                            overflow: 'hidden', 
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                        }}>
+                            {splitPercentages.map((pct, i) => (
+                                <div 
+                                    key={i} 
+                                    style={{ 
+                                        width: `${pct}%`, 
+                                        backgroundColor: canoeColors[i % canoeColors.length],
+                                        opacity: 0.85
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
 
             <CrewFormSheet
