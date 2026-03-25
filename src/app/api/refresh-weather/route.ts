@@ -12,13 +12,24 @@ import type { OpenMeteoResponse } from '@/lib/weatherMapper';
 const TRIP_ID = 'trip-maple-lake-001';
 const FORECAST_DAYS = 5;
 
-// ─── Simple secret guard ──────────────────────────────────────────────────────
-// Call: GET /api/refresh-weather?secret=your_secret_here
+// ─── Auth guard ──────────────────────────────────────────────────────────────
+// Accepts two methods:
+//   1. Vercel Cron:  Authorization: Bearer {CRON_SECRET}  (set in Vercel dashboard)
+//   2. Manual call: GET /api/refresh-weather?secret={WEATHER_REFRESH_SECRET}
 function isAuthorized(req: NextRequest): boolean {
-    const secret = process.env.WEATHER_REFRESH_SECRET;
-    if (!secret) return false; // no secret configured → deny all
-    const provided = req.nextUrl.searchParams.get('secret');
-    return provided === secret;
+    // Method 1: Vercel Cron header
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers.get('authorization');
+    if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+
+    // Method 2: Legacy query param (manual trigger)
+    const querySecret = process.env.WEATHER_REFRESH_SECRET;
+    if (querySecret) {
+        const provided = req.nextUrl.searchParams.get('secret');
+        if (provided === querySecret) return true;
+    }
+
+    return false;
 }
 
 export async function GET(req: NextRequest) {
