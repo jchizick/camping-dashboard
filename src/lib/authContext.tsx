@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-  const isAuthorized = WHITELISTED_EMAILS.includes(user?.email ?? '');
+  const isAuthorized = WHITELISTED_EMAILS.includes((user?.email ?? '').toLowerCase());
 
   return (
     <AuthContext.Provider value={{ user, isAuthorized, isLoading, signIn, signOut }}>
