@@ -324,6 +324,71 @@ img {
   background: var(--col-glass-hover);
 }
 
+/* ── Admin Auth Button ─────────────────────────────────── */
+.hero__admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-base);
+  border: 1px solid var(--col-glass-border);
+}
+
+.hero__admin-btn--sign-in {
+  color: var(--col-text-muted);
+  background: transparent;
+  opacity: 0.55;
+}
+
+.hero__admin-btn--sign-in:hover {
+  opacity: 1;
+  color: var(--col-accent);
+  background: var(--col-accent-dim);
+  border-color: hsla(42, 65%, 58%, 0.3);
+}
+
+.hero__admin-btn--signed-in {
+  color: var(--col-accent);
+  background: var(--col-accent-dim);
+  border-color: hsla(42, 65%, 58%, 0.3);
+}
+
+.hero__admin-btn--signed-in:hover {
+  background: hsla(42, 65%, 58%, 0.25);
+  color: var(--col-accent-bright);
+}
+
+.hero__admin-btn--unauthorized {
+  color: var(--col-danger);
+  background: var(--col-danger-dim);
+  border-color: hsla(5, 75%, 55%, 0.3);
+  font-size: 0.68rem;
+}
+
+.hero__admin-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--col-accent);
+  color: hsl(32, 28%, 7%);
+  font-size: 0.6rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.hero__admin-label {
+  font-size: 0.72rem;
+}
+
+
 .hero__center {
   display: flex;
   align-items: center;

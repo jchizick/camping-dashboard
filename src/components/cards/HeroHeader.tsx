@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { Trip, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
 import { padTwo } from '@/lib/helpers';
+import { useAuth } from '@/lib/authContext';
 
 
 interface HeroHeaderProps {
@@ -25,6 +26,7 @@ export default function HeroHeader({
     onThemeToggle,
 }: HeroHeaderProps) {
     const [tick, setTick] = useState(0);
+    const { user, isAuthorized, isLoading, signIn, signOut } = useAuth();
 
     // Force a re-render every second so parent can update countdown
     useEffect(() => {
@@ -48,6 +50,42 @@ export default function HeroHeader({
                 >
                     {themeOverride === 'auto' ? '⟳ Auto' : themeMode === 'day' ? '☀️ Day' : '🌙 Night'}
                 </button>
+
+                {/* ── Admin auth button ── */}
+                {!isLoading && (
+                    isAuthorized ? (
+                        <button
+                            className="hero__admin-btn hero__admin-btn--signed-in"
+                            onClick={signOut}
+                            title={`Signed in as ${user?.email}\nClick to sign out`}
+                            aria-label="Sign out"
+                        >
+                            <span className="hero__admin-avatar">
+                                {(user?.email?.[0] ?? 'A').toUpperCase()}
+                            </span>
+                            <span className="hero__admin-label">Admin</span>
+                        </button>
+                    ) : user ? (
+                        // Signed in but not on whitelist
+                        <button
+                            className="hero__admin-btn hero__admin-btn--unauthorized"
+                            onClick={signOut}
+                            title="Not authorized — click to sign out"
+                            aria-label="Sign out"
+                        >
+                            🚫 Unauthorized
+                        </button>
+                    ) : (
+                        <button
+                            className="hero__admin-btn hero__admin-btn--sign-in"
+                            onClick={signIn}
+                            aria-label="Admin sign in"
+                            title="Sign in to edit dashboard data"
+                        >
+                            🔑 Admin
+                        </button>
+                    )
+                )}
             </div>
 
             <div className="hero__center">

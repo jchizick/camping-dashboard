@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, ThemeOverride, DashboardData, OfflineStatus, ParkIntel } from '@/types';
 import { fetchDashboardData } from '@/lib/fetchDashboard';
+import { AuthProvider, useAuth } from '@/lib/authContext';
 import {
   // Gear
   createGearItem, updateGearItem, deleteGearItem, toggleGearPacked,
@@ -47,6 +48,14 @@ import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
 
 export default function TripDashboardPage() {
+  return (
+    <AuthProvider>
+      <DashboardLoader />
+    </AuthProvider>
+  );
+}
+
+function DashboardLoader() {
   const [initialData, setInitialData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +95,11 @@ export default function TripDashboardPage() {
 }
 
 function DashboardContent({ data }: { data: DashboardData }) {
+  // ── Auth ──────────────────────────────────────────────────────────
+  const { isAuthorized } = useAuth();
+
   // ── User-authored state slices ───────────────────────────────────
+
   const [gear, setGear] = useState<GearItem[]>(data.gear);
   const [meals, setMeals] = useState<Meal[]>(data.meals);
   const [timeline, setTimeline] = useState<TimelineEvent[]>(data.timeline);
@@ -326,19 +339,19 @@ function DashboardContent({ data }: { data: DashboardData }) {
           <div className="dashboard__col dashboard__col--gear">
             <GearChecklistCard
               gear={gear}
-              onToggle={handleGearToggle}
-              onAdd={handleGearAdd}
-              onUpdate={handleGearUpdate}
-              onDelete={handleGearDelete}
+              onToggle={isAuthorized ? handleGearToggle : undefined}
+              onAdd={isAuthorized ? handleGearAdd : undefined}
+              onUpdate={isAuthorized ? handleGearUpdate : undefined}
+              onDelete={isAuthorized ? handleGearDelete : undefined}
             />
           </div>
           <div className="dashboard__col dashboard__col--timeline">
             <TimelineCard
               events={timeline}
               tripDays={tripDays}
-              onAdd={handleTimelineAdd}
-              onUpdate={handleTimelineUpdate}
-              onDelete={handleTimelineDelete}
+              onAdd={isAuthorized ? handleTimelineAdd : undefined}
+              onUpdate={isAuthorized ? handleTimelineUpdate : undefined}
+              onDelete={isAuthorized ? handleTimelineDelete : undefined}
             />
           </div>
         </div>
@@ -346,13 +359,13 @@ function DashboardContent({ data }: { data: DashboardData }) {
         {/* ── Row D: Park Intel + Alerts ─── */}
         <div className="dashboard__row dashboard__row--intel">
           <div className="dashboard__col dashboard__col--park">
-            <ParkIntelCard intel={parkIntel} onUpdate={handleParkIntelUpdate} />
+            <ParkIntelCard intel={parkIntel} onUpdate={isAuthorized ? handleParkIntelUpdate : undefined} />
           </div>
           <div className="dashboard__col dashboard__col--alerts">
             <AlertsCard
               alerts={alerts}
-              onAddManual={handleAlertAdd}
-              onDeleteManual={handleAlertDelete}
+              onAddManual={isAuthorized ? handleAlertAdd : undefined}
+              onDeleteManual={isAuthorized ? handleAlertDelete : undefined}
             />
           </div>
         </div>
@@ -365,9 +378,9 @@ function DashboardContent({ data }: { data: DashboardData }) {
                 <MealPlannerCard
                   meals={meals}
                   totalDays={tripDays}
-                  onAdd={handleMealAdd}
-                  onUpdate={handleMealUpdate}
-                  onDelete={handleMealDelete}
+                  onAdd={isAuthorized ? handleMealAdd : undefined}
+                  onUpdate={isAuthorized ? handleMealUpdate : undefined}
+                  onDelete={isAuthorized ? handleMealDelete : undefined}
                 />
               </div>
             )}
@@ -375,15 +388,15 @@ function DashboardContent({ data }: { data: DashboardData }) {
               <div className="dashboard__col">
                 <CrewRosterCard
                   crew={crew}
-                  onAdd={handleCrewAdd}
-                  onUpdate={handleCrewUpdate}
-                  onDelete={handleCrewDelete}
+                  onAdd={isAuthorized ? handleCrewAdd : undefined}
+                  onUpdate={isAuthorized ? handleCrewUpdate : undefined}
+                  onDelete={isAuthorized ? handleCrewDelete : undefined}
                 />
               </div>
             )}
             {data.settings.show_offline && (
               <div className="dashboard__col">
-                <OfflineVaultCard status={offlineStatus} onToggle={handleOfflineToggle} />
+                <OfflineVaultCard status={offlineStatus} onToggle={isAuthorized ? handleOfflineToggle : undefined} />
               </div>
             )}
           </div>
