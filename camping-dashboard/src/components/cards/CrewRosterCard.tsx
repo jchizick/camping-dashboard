@@ -114,8 +114,16 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                                 
                                 {members.map((member) => (
                                     <div key={member.id} className="group relative flex gap-4 p-2 -mx-2 rounded hover:bg-card-hover/30 transition-colors">
-                                        <div className="w-10 h-10 rounded-full bg-border-subtle flex items-center justify-center font-mono font-bold text-text-main shrink-0 border border-border-subtle">
-                                            {member.name.charAt(0).toUpperCase()}
+                                        <div className="w-10 h-10 rounded-full bg-border-subtle flex items-center justify-center font-mono font-bold text-text-main shrink-0 border border-border-subtle overflow-hidden relative">
+                                            <span className="absolute z-0">{member.name.charAt(0).toUpperCase()}</span>
+                                            <img
+                                                src={`/avatars/${member.name.charAt(0).toUpperCase()}.png`}
+                                                alt={member.name}
+                                                className="absolute inset-0 w-full h-full object-cover z-10"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start mb-1">
