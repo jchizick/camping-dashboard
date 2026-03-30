@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import type { TimelineEvent } from '@/types';
 import { groupBy } from '@/lib/helpers';
-import GlassCard from '@/components/ui/GlassCard';
-import SectionHeader from '@/components/ui/SectionHeader';
+import { Card, Badge } from '@/components/ui/Primitives';
 import TimelineFormSheet from '@/components/cards/TimelineFormSheet';
+import { Clock, Plus, Pencil, Trash2 } from 'lucide-react';
 
 interface TimelineCardProps {
     events: TimelineEvent[];
@@ -19,7 +19,7 @@ const dayLabels: Record<number, string> = {
     1: 'Day 1 — Arrival',
     2: 'Day 2 — Explore',
     3: 'Day 3 — Weather Watch',
-    4: 'Day 4 — Paddle Out',
+    4: 'Day 4 — Hike Out',
 };
 
 export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDelete }: TimelineCardProps) {
@@ -31,7 +31,6 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
     const grouped = groupBy(events, (e) => String(e.day_number));
     const dayEvents = (grouped[String(selectedDay)] || []).sort((a, b) => a.sort_order - b.sort_order);
 
-    // Auto-compute next sort order so new events land at the end
     const nextSortOrder = dayEvents.length > 0
         ? Math.max(...dayEvents.map((e) => e.sort_order)) + 10
         : 10;
@@ -54,10 +53,6 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
         }
     }
 
-    function handleDelete(id: string) {
-        setPendingDeleteId(id);
-    }
-
     async function confirmDelete() {
         if (!pendingDeleteId) return;
         await onDelete?.(pendingDeleteId);
@@ -65,93 +60,98 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
     }
 
     return (
-        <GlassCard className="timeline-card">
-            <SectionHeader
-                title="Trip Timeline"
-                icon="📋"
-                subtitle={`${tripDays}-day expedition plan`}
-                onAdd={onAdd ? openAdd : undefined}
-                addLabel="Add timeline event"
-            />
-
-            {pendingDeleteId && (() => {
-                const event = dayEvents.find(e => e.id === pendingDeleteId);
-                return (
-                    <div className="gear-card__delete-confirm">
-                        <span>Remove <strong>{event?.title ?? 'this event'}</strong>?</span>
-                        <div className="gear-card__delete-confirm-actions">
-                            <button className="gear-card__delete-confirm-btn gear-card__delete-confirm-btn--cancel" onClick={() => setPendingDeleteId(null)}>Cancel</button>
-                            <button className="gear-card__delete-confirm-btn gear-card__delete-confirm-btn--confirm" onClick={confirmDelete}>Remove</button>
-                        </div>
-                    </div>
-                );
-            })()}
-
-            <div className="timeline-card__day-tabs">
+        <Card 
+            title="Trip Timeline" 
+            icon={Clock} 
+            className="h-full flex flex-col max-h-[600px]"
+            action={onAdd && (
+                <button onClick={openAdd} className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors">
+                    <Plus size={16} />
+                </button>
+            )}
+        >
+            <div className="text-sm text-text-muted mb-6">{tripDays}-day expedition plan</div>
+            
+            <div className="flex gap-2 mb-6 overflow-x-auto custom-scrollbar pb-2 shrink-0">
                 {Array.from({ length: tripDays }, (_, i) => i + 1).map((day) => (
                     <button
                         key={day}
-                        className={`timeline-card__day-tab ${selectedDay === day ? 'timeline-card__day-tab--active' : ''}`}
                         onClick={() => setSelectedDay(day)}
-                        aria-pressed={selectedDay === day}
+                        className={`px-4 py-1.5 rounded-full text-xs font-mono border whitespace-nowrap transition-colors ${
+                            selectedDay === day 
+                                ? 'bg-border-subtle text-text-main border-border-subtle' 
+                                : 'bg-transparent text-text-muted border-border-subtle hover:bg-card-hover'
+                        }`}
                     >
                         Day {day}
                     </button>
                 ))}
             </div>
 
-            <p className="timeline-card__day-label">
+            <h3 className="text-sm font-bold text-text-main mb-4">
                 {dayLabels[selectedDay] || `Day ${selectedDay}`}
-            </p>
+            </h3>
 
-            <div className="timeline-card__events">
+            {pendingDeleteId && (() => {
+                const event = dayEvents.find(e => e.id === pendingDeleteId);
+                return (
+                    <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red p-3 mb-4 rounded-xl flex items-center justify-between text-sm shrink-0">
+                        <span>Remove <strong>{event?.title ?? 'this event'}</strong>?</span>
+                        <div className="flex gap-2">
+                            <button className="px-3 py-1 bg-card-bg rounded border border-border-subtle hover:bg-card-hover text-text-muted text-xs" onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                            <button className="px-3 py-1 bg-accent-red text-bg-main rounded hover:bg-accent-red/80 font-bold text-xs" onClick={confirmDelete}>Remove</button>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            <div className="relative space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                {dayEvents.length > 0 && <div className="absolute left-[60px] top-2 bottom-2 w-px bg-border-subtle z-0" />}
+                
                 {dayEvents.length === 0 ? (
-                    <p className="timeline-card__empty">No events planned for this day yet</p>
+                    <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50 relative z-10 bg-card-bg">
+                        No events planned for this day yet
+                    </div>
                 ) : (
                     dayEvents.map((event, i) => (
-                        <div key={event.id} className="timeline-card__event">
-                            <div className="timeline-card__event-time">{event.event_time}</div>
-                            <div className="timeline-card__event-line">
-                                <div className="timeline-card__event-dot" />
-                                {i < dayEvents.length - 1 && <div className="timeline-card__event-connector" />}
-                            </div>
-                            <div className="timeline-card__event-content">
-                                <p className="timeline-card__event-title">
-                                    {event.title}
+                        <div key={event.id} className="relative flex gap-6 group hover:bg-card-hover/30 p-2 -my-2 -mx-2 rounded-lg transition-colors z-10">
+                            <div className="w-12 text-xs font-mono text-accent-yellow pt-0.5 shrink-0 text-right">{event.event_time}</div>
+                            
+                            <div className="absolute left-[64px] top-3.5 w-2 h-2 rounded-full bg-card-bg border-2 border-accent-yellow z-20 group-hover:bg-accent-yellow transition-colors" />
+                            
+                            <div className="flex-1 pb-6 border-b border-border-subtle/30 last:border-0 last:pb-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="text-sm font-medium text-text-main group-hover:text-accent-yellow transition-colors">{event.title}</h4>
                                     {event.phase && event.phase !== 'None' && (
-                                        <span className={`status-pill status-pill--sm timeline-card__phase timeline-card__phase--${event.phase.toLowerCase()}`}>
+                                        <Badge variant={event.phase === 'Transit' ? 'info' : event.phase === 'Setup' ? 'warning' : 'success'}>
                                             {event.phase}
-                                        </span>
-                                    )}
-                                </p>
-                                {event.details && (
-                                    <p className="timeline-card__event-details">{event.details}</p>
-                                )}
-                            </div>
-                            {(onUpdate || onDelete) && (
-                                <div className="row-actions">
-                                    {onUpdate && (
-                                        <button
-                                            className="row-actions__btn row-actions__btn--edit"
-                                            onClick={() => openEdit(event)}
-                                            aria-label={`Edit ${event.title}`}
-                                            title="Edit event"
-                                        >
-                                            ✏️
-                                        </button>
-                                    )}
-                                    {onDelete && (
-                                        <button
-                                            className="row-actions__btn row-actions__btn--delete"
-                                            onClick={() => handleDelete(event.id)}
-                                            aria-label={`Delete ${event.title}`}
-                                            title="Delete event"
-                                        >
-                                            🗑️
-                                        </button>
+                                        </Badge>
                                     )}
                                 </div>
-                            )}
+                                {event.details && <p className="text-xs text-text-muted leading-relaxed">{event.details}</p>}
+                                
+                                {/* Timeline Event Actions */}
+                                {(onUpdate || onDelete) && (
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-3">
+                                        {onUpdate && (
+                                            <button 
+                                                className="p-1 text-text-muted hover:text-accent-yellow rounded hover:bg-border-subtle transition-colors"
+                                                onClick={() => openEdit(event)}
+                                            >
+                                                <Pencil size={12} />
+                                            </button>
+                                        )}
+                                        {onDelete && (
+                                            <button 
+                                                className="p-1 text-text-muted hover:text-accent-red rounded hover:bg-border-subtle transition-colors"
+                                                onClick={() => setPendingDeleteId(event.id)}
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ))
                 )}
@@ -166,6 +166,6 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                 tripDays={tripDays}
                 nextSortOrder={nextSortOrder}
             />
-        </GlassCard>
+        </Card>
     );
 }

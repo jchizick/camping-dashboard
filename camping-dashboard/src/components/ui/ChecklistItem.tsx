@@ -2,7 +2,8 @@
 
 import React from 'react';
 import type { GearItem } from '@/types';
-import StatusPill from './StatusPill';
+import { Badge } from '@/components/ui/Primitives';
+import { CheckCircle2, Circle, Pencil, Trash2 } from 'lucide-react';
 
 interface ChecklistItemProps {
     item: GearItem;
@@ -11,60 +12,62 @@ interface ChecklistItemProps {
     onDelete?: (id: string) => void;
 }
 
-const priorityDot: Record<string, string> = {
-    critical: '🔴',
-    high: '🟡',
-    low: '🟢',
-};
-
 export default function ChecklistItem({ item, onToggle, onEdit, onDelete }: ChecklistItemProps) {
     return (
-        <div
-            className={`checklist-item ${item.packed ? 'checklist-item--packed' : 'checklist-item--needed'}`}
-        >
-            {/* Toggle zone — clicking here packs/unpacks */}
-            <div
-                className="checklist-item__toggle"
+        <div className="flex items-center justify-between p-2 hover:bg-card-hover rounded-lg group transition-colors">
+            <div 
+                className="flex items-center gap-3 cursor-pointer flex-1"
                 role="button"
                 tabIndex={0}
                 onClick={() => onToggle?.(item.id)}
                 onKeyDown={(e) => e.key === 'Enter' && onToggle?.(item.id)}
                 aria-label={`${item.name} — ${item.packed ? 'packed' : 'not packed'}`}
             >
-                <span className="checklist-item__check">{item.packed ? '✓' : '○'}</span>
-                <span className="checklist-item__priority">{priorityDot[item.priority]}</span>
-                <span className="checklist-item__name">{item.name}</span>
-                <div className="checklist-item__meta">
+                {item.packed ? (
+                    <CheckCircle2 size={16} className="text-accent-green" />
+                ) : item.priority === 'critical' ? (
+                    <Circle size={16} className="text-accent-red" />
+                ) : (
+                    <Circle size={16} className="text-accent-yellow" />
+                )}
+                
+                <span className={`text-sm ${item.packed ? 'text-text-muted line-through' : 'text-text-main'}`}>
+                    {item.name}
+                </span>
+
+                <div className="flex items-center gap-2 ml-2">
                     {item.owner && (
-                        <StatusPill label={item.owner} variant="ok" size="sm" />
+                        <div className="text-[10px] uppercase tracking-wider bg-border-subtle px-2 py-0.5 rounded text-text-muted">
+                            {item.owner}
+                        </div>
                     )}
                     {item.weight_kg > 0 && (
-                        <span className="checklist-item__weight">{item.weight_kg}kg</span>
+                        <span className="text-[10px] font-mono text-text-muted">{item.weight_kg}kg</span>
                     )}
                 </div>
             </div>
 
             {/* Action zone — edit / delete */}
             {(onEdit || onDelete) && (
-                <div className="row-actions">
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
                     {onEdit && (
                         <button
-                            className="row-actions__btn row-actions__btn--edit"
-                            onClick={() => onEdit(item)}
+                            className="p-1 hover:bg-border-subtle rounded text-text-muted hover:text-accent-yellow transition-colors"
+                            onClick={(e) => { e.stopPropagation(); onEdit(item); }}
                             aria-label={`Edit ${item.name}`}
                             title="Edit item"
                         >
-                            ✏️
+                            <Pencil size={14} />
                         </button>
                     )}
                     {onDelete && (
                         <button
-                            className="row-actions__btn row-actions__btn--delete"
-                            onClick={() => onDelete(item.id)}
+                            className="p-1 hover:bg-border-subtle rounded text-text-muted hover:text-accent-red transition-colors"
+                            onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
                             aria-label={`Delete ${item.name}`}
                             title="Delete item"
                         >
-                            🗑️
+                            <Trash2 size={14} />
                         </button>
                     )}
                 </div>

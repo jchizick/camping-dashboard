@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import type { Trip } from '@/types';
-import GlassCard from '@/components/ui/GlassCard';
-import SectionHeader from '@/components/ui/SectionHeader';
+import { Card } from '@/components/ui/Primitives';
+import { Map } from 'lucide-react';
 
 interface MapRouteCardProps {
     trip: Trip;
@@ -24,35 +24,21 @@ export default function MapRouteCard({ trip }: MapRouteCardProps) {
     }, []);
 
     return (
-        <GlassCard className="map-route-card">
-            <SectionHeader title="Route" icon="🗺" subtitle={`${trip.launch_point_name} → ${trip.lake_name} ${trip.site_name} · ${trip.distance_km} km`} />
-            <div className="map-route-card__map-container">
+        <Card title="Route" icon={Map} className="h-full" action={<span className="text-xs font-mono text-text-muted">{trip.distance_km} km</span>}>
+            <div className="text-sm text-text-muted mb-4 font-mono">
+                {trip.launch_point_name} → {trip.lake_name} {trip.site_name}
+            </div>
+            <div className="relative w-full h-[240px] md:h-[calc(100%-3rem)] min-h-[240px] rounded-xl overflow-hidden border border-border-subtle bg-card-hover group">
+                <div className="absolute inset-0 bg-map-overlay mix-blend-overlay pointer-events-none z-[1000]" />
                 {ready && MapInner ? (
                     <MapInner trip={trip} />
                 ) : (
-                    <div className="map-route-card__placeholder">
-                        <div className="map-route-card__placeholder-inner">
-                            <span className="map-route-card__placeholder-icon">🛶</span>
-                            <p>Loading map…</p>
-                            <p className="map-route-card__placeholder-coords">
-                                Launch: {trip.launch_lat.toFixed(4)}, {trip.launch_lng.toFixed(4)}<br />
-                                Site 4: {trip.site_lat.toFixed(4)}, {trip.site_lng.toFixed(4)}
-                            </p>
-                        </div>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-text-muted font-mono text-sm opacity-50">
+                        <span className="text-3xl mb-2">🛶</span>
+                        <p>Loading map…</p>
                     </div>
                 )}
             </div>
-            <div className="map-route-card__legend">
-                <span className="map-route-card__legend-item">
-                    <span className="map-route-card__legend-dot map-route-card__legend-dot--launch" />
-                    {trip.launch_point_name}
-                </span>
-                <span className="map-route-card__legend-item">
-                    <span className="map-route-card__legend-dot map-route-card__legend-dot--site" />
-                    {trip.lake_name} — {trip.site_name}
-                </span>
-                <span className="map-route-card__legend-distance">📏 {trip.distance_km} km</span>
-            </div>
-        </GlassCard>
+        </Card>
     );
 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import type { Trip, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
 import { padTwo } from '@/lib/helpers';
 import { useAuth } from '@/lib/authContext';
-
+import { Activity, Sun, Moon, Radio, User as UserIcon, Star, Wind, Sunset } from 'lucide-react';
 
 interface HeroHeaderProps {
     trip: Trip;
@@ -34,108 +34,85 @@ export default function HeroHeader({
         return () => clearInterval(id);
     }, []);
 
+    const isDarkMode = themeMode === 'night';
+
     return (
-        <header className="hero">
-            <div className="hero__bg-overlay" />
-
-            <div className="hero__top-bar">
-                <div className="hero__badge">
-                    <span className="hero__badge-dot" />
-                    EXPEDITION CONTROL
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2 bg-accent-yellow/10 text-accent-yellow px-3 py-1 rounded-full text-xs font-mono uppercase tracking-widest border border-accent-yellow/20">
+                        <Activity size={14} />
+                        Expedition Control
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <button 
+                            onClick={onThemeToggle}
+                            className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                                isDarkMode ? 'text-text-main border-accent-blue bg-accent-blue/10' : 'text-text-main border-accent-yellow bg-accent-yellow/10'
+                            }`}
+                        >
+                            {isDarkMode ? <Moon size={12} /> : <Sun size={12} />} {isDarkMode ? 'Night' : 'Day'}
+                        </button>
+                        
+                        {!isLoading && (
+                            <button 
+                                onClick={user ? signOut : signIn}
+                                className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                                    isAuthorized ? 'text-accent-yellow border-accent-yellow/30 bg-accent-yellow/10 hover:bg-accent-yellow/20' : 
+                                    user ? 'text-accent-red border-accent-red/30 bg-accent-red/10' :
+                                    'text-text-muted hover:text-text-main border-border-subtle hover:bg-card-hover'
+                                }`}
+                                title={isAuthorized ? `Signed in as ${user?.email}` : user ? 'Not authorized' : 'Admin sign in'}
+                            >
+                                <UserIcon size={12} /> {isAuthorized ? 'Admin' : user ? 'Unauthorized' : 'Sign In'}
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <button
-                    className="hero__theme-toggle"
-                    onClick={onThemeToggle}
-                    aria-label="Toggle day/night theme"
-                >
-                    {themeOverride === 'auto' ? '⟳ Auto' : themeMode === 'day' ? '☀️ Day' : '🌙 Night'}
-                </button>
+                
+                <div>
+                    <h2 className="text-accent-yellow text-sm font-mono uppercase tracking-widest mb-1">{trip.park_name}</h2>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-text-main mb-2">{trip.name}</h1>
+                    <p className="text-text-muted text-lg flex items-center gap-2">
+                        {trip.lake_name} <span className="w-1 h-1 rounded-full bg-border-subtle" /> {trip.site_name}
+                    </p>
+                </div>
 
-                {/* ── Admin auth button ── */}
-                {!isLoading && (
-                    isAuthorized ? (
-                        <button
-                            className="hero__admin-btn hero__admin-btn--signed-in"
-                            onClick={signOut}
-                            title={`Signed in as ${user?.email}\nClick to sign out`}
-                            aria-label="Sign out"
-                        >
-                            <span className="hero__admin-avatar">
-                                {(user?.email?.[0] ?? 'A').toUpperCase()}
-                            </span>
-                            <span className="hero__admin-label">Admin</span>
-                        </button>
-                    ) : user ? (
-                        // Signed in but not on whitelist
-                        <button
-                            className="hero__admin-btn hero__admin-btn--unauthorized"
-                            onClick={signOut}
-                            title="Not authorized — click to sign out"
-                            aria-label="Sign out"
-                        >
-                            🚫 Unauthorized
-                        </button>
-                    ) : (
-                        <button
-                            className="hero__admin-btn hero__admin-btn--sign-in"
-                            onClick={signIn}
-                            aria-label="Admin sign in"
-                            title="Sign in to edit dashboard data"
-                        >
-                            🔑 Admin
-                        </button>
-                    )
-                )}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm font-mono text-text-muted bg-card-bg px-4 py-2 rounded-lg border border-border-subtle w-fit">
+                    <div className="flex items-center gap-2 text-text-main">
+                        <Star size={16} className="text-accent-yellow fill-accent-yellow shrink-0" />
+                        <span className="text-lg font-bold">{Math.round(weather.temperature_c)}°C</span>
+                        <span className="text-text-muted whitespace-nowrap">{weather.condition_label}</span>
+                    </div>
+                    <div className="hidden sm:block w-px h-4 bg-border-subtle" />
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Wind size={14} className="shrink-0" /> {weather.wind_kph} km/h
+                    </div>
+                    <div className="hidden sm:block w-px h-4 bg-border-subtle" />
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Sunset size={14} className="text-accent-blue shrink-0" /> Sunset {weather.sunset_time}
+                    </div>
+                </div>
             </div>
 
-            <div className="hero__center">
-                <div className="hero__title-block">
-                    <p className="hero__park">{trip.park_name}</p>
-                    <h1 className="hero__title">{trip.name}</h1>
-                    <p className="hero__subtitle">{trip.lake_name} · {trip.site_name}</p>
-                </div>
-
-                <div className="hero__countdown" aria-live="polite" aria-atomic="true">
+            <div className="text-left md:text-right mt-4 md:mt-0">
+                <div className="text-xs font-mono text-text-muted uppercase tracking-widest mb-2">Trip Begins In</div>
+                <div className="flex flex-wrap gap-3 sm:gap-4 font-mono justify-start md:justify-end">
                     {countdown.isPast ? (
-                        <div className="hero__countdown-past">Trip is underway 🛶</div>
+                        <div className="text-2xl font-bold text-accent-yellow">Trip is underway 🛶</div>
                     ) : (
-                        <>
-                            <p className="hero__countdown-label">Trip begins in</p>
-                            <div className="hero__countdown-units">
-                                <div className="hero__countdown-unit">
-                                    <span className="hero__countdown-value">{padTwo(countdown.days)}</span>
-                                    <span className="hero__countdown-unit-label">days</span>
-                                </div>
-                                <span className="hero__countdown-sep">:</span>
-                                <div className="hero__countdown-unit">
-                                    <span className="hero__countdown-value">{padTwo(countdown.hours)}</span>
-                                    <span className="hero__countdown-unit-label">hrs</span>
-                                </div>
-                                <span className="hero__countdown-sep">:</span>
-                                <div className="hero__countdown-unit">
-                                    <span className="hero__countdown-value">{padTwo(countdown.minutes)}</span>
-                                    <span className="hero__countdown-unit-label">min</span>
-                                </div>
-                                <span className="hero__countdown-sep">:</span>
-                                <div className="hero__countdown-unit">
-                                    <span className="hero__countdown-value">{padTwo(countdown.seconds)}</span>
-                                    <span className="hero__countdown-unit-label">sec</span>
-                                </div>
+                        [
+                            { value: padTwo(countdown.days), label: 'Days' },
+                            { value: padTwo(countdown.hours), label: 'Hrs' },
+                            { value: padTwo(countdown.minutes), label: 'Min' },
+                            { value: padTwo(countdown.seconds), label: 'Sec' }
+                        ].map((unit, i) => (
+                            <div key={i} className="flex flex-col items-center">
+                                <span className="text-4xl md:text-5xl font-bold text-text-main tracking-tighter">{unit.value}</span>
+                                <span className="text-[10px] uppercase tracking-widest text-text-muted mt-1">{unit.label}</span>
                             </div>
-                        </>
+                        ))
                     )}
-                </div>
-            </div>
-
-            <div className="hero__footer">
-                <div className="hero__conditions">
-                    <span className="hero__conditions-icon">{weather.icon}</span>
-                    <span className="hero__conditions-temp">{Math.round(weather.temperature_c)}°C</span>
-                    <span className="hero__conditions-label">{weather.condition_label}</span>
-                    <span className="hero__conditions-divider">·</span>
-                    <span className="hero__conditions-wind">💨 {weather.wind_kph} km/h</span>
-                    <span className="hero__conditions-divider">·</span>
-                    <span className="hero__conditions-sunset">🌅 Sunset {weather.sunset_time}</span>
                 </div>
             </div>
         </header>

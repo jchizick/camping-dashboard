@@ -153,11 +153,20 @@ function DashboardContent({ data }: { data: DashboardData }) {
   // ── Theme toggle ──────────────────────────────────────────────────
   function handleThemeToggle() {
     setThemeOverride((prev) => {
-      if (prev === 'auto') return 'day';
-      if (prev === 'day') return 'night';
-      return 'auto';
+      // If resolving auto based on current mode, switch directly. 
+      // Actually, since themeMode is derived, we can just invert the active themeMode
+      return themeMode === 'night' ? 'day' : 'night';
     });
   }
+
+  useEffect(() => {
+    // Sync dark mode to HTML document so body gets background color
+    if (themeMode === 'night') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [themeMode]);
 
   // ── Gear mutations ────────────────────────────────────────────────
   async function handleGearToggle(id: string) {
@@ -260,83 +269,54 @@ function DashboardContent({ data }: { data: DashboardData }) {
     setAlerts(prev => prev.filter(a => a.id !== id));
   }
 
-  // ── Park Intel mutations ──────────────────────────────────────────
+  // ── Park Intel mutations ─────────────────────────────────────────
   async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'id' | 'trip_id' | 'updated_at'>>) {
-    const prev = parkIntel;
-    setParkIntel(current => ({ ...current, ...patch }));
-    const { error } = await updateParkIntel(parkIntel.id, patch);
-    if (error) {
-      console.error('[updateParkIntel] Supabase write failed, reverting:', error.message);
-      setParkIntel(prev);
-    }
+    const { data: updated, error } = await updateParkIntel(parkIntel.id, patch);
+    if (error || !updated) { console.error('[updateParkIntel]', error?.message); throw error; }
+    setParkIntel(updated as ParkIntel);
   }
 
-  // ── Offline mutations ─────────────────────────────────────────────
+  // ── Offline Status mutations ──────────────────────────────────────
   async function handleOfflineToggle(key: keyof OfflineStatus) {
-    const current = offlineStatus[key];
-    if (typeof current !== 'boolean') return;
-    const newValue = !current;
-    
-    setOfflineStatus(prev => ({ ...prev, [key]: newValue }));
-    
+    if (key === 'id' || key === 'trip_id' || key === 'updated_at') return;
+    const newValue = !offlineStatus[key];
     const patch = { [key]: newValue };
-    const { error } = await updateOfflineStatus(offlineStatus.id, patch);
-    
-    if (error) {
-      console.error('[updateOfflineStatus] Supabase write failed, reverting:', error.message);
-      setOfflineStatus(prev => ({ ...prev, [key]: current }));
-    }
+    const { data: updated, error } = await updateOfflineStatus(offlineStatus.id, patch);
+    if (error || !updated) { console.error('[updateOfflineStatus]', error?.message); throw error; }
+    setOfflineStatus(updated as OfflineStatus);
   }
 
   return (
-    <main
-      className={`dashboard theme-${themeMode}`}
-      data-theme={themeMode}
-    >
-      {/* Atmospheric background layers */}
-      <div className="dashboard__bg" aria-hidden="true">
-        <div className="dashboard__bg-gradient" />
-        <div className="dashboard__bg-texture" />
-        {themeMode === 'night' && <div className="dashboard__bg-stars" />}
-      </div>
+    <>
+      <div className="bg-topography" />
+      <div className={`min-h-screen p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 relative z-10 ${themeMode === 'night' ? 'dark' : ''}`}>
+        <HeroHeader
+          trip={data.trip}
+          weather={data.currentWeather}
+          readiness={readiness}
+          countdown={countdown}
+          themeMode={themeMode}
+          themeOverride={themeOverride}
+          onThemeToggle={handleThemeToggle}
+        />
 
-      {/* ── Hero ────────────────────────────────────────────────── */}
-      <HeroHeader
-        trip={data.trip}
-        weather={data.currentWeather}
-        readiness={readiness}
-        countdown={countdown}
-        themeMode={themeMode}
-        themeOverride={themeOverride}
-        onThemeToggle={handleThemeToggle}
-      />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      {/* ── Dashboard Grid ──────────────────────────────────────── */}
-      <section className="dashboard__grid">
-
-        {/* ── Row A: Route + Weather ─── */}
-        <div className="dashboard__row dashboard__row--route">
-          <div className="dashboard__col dashboard__col--map">
+          <div className="lg:col-span-8">
             <MapRouteCard trip={data.trip} />
           </div>
-          <div className="dashboard__col dashboard__col--sidebar">
+          <div className="lg:col-span-4 flex flex-col gap-6">
             <WeatherCard weather={data.currentWeather} astro={data.astro} />
           </div>
-        </div>
 
-        {/* ── Row B: Forecast + Readiness ─── */}
-        <div className="dashboard__row dashboard__row--forecast">
-          <div className="dashboard__col dashboard__col--forecast">
+          <div className="lg:col-span-8">
             <ForecastCard forecast={data.forecast} />
           </div>
-          <div className="dashboard__col dashboard__col--readiness">
+          <div className="lg:col-span-4">
             <ReadinessScoreCard readiness={readiness} />
           </div>
-        </div>
 
-        {/* ── Row C: Gear + Timeline ─── */}
-        <div className="dashboard__row dashboard__row--prep">
-          <div className="dashboard__col dashboard__col--gear">
+          <div className="lg:col-span-6">
             <GearChecklistCard
               gear={gear}
               onToggle={isAuthorized ? handleGearToggle : undefined}
@@ -345,7 +325,7 @@ function DashboardContent({ data }: { data: DashboardData }) {
               onDelete={isAuthorized ? handleGearDelete : undefined}
             />
           </div>
-          <div className="dashboard__col dashboard__col--timeline">
+          <div className="lg:col-span-6">
             <TimelineCard
               events={timeline}
               tripDays={tripDays}
@@ -354,69 +334,61 @@ function DashboardContent({ data }: { data: DashboardData }) {
               onDelete={isAuthorized ? handleTimelineDelete : undefined}
             />
           </div>
-        </div>
 
-        {/* ── Row D: Park Intel + Alerts ─── */}
-        <div className="dashboard__row dashboard__row--intel">
-          <div className="dashboard__col dashboard__col--park">
+          <div className="lg:col-span-8">
             <ParkIntelCard intel={parkIntel} onUpdate={isAuthorized ? handleParkIntelUpdate : undefined} />
           </div>
-          <div className="dashboard__col dashboard__col--alerts">
+          <div className="lg:col-span-4">
             <AlertsCard
               alerts={alerts}
               onAddManual={isAuthorized ? handleAlertAdd : undefined}
               onDeleteManual={isAuthorized ? handleAlertDelete : undefined}
             />
           </div>
-        </div>
 
-        {/* ── Row E: Meals + Crew + Offline ─── */}
-        {(data.settings.show_meals || data.settings.show_crew || data.settings.show_offline) && (
-          <div className="dashboard__row dashboard__row--logistics">
-            {data.settings.show_meals && (
-              <div className="dashboard__col">
-                <MealPlannerCard
-                  meals={meals}
-                  totalDays={tripDays}
-                  onAdd={isAuthorized ? handleMealAdd : undefined}
-                  onUpdate={isAuthorized ? handleMealUpdate : undefined}
-                  onDelete={isAuthorized ? handleMealDelete : undefined}
-                />
-              </div>
-            )}
-            {data.settings.show_crew && (
-              <div className="dashboard__col">
-                <CrewRosterCard
-                  crew={crew}
-                  onAdd={isAuthorized ? handleCrewAdd : undefined}
-                  onUpdate={isAuthorized ? handleCrewUpdate : undefined}
-                  onDelete={isAuthorized ? handleCrewDelete : undefined}
-                />
-              </div>
-            )}
-            {data.settings.show_offline && (
-              <div className="dashboard__col">
-                <OfflineVaultCard status={offlineStatus} onToggle={isAuthorized ? handleOfflineToggle : undefined} />
-              </div>
-            )}
-          </div>
-        )}
+          {(data.settings.show_meals || data.settings.show_crew || data.settings.show_offline) && (
+            <>
+              {data.settings.show_meals && (
+                <div className="lg:col-span-4">
+                  <MealPlannerCard
+                    meals={meals}
+                    totalDays={tripDays}
+                    onAdd={isAuthorized ? handleMealAdd : undefined}
+                    onUpdate={isAuthorized ? handleMealUpdate : undefined}
+                    onDelete={isAuthorized ? handleMealDelete : undefined}
+                  />
+                </div>
+              )}
+              {data.settings.show_crew && (
+                <div className="lg:col-span-4">
+                  <CrewRosterCard
+                    crew={crew}
+                    onAdd={isAuthorized ? handleCrewAdd : undefined}
+                    onUpdate={isAuthorized ? handleCrewUpdate : undefined}
+                    onDelete={isAuthorized ? handleCrewDelete : undefined}
+                  />
+                </div>
+              )}
+              {data.settings.show_offline && (
+                <div className="lg:col-span-4">
+                  <OfflineVaultCard status={offlineStatus} onToggle={isAuthorized ? handleOfflineToggle : undefined} />
+                </div>
+              )}
+            </>
+          )}
 
-        {/* ── Row F: Astro ─── */}
-        {data.settings.show_astro && (
-          <div className="dashboard__row dashboard__row--astro">
-            <div className="dashboard__col dashboard__col--astro">
+          {data.settings.show_astro && (
+            <div className="lg:col-span-12">
               <AstroCard astro={data.astro} weather={data.currentWeather} />
             </div>
-          </div>
-        )}
+          )}
 
-      </section>
+        </div>
 
-      <footer className="dashboard__footer">
-        <p>Algonquin Wilderness Mission Control · Supabase live · {new Date().toLocaleDateString('en-CA')}</p>
-      </footer>
-    </main>
+        <footer className="text-center py-8 text-xs font-mono text-text-muted uppercase tracking-widest">
+          Algonquin Wilderness Mission Control · Supabase live · {new Date().toLocaleDateString('en-CA')}
+        </footer>
+      </div>
+    </>
   );
 }
-

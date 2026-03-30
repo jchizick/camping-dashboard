@@ -2,33 +2,37 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import type { ReadinessScore } from '@/types';
-import GlassCard from '@/components/ui/GlassCard';
-import SectionHeader from '@/components/ui/SectionHeader';
-import ProgressBar from '@/components/ui/ProgressBar';
+import { Card, ProgressBar } from '@/components/ui/Primitives';
+import { Activity, Tent, ShieldAlert, Utensils, CloudRain, Clock } from 'lucide-react';
 
 interface ReadinessScoreCardProps {
     readiness: ReadinessScore;
 }
 
 const subScores = [
-    { key: 'gear' as const, label: 'Gear', icon: '🎒', weight: '35%' },
-    { key: 'offline' as const, label: 'Offline Safety', icon: '📡', weight: '20%' },
-    { key: 'meals' as const, label: 'Meals', icon: '🍲', weight: '20%' },
-    { key: 'weather' as const, label: 'Weather Prep', icon: '🌤', weight: '15%' },
-    { key: 'timeline' as const, label: 'Timeline', icon: '📋', weight: '10%' },
+    { key: 'gear' as const, label: 'Gear', icon: Tent, bgHover: 'bg-accent-red' },
+    { key: 'offline' as const, label: 'Offline Safety', icon: ShieldAlert, bgHover: 'bg-accent-red' },
+    { key: 'meals' as const, label: 'Meals', icon: Utensils, bgHover: 'bg-accent-yellow' },
+    { key: 'weather' as const, label: 'Weather Prep', icon: CloudRain, bgHover: 'bg-accent-green' },
+    { key: 'timeline' as const, label: 'Timeline', icon: Clock, bgHover: 'bg-accent-blue' },
 ];
 
-function scoreVariant(score: number): 'success' | 'default' | 'danger' {
-    if (score >= 80) return 'success';
-    if (score >= 50) return 'default';
-    return 'danger';
+function scoreColor(score: number): string {
+    if (score >= 80) return 'bg-accent-green';
+    if (score >= 50) return 'bg-accent-yellow';
+    return 'bg-accent-red';
 }
 
-function overallClass(score: number): string {
-    if (score >= 90) return 'readiness-card__ring--locked';
-    if (score >= 75) return 'readiness-card__ring--ready';
-    if (score >= 50) return 'readiness-card__ring--attention';
-    return 'readiness-card__ring--not-ready';
+function strokeColor(score: number): string {
+    if (score >= 80) return 'var(--color-accent-green)';
+    if (score >= 50) return 'var(--color-accent-yellow)';
+    return 'var(--color-accent-red)';
+}
+
+function textColor(score: number): string {
+    if (score >= 80) return 'text-accent-green';
+    if (score >= 50) return 'text-accent-yellow';
+    return 'text-accent-red';
 }
 
 export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProps) {
@@ -46,70 +50,60 @@ export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProp
             { threshold: 0.1 }
         );
 
-        if (ringRef.current) {
-            observer.observe(ringRef.current);
-        }
-
+        if (ringRef.current) observer.observe(ringRef.current);
         return () => observer.disconnect();
     }, []);
 
-    const size = 90;
-    const strokeWidth = 2;
-    const radius = Math.floor((size - strokeWidth) / 2);
+    const size = 96;
+    const strokeWidth = 8;
+    const radius = 42;
     const circumference = Math.round(radius * 2 * Math.PI);
     const dashOffset = isVisible ? circumference - (readiness.overall / 100) * circumference : circumference;
 
-    return (
-        <GlassCard className="readiness-card">
-            <SectionHeader title="Mission Readiness" icon="🎯" />
+    const mainColorClass = textColor(readiness.overall);
+    const mainStrokeValue = strokeColor(readiness.overall);
 
-            <div className="readiness-card__hero">
-                <div ref={ringRef} className={`readiness-card__ring ${overallClass(readiness.overall)}`}>
-                    <svg className="readiness-card__svg" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                        <circle
-                            className="readiness-card__track"
-                            cx={size / 2} cy={size / 2} r={radius}
-                            fill="transparent" strokeWidth={strokeWidth}
-                        />
-                        <circle
-                            className="readiness-card__progress"
-                            cx={size / 2} cy={size / 2} r={radius}
-                            fill="transparent" stroke="currentColor"
-                            strokeWidth={strokeWidth}
-                            strokeDasharray={circumference}
-                            strokeDashoffset={dashOffset}
+    return (
+        <Card title="Mission Readiness" icon={Activity} className="h-full">
+            <div className="flex items-center gap-6 mb-8">
+                <div ref={ringRef} className="relative w-24 h-24 flex items-center justify-center">
+                    <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--color-border-subtle)" strokeWidth={strokeWidth} />
+                        <circle 
+                            cx="50" cy="50" r={radius} fill="none" 
+                            stroke={mainStrokeValue} 
+                            strokeWidth={strokeWidth} 
+                            strokeDasharray={circumference} 
+                            strokeDashoffset={dashOffset} 
                             strokeLinecap="round"
+                            className="transition-all duration-1000 ease-out delay-300" 
                         />
                     </svg>
-                    <div className="readiness-card__content">
-                        <span className="readiness-card__score">{readiness.overall}</span>
-                        <span className="readiness-card__score-pct">%</span>
+                    <div className="text-center z-10 flex items-baseline">
+                        <span className={`text-3xl font-bold font-mono ${mainColorClass}`}>{readiness.overall}</span>
+                        <span className={`text-sm font-mono ${mainColorClass}`}>%</span>
                     </div>
                 </div>
-                <div className="readiness-card__label-block">
-                    <p className="readiness-card__label">{readiness.label}</p>
-                    <p className="readiness-card__sublabel">Overall expedition readiness</p>
+                <div>
+                    <div className="text-lg font-medium text-text-main mb-1">{readiness.label}</div>
+                    <div className="text-sm text-text-muted">Overall expedition readiness</div>
                 </div>
             </div>
 
-            <div className="readiness-card__breakdown">
-                {subScores.map(({ key, label, icon, weight }) => (
-                    <div key={key} className="readiness-card__sub">
-                        <div className="readiness-card__sub-header">
-                            <span className="readiness-card__sub-icon">{icon}</span>
-                            <span className="readiness-card__sub-label">{label}</span>
-                            <span className="readiness-card__sub-weight">{weight}</span>
-                            <span className="readiness-card__sub-value">{readiness[key]}%</span>
+            <div className="space-y-4">
+                {subScores.map(({ key, label, icon: Icon }) => (
+                    <div key={key}>
+                        <div className="flex justify-between text-xs font-mono text-text-muted mb-2">
+                            <span className="flex items-center gap-2">
+                                <Icon size={14} />
+                                {label}
+                            </span>
+                            <span className={textColor(readiness[key])}>{readiness[key]}%</span>
                         </div>
-                        <ProgressBar
-                            value={readiness[key]}
-                            showPercent={false}
-                            variant={scoreVariant(readiness[key])}
-                            size="sm"
-                        />
+                        <ProgressBar value={readiness[key]} colorClass={scoreColor(readiness[key])} />
                     </div>
                 ))}
             </div>
-        </GlassCard>
+        </Card>
     );
 }
