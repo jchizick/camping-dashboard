@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import type { Trip, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
 import { padTwo } from '@/lib/helpers';
 import { useAuth } from '@/lib/authContext';
-import { Activity, Sun, Moon, Radio, User as UserIcon, Star, Wind, Sunset } from 'lucide-react';
+import { Activity, User as UserIcon, Star, Wind, Sunset } from 'lucide-react';
 
 interface HeroHeaderProps {
     trip: Trip;
@@ -12,8 +12,7 @@ interface HeroHeaderProps {
     readiness: ReadinessScore;
     countdown: CountdownResult;
     themeMode: ThemeMode;
-    themeOverride: 'auto' | 'day' | 'night';
-    onThemeToggle: () => void;
+    onMissionBrief?: () => void;
 }
 
 export default function HeroHeader({
@@ -22,8 +21,7 @@ export default function HeroHeader({
     readiness,
     countdown,
     themeMode,
-    themeOverride,
-    onThemeToggle,
+    onMissionBrief,
 }: HeroHeaderProps) {
     const [tick, setTick] = useState(0);
     const { user, isAuthorized, isLoading, signIn, signOut } = useAuth();
@@ -34,7 +32,7 @@ export default function HeroHeader({
         return () => clearInterval(id);
     }, []);
 
-    const isDarkMode = themeMode === 'night';
+
 
     return (
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -45,13 +43,12 @@ export default function HeroHeader({
                         Expedition Control
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <button 
-                            onClick={onThemeToggle}
-                            className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
-                                isDarkMode ? 'text-text-main border-accent-blue bg-accent-blue/10' : 'text-text-main border-accent-yellow bg-accent-yellow/10'
-                            }`}
+                        <button
+                            id="mission-brief-btn"
+                            onClick={onMissionBrief}
+                            className="text-xs font-mono px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-text-main border-accent-yellow/40 bg-accent-yellow/10 hover:bg-accent-yellow/20 hover:border-accent-yellow/60 active:scale-95"
                         >
-                            {isDarkMode ? <Moon size={12} /> : <Sun size={12} />} {isDarkMode ? 'Night' : 'Day'}
+                            🎧 Mission Brief
                         </button>
                         
                         {!isLoading && (

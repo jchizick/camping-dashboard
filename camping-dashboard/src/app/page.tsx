@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, ThemeOverride, DashboardData, OfflineStatus, ParkIntel } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, DashboardData, OfflineStatus, ParkIntel } from '@/types';
 import { fetchDashboardData } from '@/lib/fetchDashboard';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import {
@@ -22,7 +22,6 @@ import {
 } from '@/lib/mutations';
 import {
   getTripCountdown,
-  getThemeModeFromTime,
   calculateGearReadiness,
   calculateMealCompleteness,
   calculateOfflineReadiness,
@@ -81,11 +80,102 @@ function DashboardLoader() {
 
   if (!initialData) {
     return (
-      <main className="dashboard theme-night" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ width: '40px', height: '40px', border: '3px solid rgba(255,183,77,0.3)', borderTopColor: '#ffb74d', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
-          <h2 style={{ color: '#ffb74d', letterSpacing: '2px', textTransform: 'uppercase', margin: 0, fontSize: '1.2rem' }}>Initializing Mission Control...</h2>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <main style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: '#121210',
+        fontFamily: '"JetBrains Mono", "Courier New", monospace',
+      }}>
+        <style>{`
+          @keyframes spin-slow { to { transform: rotate(360deg); } }
+          @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+          @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 0.2; }
+            100% { transform: scale(0.8); opacity: 0.6; }
+          }
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+          @keyframes fade-up {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', animation: 'fade-up 0.6s ease forwards' }}>
+
+          {/* Compass / Radar ring stack */}
+          <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+            {/* Outer pulse ring */}
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              border: '1px solid rgba(234, 179, 8, 0.25)',
+              animation: 'pulse-ring 2.4s ease-in-out infinite',
+            }} />
+
+            {/* Middle pulse ring */}
+            <div style={{
+              position: 'absolute', inset: '12px', borderRadius: '50%',
+              border: '1px solid rgba(234, 179, 8, 0.35)',
+              animation: 'pulse-ring 2.4s ease-in-out infinite 0.4s',
+            }} />
+
+            {/* Spinning outer arc */}
+            <div style={{
+              position: 'absolute', inset: '4px', borderRadius: '50%',
+              border: '2px solid transparent',
+              borderTopColor: 'rgba(234, 179, 8, 0.7)',
+              borderRightColor: 'rgba(234, 179, 8, 0.2)',
+              animation: 'spin-slow 1.8s linear infinite',
+            }} />
+
+            {/* Spinning inner arc (reverse) */}
+            <div style={{
+              position: 'absolute', inset: '20px', borderRadius: '50%',
+              border: '1.5px solid transparent',
+              borderBottomColor: 'rgba(234, 179, 8, 0.5)',
+              borderLeftColor: 'rgba(234, 179, 8, 0.15)',
+              animation: 'spin-reverse 1.2s linear infinite',
+            }} />
+
+            {/* Center compass dot */}
+            <div style={{
+              width: '8px', height: '8px', borderRadius: '50%',
+              background: '#eab308',
+              boxShadow: '0 0 12px 3px rgba(234,179,8,0.5)',
+            }} />
+          </div>
+
+          {/* Labels */}
+          <div style={{ textAlign: 'center' }}>
+            <p style={{
+              color: '#eab308',
+              fontSize: '0.7rem',
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              margin: '0 0 0.5rem',
+              opacity: 0.6,
+            }}>
+              Algonquin · Maple Lake
+            </p>
+            <p style={{
+              color: 'rgba(243,244,246,0.9)',
+              fontSize: '0.85rem',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              margin: 0,
+              fontWeight: 600,
+            }}>
+              Initializing Mission Control
+              <span style={{ animation: 'blink 1.2s step-end infinite' }}>_</span>
+            </p>
+          </div>
+
         </div>
       </main>
     );
@@ -108,14 +198,14 @@ function DashboardContent({ data }: { data: DashboardData }) {
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>(data.offlineStatus);
   const [parkIntel, setParkIntel] = useState<ParkIntel>(data.parkIntel);
 
-  // ── Local UI state ────────────────────────────────────────────────
-  const [themeOverride, setThemeOverride] = useState<ThemeOverride>(
-    data.settings.manual_theme_override
-  );
-  const [countdown, setCountdown] = useState(() => getTripCountdown(data.trip.start_date));
-  const [isMounted, setIsMounted] = useState(false);
+  // ── Theme (locked to night) ───────────────────────────────────────
+  const themeMode = 'night' as const;
 
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  const [countdown, setCountdown] = useState(() => getTripCountdown(data.trip.start_date));
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -124,21 +214,10 @@ function DashboardContent({ data }: { data: DashboardData }) {
     return () => clearInterval(id);
   }, [data.trip.start_date]);
 
-  // ── Derived values ────────────────────────────────────────────────
-  const sunriseHour = parseInt(data.currentWeather.sunrise_time.split(':')[0], 10);
-  const sunsetHour = parseInt(data.currentWeather.sunset_time.split(':')[0], 10);
-  const currentHour = isMounted ? new Date().getHours() : 10;
-
-  const themeMode = useMemo(
-    () => getThemeModeFromTime(currentHour, sunriseHour, sunsetHour, themeOverride),
-    [currentHour, sunriseHour, sunsetHour, themeOverride]
-  );
-
   const tripDays = useMemo(
     () => getTripDays(data.trip.start_date, data.trip.end_date),
     [data.trip.start_date, data.trip.end_date]
   );
-
   const gearReadiness = useMemo(() => calculateGearReadiness(gear), [gear]);
   const mealReadiness = useMemo(() => calculateMealCompleteness(meals, tripDays), [meals, tripDays]);
   const offlineReadiness = useMemo(() => calculateOfflineReadiness(offlineStatus), [offlineStatus]);
@@ -149,24 +228,6 @@ function DashboardContent({ data }: { data: DashboardData }) {
     () => calculateOverallReadiness({ gear: gearReadiness, meals: mealReadiness, weather: weatherReadiness, offline: offlineReadiness, timeline: timelineReadiness }),
     [gearReadiness, mealReadiness, weatherReadiness, offlineReadiness, timelineReadiness]
   );
-
-  // ── Theme toggle ──────────────────────────────────────────────────
-  function handleThemeToggle() {
-    setThemeOverride((prev) => {
-      // If resolving auto based on current mode, switch directly. 
-      // Actually, since themeMode is derived, we can just invert the active themeMode
-      return themeMode === 'night' ? 'day' : 'night';
-    });
-  }
-
-  useEffect(() => {
-    // Sync dark mode to HTML document so body gets background color
-    if (themeMode === 'night') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [themeMode]);
 
   // ── Gear mutations ────────────────────────────────────────────────
   async function handleGearToggle(id: string) {
@@ -296,8 +357,6 @@ function DashboardContent({ data }: { data: DashboardData }) {
           readiness={readiness}
           countdown={countdown}
           themeMode={themeMode}
-          themeOverride={themeOverride}
-          onThemeToggle={handleThemeToggle}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
