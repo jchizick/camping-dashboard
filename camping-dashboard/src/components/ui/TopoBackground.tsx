@@ -20,18 +20,13 @@ export const TopoBackground = () => {
 
       {/* 2. Path-Based SVG Topo System */}
       <div 
-        // Mobile gets higher opacity (0.4/0.35), Desktop (md:) stays subtle (0.25/0.15)
-        className="absolute inset-0 opacity-[0.4] md:opacity-[0.25] dark:opacity-[0.35] dark:md:opacity-[0.15] transition-opacity duration-300"
+        className="absolute inset-0 opacity-[0.25] dark:opacity-[0.15] transition-opacity duration-300"
         style={{
-          // Smoother fade that works beautifully on both tall mobile screens and wide desktop screens
-          maskImage: 'linear-gradient(to bottom, black 0%, black 15%, transparent 85%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 15%, transparent 85%)'
+          maskImage: 'linear-gradient(to bottom, black 0%, black 35%, transparent 90%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 35%, transparent 90%)'
         }}
       >
-        {/* xMaxYMin anchors the SVG to the top-right. 
-            On mobile, this shows the dense contour peaks. 
-            On desktop, it keeps the top visible (which is great since the bottom fades out anyway). */}
-        <svg className="w-full h-full stroke-black dark:stroke-white transition-colors duration-300" viewBox="0 0 1440 1024" preserveAspectRatio="xMaxYMin slice" fill="none" strokeWidth="1.5">
+        <svg className="w-full h-full stroke-black dark:stroke-white transition-colors duration-300" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice" fill="none" strokeWidth="1.5">
           
           {/* Zone 1: Top Left Ridge */}
           <g className="opacity-80">
