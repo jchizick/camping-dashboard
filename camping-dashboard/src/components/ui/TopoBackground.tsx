@@ -6,13 +6,13 @@ export const TopoBackground = () => {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-app-bg transition-colors duration-300">
 
-      {/* 1. Macro Terrain Depth Layer — Reduced blur for mobile compatibility */}
-      <div className="absolute inset-0 opacity-[0.2] md:opacity-[0.1] dark:opacity-[0.1] md:dark:opacity-[0.05]">
+      {/* 1. Macro Terrain Depth Layer — Subtle base shapes */}
+      <div className="absolute inset-0 opacity-[0.1] md:opacity-[0.1] dark:opacity-[0.06] md:dark:opacity-[0.04]">
         <svg
           className="w-full h-full"
           viewBox="0 0 1440 1024"
           preserveAspectRatio="xMidYMid slice"
-          style={{ filter: 'blur(60px)' }}
+          style={{ filter: 'blur(80px)' }}
         >
           <ellipse cx="400" cy="300" rx="600" ry="500" className="fill-current text-text-muted" />
           <ellipse cx="1200" cy="800" rx="700" ry="600" className="fill-current text-text-muted" />
@@ -20,12 +20,12 @@ export const TopoBackground = () => {
         </svg>
       </div>
 
-      {/* 2. Path-Based SVG Topo System */}
+      {/* 2. Path-Based SVG Topo System — Scaled for mobile breathing room */}
       <div
-        className="absolute inset-0 opacity-[0.4] md:opacity-[0.25] dark:opacity-[0.3] md:dark:opacity-[0.15] transition-opacity duration-300"
+        className="absolute inset-0 opacity-[0.25] md:opacity-[0.2] dark:opacity-[0.12] md:dark:opacity-[0.1] transition-opacity duration-300 scale-[1.3] md:scale-100"
         style={{
-          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
-          maskImage: 'linear-gradient(to bottom, black 0%, black 50%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 25%, transparent 95%)',
+          maskImage: 'linear-gradient(to bottom, black 0%, black 25%, transparent 95%)',
         }}
       >
         <svg
@@ -33,18 +33,17 @@ export const TopoBackground = () => {
           viewBox="0 0 1440 1024"
           preserveAspectRatio="xMidYMid slice"
           fill="none"
-          strokeWidth="1.2"
+          strokeWidth="1.1"
         >
-          {/* Zone 1: Top Left Ridge - More centralized for mobile */}
+          {/* Zone 1: Top Left Ridge */}
           <g opacity="0.8">
             <path d="M 0,200 C 250,150 450,350 720,300 C 990,250 1150,100 1440,150" />
             <path d="M 0,170 C 260,110 470,310 740,260 C 1010,210 1170,60 1440,110" />
             <path d="M 0,130 C 270,60 490,260 760,210 C 1030,160 1190,10 1440,60" />
             <path d="M 0,80 C 280,0 510,200 780,150 C 1050,100 1210,-50 1440,0" />
-            <path d="M 0,20 C 290,-70 530,130 800,80 C 1070,30 1230,-120 1440,-70" />
           </g>
 
-          {/* Zone 2: Middle Flow - Guaranteed visibility on narrow screens */}
+          {/* Zone 2: Middle Flow */}
           <g opacity="0.6">
             <path d="M 0,400 C 300,380 500,580 720,500 C 940,420 1140,250 1440,300" />
             <path d="M 0,440 C 320,420 520,630 750,540 C 980,450 1170,280 1440,340" />
@@ -52,7 +51,7 @@ export const TopoBackground = () => {
             <path d="M 0,550 C 390,530 590,760 840,650 C 1090,540 1260,370 1440,450" />
           </g>
 
-          {/* Zone 3: Bottom Right Elevation - Adjusted to show more on mobile */}
+          {/* Zone 3: Bottom Right Elevation */}
           <g opacity="0.5">
             <path d="M 400,1000 C 600,800 800,950 1000,750 C 1200,550 1400,700 1600,500" />
             <path d="M 450,1050 C 660,840 850,1000 1060,790 C 1270,580 1460,740 1600,550" />
@@ -70,16 +69,16 @@ export const TopoBackground = () => {
 
       {/* 3. Ultra-soft Micro-noise Layer */}
       <div
-        className="absolute inset-0 opacity-[0.06] dark:opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.02]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
       />
 
-      {/* 4. Atmospheric Lighting Layers */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_rgba(255,255,255,0.2)_0%,_transparent_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,_rgba(255,255,255,0.05)_0%,_transparent_60%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent dark:from-black/70" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_transparent_40%,_rgba(0,0,0,0.05)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,_transparent_40%,_rgba(0,0,0,0.5)_100%)]" />
+      {/* 4. Atmospheric Lighting Layers — Dimmed to be less 'bright' */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_rgba(255,255,255,0.1)_0%,_transparent_60%)] dark:bg-[radial-gradient(circle_at_50%_0%,_rgba(255,255,255,0.03)_0%,_transparent_60%)]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent dark:from-black/80" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_transparent_40%,_rgba(0,0,0,0.05)_100%)] dark:bg-[radial-gradient(circle_at_50%_50%,_transparent_40%,_rgba(0,0,0,0.6)_100%)]" />
     </div>
   );
 };
