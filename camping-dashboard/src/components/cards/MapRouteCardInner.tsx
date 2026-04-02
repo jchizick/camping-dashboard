@@ -25,7 +25,7 @@ export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {
             container: mapContainer.current!,
             style: '019d455e-b710-7fbb-9975-144fe567f9ec',
             center: [centerLng, centerLat],
-            zoom: 15.1,
+            zoom: 16.1,
             navigationControl: false,
             geolocateControl: false,
             scaleControl: false,
