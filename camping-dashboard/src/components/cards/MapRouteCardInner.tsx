@@ -13,12 +13,8 @@ export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maptilersdk.Map | null>(null);
 
-    const centerLng = trip.launch_lng && trip.site_lng
-        ? (trip.launch_lng + trip.site_lng) / 2
-        : -78.8381;
-    const centerLat = trip.launch_lat && trip.site_lat
-        ? (trip.launch_lat + trip.site_lat) / 2
-        : 45.4685;
+    const centerLng = -78.8381;
+    const centerLat = 45.46847;
 
     maptilersdk.config.apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY!;
 
@@ -29,7 +25,7 @@ export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {
             container: mapContainer.current!,
             style: '019d455e-b710-7fbb-9975-144fe567f9ec',
             center: [centerLng, centerLat],
-            zoom: 12,
+            zoom: 15.1,
             navigationControl: false,
             geolocateControl: false,
             scaleControl: false,
