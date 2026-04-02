@@ -25,6 +25,7 @@ export const Badge = ({ children, variant = 'default' }: any) => {
   const variants: any = {
     default: 'bg-border-subtle text-text-muted',
     warning: 'bg-accent-yellow/10 text-accent-yellow border border-accent-yellow/20',
+    critical: 'bg-accent-red/15 text-accent-red border border-accent-red/40',
     info: 'bg-accent-blue/10 text-accent-blue border border-accent-blue/20',
     success: 'bg-accent-green/10 text-accent-green border border-accent-green/20',
   };
