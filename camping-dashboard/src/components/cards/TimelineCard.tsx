@@ -105,55 +105,59 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                 );
             })()}
 
-            <div className="relative space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                {dayEvents.length > 0 && <div className="absolute left-[60px] top-2 bottom-2 w-px bg-border-subtle z-0" />}
-                
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                 {dayEvents.length === 0 ? (
                     <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50 relative z-10 bg-card-bg">
                         No events planned for this day yet
                     </div>
                 ) : (
-                    dayEvents.map((event, i) => (
-                        <div key={event.id} className="relative flex gap-6 group hover:bg-card-hover/30 p-2 -my-2 -mx-2 rounded-lg transition-colors z-10">
-                            <div className="w-12 text-xs font-mono text-accent-yellow pt-0.5 shrink-0 text-right">{event.event_time}</div>
-                            
-                            <div className="absolute left-[64px] top-3.5 w-2 h-2 rounded-full bg-card-bg border-2 border-accent-yellow z-20 group-hover:bg-accent-yellow transition-colors" />
-                            
-                            <div className="flex-1 pb-6 border-b border-border-subtle/30 last:border-0 last:pb-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-medium text-text-main group-hover:text-accent-yellow transition-colors">{event.title}</h4>
-                                    {event.phase && event.phase !== 'None' && (
-                                        <Badge variant={event.phase === 'Transit' ? 'info' : event.phase === 'Setup' ? 'warning' : 'success'}>
-                                            {event.phase}
-                                        </Badge>
-                                    )}
-                                </div>
-                                {event.details && <p className="text-xs text-text-muted leading-relaxed">{event.details}</p>}
+                    <div className="relative space-y-6">
+                        {/* Vertical line that spans all content with original alignment */}
+                        <div className="absolute left-[60px] top-2 bottom-2 w-px bg-border-subtle z-0" />
+                        
+                        {dayEvents.map((event, i) => (
+                            <div key={event.id} className="relative flex gap-6 group hover:bg-card-hover/30 p-2 -my-2 -mx-2 rounded-lg transition-colors z-10">
+                                <div className="w-12 text-xs font-mono text-accent-yellow pt-0.5 shrink-0 text-right">{event.event_time}</div>
                                 
-                                {/* Timeline Event Actions */}
-                                {(onUpdate || onDelete) && (
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-3">
-                                        {onUpdate && (
-                                            <button 
-                                                className="p-1 text-text-muted hover:text-accent-yellow rounded hover:bg-border-subtle transition-colors"
-                                                onClick={() => openEdit(event)}
-                                            >
-                                                <Pencil size={12} />
-                                            </button>
-                                        )}
-                                        {onDelete && (
-                                            <button 
-                                                className="p-1 text-text-muted hover:text-accent-red rounded hover:bg-border-subtle transition-colors"
-                                                onClick={() => setPendingDeleteId(event.id)}
-                                            >
-                                                <Trash2 size={12} />
-                                            </button>
+                                {/* Bullet indicator - restored original style */}
+                                <div className="absolute left-[64px] top-3.5 w-2 h-2 rounded-full bg-card-bg border-2 border-accent-yellow z-20 group-hover:bg-accent-yellow transition-colors" />
+                                
+                                <div className="flex-1 pb-6 border-b border-border-subtle/30 last:border-0 last:pb-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="text-sm font-medium text-text-main group-hover:text-accent-yellow transition-colors">{event.title}</h4>
+                                        {event.phase && event.phase !== 'None' && (
+                                            <Badge variant={event.phase === 'Transit' ? 'info' : event.phase === 'Setup' ? 'warning' : 'success'}>
+                                                {event.phase}
+                                            </Badge>
                                         )}
                                     </div>
-                                )}
+                                    {event.details && <p className="text-xs text-text-muted leading-relaxed">{event.details}</p>}
+                                    
+                                    {/* Timeline Event Actions */}
+                                    {(onUpdate || onDelete) && (
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-3">
+                                            {onUpdate && (
+                                                <button 
+                                                    className="p-1 text-text-muted hover:text-accent-yellow rounded hover:bg-border-subtle transition-colors"
+                                                    onClick={() => openEdit(event)}
+                                                >
+                                                    <Pencil size={12} />
+                                                </button>
+                                            )}
+                                            {onDelete && (
+                                                <button 
+                                                    className="p-1 text-text-muted hover:text-accent-red rounded hover:bg-border-subtle transition-colors"
+                                                    onClick={() => setPendingDeleteId(event.id)}
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 )}
             </div>
 
