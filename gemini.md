@@ -19,6 +19,9 @@
 ├── gemini.md                    # Project Constitution (this file)
 ├── .env                         # API Keys/Secrets
 ├── architecture/                # Layer 1: SOPs & Technical Specs
+│   ├── card-classification.md
+│   ├── project-summary.md       # Tools & Tech Stack Summary
+│   └── weather-api.md
 ├── tools/                       # Layer 3: Deterministic Python Scripts
 ├── .tmp/                        # Ephemeral workbench
 └── camping-dashboard/           # Next.js app (Vercel deployment target)
@@ -257,3 +260,4 @@ When a tool fails:
 | 2026-03-05 | Initial constitution created | System Pilot |
 | 2026-03-06 | Full schema, integrations, and behavioral rules defined from discovery brief | System Pilot |
 | 2026-03-20 | Replaced `moonrise_time` with `visibility` in `weather_current` schema | System Pilot |
+| 2026-04-02 | Added `architecture/project-summary.md` to track tech stack and tools | System Pilot |

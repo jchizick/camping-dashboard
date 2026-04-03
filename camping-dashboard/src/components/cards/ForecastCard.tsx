@@ -32,7 +32,7 @@ export default function ForecastCard({ forecast }: ForecastCardProps) {
                     // Try to extract Day string properly
                     let dayName = day.forecast_date;
                     try {
-                        dayName = new Date(day.forecast_date).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                        dayName = new Date(day.forecast_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
                     } catch (e) { }
 
                     const isTomorrow = i === 1;

@@ -45,6 +45,7 @@ import CrewRosterCard from '@/components/cards/CrewRosterCard';
 import OfflineVaultCard from '@/components/cards/OfflineVaultCard';
 import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
+import MissionBriefModal from '@/components/ui/MissionBriefModal';
 
 export default function TripDashboardPage() {
   return (
@@ -337,6 +338,9 @@ function DashboardContent({ data }: { data: DashboardData }) {
     setParkIntel(updated as ParkIntel);
   }
 
+  // ── Mission Brief modal ──────────────────────────────────────────
+  const [missionBriefOpen, setMissionBriefOpen] = useState(false);
+
   // ── Offline Status mutations ──────────────────────────────────────
   async function handleOfflineToggle(key: keyof OfflineStatus) {
     if (key === 'id' || key === 'trip_id' || key === 'updated_at') return;
@@ -357,6 +361,12 @@ function DashboardContent({ data }: { data: DashboardData }) {
           readiness={readiness}
           countdown={countdown}
           themeMode={themeMode}
+          onMissionBrief={() => setMissionBriefOpen(true)}
+        />
+
+        <MissionBriefModal
+          isOpen={missionBriefOpen}
+          onClose={() => setMissionBriefOpen(false)}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
