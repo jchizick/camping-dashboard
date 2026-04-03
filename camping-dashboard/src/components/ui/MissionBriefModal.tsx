@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Radio } from 'lucide-react';
 
 const MISSION_BRIEF_URL =
   'https://jeelonevfpoifdci.public.blob.vercel-storage.com/mission-brief.mp4';
@@ -58,7 +58,10 @@ export default function MissionBriefModal({ isOpen, onClose }: MissionBriefModal
         <div className="mission-brief-header">
           <div className="mission-brief-header-left">
             <span className="mission-brief-pip" />
-            <span className="mission-brief-label">🎧 MISSION BRIEF</span>
+            <span className="mission-brief-label inline-flex items-center gap-2">
+              <Radio size={14} />
+              MISSION BRIEF
+            </span>
             <span className="mission-brief-sub">ALGONQUIN · MAPLE LAKE · SITE 4</span>
           </div>
           <button

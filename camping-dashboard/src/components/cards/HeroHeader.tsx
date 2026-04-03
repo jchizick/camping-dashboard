@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import type { Trip, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
 import { padTwo } from '@/lib/helpers';
 import { useAuth } from '@/lib/authContext';
-import { Activity, User as UserIcon, Star, Wind, Sunset } from 'lucide-react';
+import { Activity, User as UserIcon, Star, Wind, Sunset, Radio } from 'lucide-react';
 
 interface HeroHeaderProps {
     trip: Trip;
@@ -48,7 +48,7 @@ export default function HeroHeader({
                             onClick={onMissionBrief}
                             className="text-xs font-mono px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-text-main border-accent-yellow/40 bg-accent-yellow/10 hover:bg-accent-yellow/20 hover:border-accent-yellow/60 active:scale-95"
                         >
-                            🎧 Mission Brief
+                            <Radio size={14} /> Mission Brief
                         </button>
                         
                         {!isLoading && (
