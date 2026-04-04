@@ -186,5 +186,7 @@ export async function updateOfflineStatus(
     return supabase
         .from('offline_status')
         .update(patch)
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 }

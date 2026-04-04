@@ -345,9 +345,20 @@ function DashboardContent({ data }: { data: DashboardData }) {
   async function handleOfflineToggle(key: keyof OfflineStatus) {
     if (key === 'id' || key === 'trip_id' || key === 'updated_at') return;
     const newValue = !offlineStatus[key];
+    
+    // Optimistic update
+    setOfflineStatus(prev => ({ ...prev, [key]: newValue }));
+
     const patch = { [key]: newValue };
     const { data: updated, error } = await updateOfflineStatus(offlineStatus.id, patch);
-    if (error || !updated) { console.error('[updateOfflineStatus]', error?.message); throw error; }
+    
+    if (error || !updated) { 
+      console.error('[updateOfflineStatus]', error?.message); 
+      // Revert on error
+      setOfflineStatus(prev => ({ ...prev, [key]: !newValue }));
+      return; 
+    }
+    
     setOfflineStatus(updated as OfflineStatus);
   }
 
