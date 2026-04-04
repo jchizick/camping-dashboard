@@ -4,7 +4,7 @@ import React from 'react';
 import type { OfflineStatus } from '@/types';
 import { calculateOfflineReadiness } from '@/lib/helpers';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
-import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle } from 'lucide-react';
+import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode } from 'lucide-react';
 
 interface OfflineVaultCardProps {
     status: OfflineStatus;
@@ -77,7 +77,7 @@ export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: Offl
                     onClick={onOpenIntel}
                     className="text-accent-yellow/70 hover:text-accent-yellow transition-colors uppercase tracking-widest flex items-center justify-center gap-1.5 w-full mx-auto p-1"
                 >
-                    <Radio size={10} />
+                    <FolderCode size={10} />
                     ACCESS PROJECT INTEL
                 </button>
             </div>

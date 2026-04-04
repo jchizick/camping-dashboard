@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { CrewMember } from '@/types';
 import { Card } from '@/components/ui/Primitives';
 import CrewFormSheet from '@/components/cards/CrewFormSheet';
-import { User, Plus, Tent, Activity, Pencil, Trash2 } from 'lucide-react';
+import { User, Plus, Tent, Scale, Pencil, Trash2 } from 'lucide-react';
 
 interface CrewRosterCardProps {
     crew: CrewMember[];
@@ -166,7 +166,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
             {crew.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-border-subtle shrink-0">
                     <div className="flex items-center gap-2 text-sm font-bold text-text-main mb-4">
-                        Load Balance <Activity size={16} className={statusColor} />
+                        Load Balance <Scale size={16} className={statusColor} />
                     </div>
                     <div className="flex justify-between items-end mb-4">
                         <div>
