@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { X, Radio } from 'lucide-react';
 
 const MISSION_BRIEF_URL =
-  'https://jeelonevfpoifdci.public.blob.vercel-storage.com/mission-brief.mp4';
+  'https://jeelonevfpoifdci.public.blob.vercel-storage.com/mission-brief-v2.mp4';
 
 interface MissionBriefModalProps {
   isOpen: boolean;
