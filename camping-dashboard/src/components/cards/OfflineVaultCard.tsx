@@ -9,6 +9,7 @@ import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circl
 interface OfflineVaultCardProps {
     status: OfflineStatus;
     onToggle?: (key: keyof OfflineStatus) => void;
+    onOpenIntel?: () => void;
 }
 
 const checks = [
@@ -19,7 +20,7 @@ const checks = [
     { key: 'emergency_contact_ready' as const, label: 'Emergency Contact', icon: AlertTriangle },
 ];
 
-export default function OfflineVaultCard({ status, onToggle }: OfflineVaultCardProps) {
+export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: OfflineVaultCardProps) {
     const readiness = calculateOfflineReadiness(status);
     const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 60 ? 'bg-accent-yellow' : 'bg-accent-red';
 
@@ -71,8 +72,14 @@ export default function OfflineVaultCard({ status, onToggle }: OfflineVaultCardP
                 </div>
             )}
 
-            <div className="mt-6 text-center text-[10px] font-mono text-text-muted uppercase tracking-widest shrink-0">
-                Updated {new Date(status.updated_at).toLocaleDateString('en-CA')}
+            <div className="mt-6 text-center text-[10px] font-mono shrink-0">
+                <button
+                    onClick={onOpenIntel}
+                    className="text-accent-yellow/70 hover:text-accent-yellow transition-colors uppercase tracking-widest flex items-center justify-center gap-1.5 w-full mx-auto p-1"
+                >
+                    <Radio size={10} />
+                    ACCESS PROJECT INTEL
+                </button>
             </div>
         </Card>
     );

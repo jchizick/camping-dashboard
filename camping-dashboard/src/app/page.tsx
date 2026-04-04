@@ -46,6 +46,7 @@ import OfflineVaultCard from '@/components/cards/OfflineVaultCard';
 import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
 import MissionBriefModal from '@/components/ui/MissionBriefModal';
+import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
 
 export default function TripDashboardPage() {
   return (
@@ -340,6 +341,7 @@ function DashboardContent({ data }: { data: DashboardData }) {
 
   // ── Mission Brief modal ──────────────────────────────────────────
   const [missionBriefOpen, setMissionBriefOpen] = useState(false);
+  const [projectIntelOpen, setProjectIntelOpen] = useState(false);
 
   // ── Offline Status mutations ──────────────────────────────────────
   async function handleOfflineToggle(key: keyof OfflineStatus) {
@@ -378,6 +380,11 @@ function DashboardContent({ data }: { data: DashboardData }) {
         <MissionBriefModal
           isOpen={missionBriefOpen}
           onClose={() => setMissionBriefOpen(false)}
+        />
+
+        <ProjectIntelModal
+          isOpen={projectIntelOpen}
+          onClose={() => setProjectIntelOpen(false)}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -451,7 +458,11 @@ function DashboardContent({ data }: { data: DashboardData }) {
               )}
               {data.settings.show_offline && (
                 <div className="lg:col-span-4">
-                  <OfflineVaultCard status={offlineStatus} onToggle={isAuthorized ? handleOfflineToggle : undefined} />
+                  <OfflineVaultCard 
+                    status={offlineStatus} 
+                    onToggle={isAuthorized ? handleOfflineToggle : undefined} 
+                    onOpenIntel={() => setProjectIntelOpen(true)}
+                  />
                 </div>
               )}
             </>
