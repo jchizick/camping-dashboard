@@ -24,11 +24,11 @@ export default function ChecklistItem({ item, onToggle, onEdit, onDelete }: Chec
                 aria-label={`${item.name} — ${item.packed ? 'packed' : 'not packed'}`}
             >
                 {item.packed ? (
-                    <CheckCircle2 size={16} className="text-accent-green" />
+                    <CheckCircle2 size={16} className="text-accent-green shrink-0" />
                 ) : item.priority === 'critical' ? (
-                    <Circle size={16} className="text-accent-red" />
+                    <Circle size={16} className="text-accent-red shrink-0" />
                 ) : (
-                    <Circle size={16} className="text-accent-yellow" />
+                    <Circle size={16} className="text-accent-yellow shrink-0" />
                 )}
                 
                 <span className={`text-sm ${item.packed ? 'text-text-muted line-through' : 'text-text-main'}`}>
