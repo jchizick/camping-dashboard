@@ -109,7 +109,7 @@
   "meals": {
     "id": "uuid", "trip_id": "uuid",
     "day_number": "int", "meal_type": "enum(breakfast|lunch|dinner|snack)",
-    "title": "string", "prep_type": "enum(dehydrated|fresh|fire)",
+    "title": "string", "prep_type": "enum(dehydrated|fresh|fire|restaurant)",
     "calories": "int", "assigned_to": "string", "notes": "text"
   },
   "crew_members": {

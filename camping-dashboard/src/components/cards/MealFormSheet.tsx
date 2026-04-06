@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { Meal, MealType, PrepType } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { Leaf, Flame, Coffee, Store } from 'lucide-react';
 
 interface MealFormSheetProps {
     isOpen: boolean;
@@ -106,17 +107,29 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
 
                 <div className="crud-form__row">
                     <div className="crud-form__field">
-                        <label className="crud-form__label" htmlFor="meal-prep">Prep Type</label>
-                        <select
-                            id="meal-prep"
-                            className="crud-form__select"
-                            value={form.prep_type}
-                            onChange={(e) => set('prep_type', e.target.value as PrepType)}
-                        >
-                            <option value="fresh">🥗 Fresh</option>
-                            <option value="dehydrated">💨 Dehydrated</option>
-                            <option value="fire">🔥 Fire</option>
-                        </select>
+                        <label className="crud-form__label">Prep Type</label>
+                        <div className="flex gap-2">
+                            {[
+                                { id: 'fresh', icon: Leaf, label: 'Fresh' },
+                                { id: 'dehydrated', icon: Flame, label: 'Dehydrated' },
+                                { id: 'fire', icon: Coffee, label: 'Fire' },
+                                { id: 'restaurant', icon: Store, label: 'Restaurant' },
+                            ].map(({ id, icon: Icon, label }) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    onClick={() => set('prep_type', id as PrepType)}
+                                    title={label}
+                                    className={`flex items-center justify-center p-2 rounded transition-colors flex-1 border ${
+                                        form.prep_type === id
+                                            ? 'bg-border-subtle text-accent-yellow border-accent-yellow/30'
+                                            : 'bg-card-bg text-text-muted border-border-subtle hover:bg-card-hover hover:text-text-main'
+                                    }`}
+                                >
+                                    <Icon size={16} />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="crud-form__field">

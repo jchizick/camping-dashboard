@@ -5,7 +5,7 @@ import type { Meal } from '@/types';
 import { groupBy } from '@/lib/helpers';
 import { Card } from '@/components/ui/Primitives';
 import MealFormSheet from '@/components/cards/MealFormSheet';
-import { Utensils, Plus, Pencil, Trash2, Flame, Leaf, Coffee } from 'lucide-react';
+import { Utensils, Plus, Pencil, Trash2, Flame, Leaf, Coffee, Store } from 'lucide-react';
 
 interface MealPlannerCardProps {
     meals: Meal[];
@@ -106,6 +106,7 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
                         if (meal.prep_type === 'dehydrated') PrepIcon = Flame;
                         if (meal.prep_type === 'fresh') PrepIcon = Leaf;
                         if (meal.prep_type === 'fire') PrepIcon = Coffee;
+                        if (meal.prep_type === 'restaurant') PrepIcon = Store;
                         
                         return (
                             <div key={meal.id} className="group relative flex items-center gap-4 p-3 rounded-xl hover:bg-card-hover transition-colors border border-transparent hover:border-border-subtle">

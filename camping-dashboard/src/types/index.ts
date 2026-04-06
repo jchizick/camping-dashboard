@@ -9,7 +9,7 @@ export type ThemeMode = 'day' | 'night';
 export type ThemeOverride = 'auto' | 'day' | 'night';
 export type Priority = 'critical' | 'high' | 'low';
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
-export type PrepType = 'dehydrated' | 'fresh' | 'fire';
+export type PrepType = 'dehydrated' | 'fresh' | 'fire' | 'restaurant';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
 
