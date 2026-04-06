@@ -97,31 +97,29 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
                     </div>
                 </div>
 
-                <div className="crud-form__row">
-                    <div className="crud-form__field">
-                        <label className="crud-form__label" htmlFor="crew-load">Load Item</label>
-                        <input
-                            id="crew-load"
-                            className="crud-form__input"
-                            type="text"
-                            value={form.load_item}
-                            onChange={(e) => set('load_item', e.target.value)}
-                            placeholder="e.g. Food barrel"
-                        />
-                    </div>
+                <div className="crud-form__field">
+                    <label className="crud-form__label" htmlFor="crew-load">Load Item</label>
+                    <input
+                        id="crew-load"
+                        className="crud-form__input"
+                        type="text"
+                        value={form.load_item}
+                        onChange={(e) => set('load_item', e.target.value)}
+                        placeholder="e.g. Food barrel"
+                    />
+                </div>
 
-                    <div className="crud-form__field">
-                        <label className="crud-form__label" htmlFor="crew-weight">Load (kg)</label>
-                        <input
-                            id="crew-weight"
-                            className="crud-form__input"
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={form.load_weight_kg}
-                            onChange={(e) => set('load_weight_kg', parseFloat(e.target.value) || 0)}
-                        />
-                    </div>
+                <div className="crud-form__field">
+                    <label className="crud-form__label" htmlFor="crew-weight">Load (kg)</label>
+                    <input
+                        id="crew-weight"
+                        className="crud-form__input"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={form.load_weight_kg}
+                        onChange={(e) => set('load_weight_kg', parseFloat(e.target.value) || 0)}
+                    />
                 </div>
 
                 <div className="crud-form__field">
