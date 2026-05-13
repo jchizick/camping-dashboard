@@ -4,7 +4,7 @@ import React from 'react';
 import type { OfflineStatus } from '@/types';
 import { calculateOfflineReadiness } from '@/lib/helpers';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
-import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode } from 'lucide-react';
+import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode, Car } from 'lucide-react';
 
 interface OfflineVaultCardProps {
     status: OfflineStatus;
@@ -15,6 +15,7 @@ interface OfflineVaultCardProps {
 const checks = [
     { key: 'maps_cached' as const, label: 'Maps Cached', icon: Map },
     { key: 'permit_saved' as const, label: 'Permit Saved', icon: CheckCircle2 },
+    { key: 'daily_vehicle_permit_saved' as const, label: 'Daily Vehicle Permit', icon: Car },
     { key: 'route_downloaded' as const, label: 'Route Downloaded', icon: Navigation },
     { key: 'satellite_device_connected' as const, label: 'Satellite Device', icon: Radio },
     { key: 'emergency_contact_ready' as const, label: 'Emergency Contact', icon: AlertTriangle },

@@ -127,6 +127,7 @@ export interface OfflineStatus {
   trip_id: string;
   maps_cached: boolean;
   permit_saved: boolean;
+  daily_vehicle_permit_saved: boolean;
   route_downloaded: boolean;
   satellite_device_connected: boolean;
   satellite_device_name: string;

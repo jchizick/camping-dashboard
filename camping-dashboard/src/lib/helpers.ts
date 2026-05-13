@@ -77,6 +77,7 @@ export function calculateOfflineReadiness(status: OfflineStatus): number {
     const checks = [
         status.maps_cached,
         status.permit_saved,
+        status.daily_vehicle_permit_saved,
         status.route_downloaded,
         status.satellite_device_connected,
         status.emergency_contact_ready,

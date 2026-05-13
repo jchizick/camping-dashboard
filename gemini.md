@@ -127,7 +127,7 @@
   },
   "offline_status": {
     "id": "uuid", "trip_id": "uuid",
-    "maps_cached": "boolean", "permit_saved": "boolean",
+    "maps_cached": "boolean", "permit_saved": "boolean", "daily_vehicle_permit_saved": "boolean",
     "route_downloaded": "boolean", "satellite_device_connected": "boolean",
     "satellite_device_name": "string", "emergency_contact_ready": "boolean",
     "updated_at": "timestamp"
@@ -261,3 +261,4 @@ When a tool fails:
 | 2026-03-06 | Full schema, integrations, and behavioral rules defined from discovery brief | System Pilot |
 | 2026-03-20 | Replaced `moonrise_time` with `visibility` in `weather_current` schema | System Pilot |
 | 2026-04-02 | Added `architecture/project-summary.md` to track tech stack and tools | System Pilot |
+| 2026-05-12 | Added `daily_vehicle_permit_saved` to `offline_status` schema | Antigravity |
