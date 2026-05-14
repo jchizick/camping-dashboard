@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Camping Dashboard — Architecture & Field Operations Map</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0c0e0d;--surface:#141816;--surface2:#1a1e1c;--border:#2a2e2c;--border2:#363a38;--text:#e8ebe9;--muted:#7a8580;--accent:#eab308;--accent2:#d4a20a;--green:#4ade80;--blue:#60a5fa;--red:#f87171;--purple:#a78bfa;--yellow:#fbbf24;--mono:'JetBrains Mono',ui-monospace,monospace;--sans:Inter,system-ui,sans-serif}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(to right,var(--border) 1px,transparent 1px),linear-gradient(to bottom,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.06}
+body::after{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(234,179,8,.04),transparent 70%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1600px;margin:0 auto;padding:1.5rem}
+header{margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1.5rem}
+h1{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.subtitle{color:var(--muted);font-size:.85rem;max-width:700px;margin-bottom:.75rem}
+.meta-strip{display:flex;flex-wrap:wrap;gap:.75rem;font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+.meta-strip span{background:var(--surface);border:1px solid var(--border);padding:.2rem .6rem;border-radius:4px}
+.meta-strip b{color:var(--accent)}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:1.5rem}
+@media(max-width:1024px){.layout{grid-template-columns:1fr}.detail-panel{order:-1}}
+.main-col{display:flex;flex-direction:column;gap:1.5rem;min-width:0}
+.section-title{font-family:var(--mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* Swimlanes */
+.swimlanes{display:flex;flex-direction:column;gap:1.25rem}
+.swimlane{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;transition:opacity .2s}
+.swimlane.dimmed{opacity:.35}
+.swim-head{font-family:var(--mono);font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.swim-icon{color:var(--accent);font-size:.9rem}
+.swim-count{font-size:.65rem;background:var(--surface2);border:1px solid var(--border);padding:0 .4rem;border-radius:3px;color:var(--muted)}
+.swim-nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.5rem}
+/* Node cards */
+.node-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.6rem .75rem;cursor:pointer;transition:all .15s}
+.node-card:hover{border-color:var(--border2);background:#1e2220}
+.node-card.highlighted{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 12px rgba(234,179,8,.08)}
+.node-card.dimmed{opacity:.3}
+.node-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.25rem}
+.node-label{font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:.1rem .4rem;border-radius:3px;border:1px solid;white-space:nowrap}
+.node-type{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
+.node-desc{font-size:.72rem;color:var(--muted);line-height:1.4}
+.node-files{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem}
+.file{font-family:var(--mono);font-size:.55rem;color:var(--accent2);background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.12);padding:.05rem .35rem;border-radius:3px}
+/* Flow selector */
+.flow-selector{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.flow-btn{font-family:var(--mono);font-size:.65rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:.35rem .65rem;border-radius:5px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.flow-btn:hover{border-color:var(--accent);color:var(--text)}
+.flow-btn.active{background:rgba(234,179,8,.08);border-color:var(--accent);color:var(--accent)}
+.flow-pip{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* Detail panel */
+.detail-panel{position:sticky;top:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;max-height:calc(100vh - 3rem);overflow-y:auto;align-self:start}
+.dp-title{font-size:1rem;font-weight:700;margin-bottom:.25rem}
+.dp-status{margin-bottom:.5rem}
+.dp-summary{font-size:.8rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.dp-section{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:1rem 0 .5rem;border-top:1px solid var(--border);padding-top:.75rem}
+.dp-nodes{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.5rem}
+.dp-node-tag{font-family:var(--mono);font-size:.6rem;background:var(--surface2);border:1px solid var(--border);padding:.15rem .4rem;border-radius:3px;color:var(--text)}
+/* Edges */
+.edge-row{display:flex;align-items:center;gap:.4rem;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.72rem;flex-wrap:wrap}
+.edge-from,.edge-to{font-family:var(--mono);font-size:.65rem;color:var(--text);background:var(--surface2);padding:.1rem .35rem;border-radius:3px}
+.edge-arrow{color:var(--accent);font-weight:700;font-size:.8rem}
+.edge-label{font-family:var(--mono);font-size:.55rem;color:var(--muted);margin-left:auto;background:rgba(234,179,8,.06);padding:.05rem .3rem;border-radius:3px}
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:.3rem;font-size:.65rem;font-family:var(--mono);color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:2px}
+/* Future */
+.future-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.5rem}
+.future-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.6rem .75rem}
+/* Data source indicator */
+.data-source-badge{font-family:var(--mono);font-size:.55rem;padding:.15rem .5rem;border-radius:4px;display:inline-flex;align-items:center;gap:.35rem}
+.data-source-badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.data-source-badge.live{color:var(--green);background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2)}
+.data-source-badge.live::before{background:var(--green);box-shadow:0 0 4px var(--green)}
+.data-source-badge.fallback{color:var(--yellow);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)}
+.data-source-badge.fallback::before{background:var(--yellow)}
+footer{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em}
+footer .footer-line{margin-bottom:.35rem}
+footer .footer-note{text-transform:none;letter-spacing:normal;font-size:.55rem;color:var(--muted);opacity:.7;max-width:600px;margin:0 auto;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Camping Dashboard — Architecture & Field Operations Map</h1>
+  <p class="subtitle">Single-page field operations dashboard for an Algonquin camping trip with Supabase persistence, authenticated CRUD, environmental refresh jobs, mapping, readiness scoring, and mission/intel overlays.</p>
+  <div class="meta-strip">
+    <span>Groups <b>9</b></span>
+    <span>Nodes <b>37</b></span>
+    <span>Edges <b>31</b></span>
+    <span>Flows <b>12</b></span>
+    <span>Future <b>4</b></span>
+    <span id="data-source" class="data-source-badge"></span>
+  </div>
+</header>
+
+<div class="section-title">Flow Selector</div>
+<div class="flow-selector" id="flowSelector"><button class="flow-btn" data-flow="auth-permission-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Auth & Permission Flow
+</button><button class="flow-btn" data-flow="weather-refresh-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Weather Refresh Flow
+</button><button class="flow-btn" data-flow="alerts-refresh-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Alerts Refresh Flow
+</button><button class="flow-btn" data-flow="supabase-crud-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Supabase CRUD Flow
+</button><button class="flow-btn" data-flow="readiness-scoring-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Readiness Scoring Flow
+</button><button class="flow-btn" data-flow="gear-checklist-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Gear Checklist Flow
+</button><button class="flow-btn" data-flow="meal-planning-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Meal Planning Flow
+</button><button class="flow-btn" data-flow="timeline-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Timeline / Itinerary Flow
+</button><button class="flow-btn" data-flow="crew-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Crew / Load Balance Flow
+</button><button class="flow-btn" data-flow="map-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Map Flow
+</button><button class="flow-btn" data-flow="mission-brief-flow" style="border-color:#16a34a55">
+  <span class="flow-pip" style="background:#4ade80"></span>Mission Brief Flow
+</button><button class="flow-btn" data-flow="future-jobs-flow" style="border-color:#8b5cf655">
+  <span class="flow-pip" style="background:#a78bfa"></span>Future Scheduled Jobs
+</button></div>
+
+<div class="layout">
+  <div class="main-col">
+    <div class="section-title">System Architecture — Swimlanes</div>
+    <div class="swimlanes" id="swimlanes"><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">⬡</span> App Shell / Auth <span class="swim-count">3</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="app-shell" data-status="implemented">
+  <div class="node-head"><span class="node-label">Next.js App Shell</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">app</div>
+  <div class="node-desc">Single-page Next.js 16 dashboard with App Router, React 19, Tailwind v4.</div>
+  <div class="node-files"><span class="file">src/app/layout.tsx</span><span class="file">src/app/page.tsx</span><span class="file">src/app/globals.css</span></div>
+</div><div class="node-card " data-id="google-oauth" data-status="implemented">
+  <div class="node-head"><span class="node-label">Google OAuth</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">auth</div>
+  <div class="node-desc">Supabase Google OAuth with server-side callback route.</div>
+  <div class="node-files"><span class="file">src/lib/authContext.tsx</span><span class="file">src/app/auth/callback/route.ts</span></div>
+</div><div class="node-card " data-id="authorization-mode" data-status="implemented">
+  <div class="node-head"><span class="node-label">Email Whitelist Auth</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">auth</div>
+  <div class="node-desc">Whitelisted emails get full CRUD; others get read-only.</div>
+  <div class="node-files"><span class="file">src/lib/authContext.tsx</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">◈</span> External Sources <span class="swim-count">5</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="open-meteo" data-status="external">
+  <div class="node-head"><span class="node-label">Open-Meteo API</span><span class="badge" style="background:#3b82f622;border-color:#3b82f655;color:#60a5fa">External</span></div>
+  <div class="node-type">external</div>
+  <div class="node-desc">Free weather forecast API for current + 5-day daily data.</div>
+  
+</div><div class="node-card " data-id="ontario-parks" data-status="external">
+  <div class="node-head"><span class="node-label">Ontario Parks Alerts</span><span class="badge" style="background:#3b82f622;border-color:#3b82f655;color:#60a5fa">External</span></div>
+  <div class="node-type">external</div>
+  <div class="node-desc">Algonquin backcountry alerts page scraped via HTML regex.</div>
+  
+</div><div class="node-card " data-id="environment-canada" data-status="external">
+  <div class="node-head"><span class="node-label">Environment Canada</span><span class="badge" style="background:#3b82f622;border-color:#3b82f655;color:#60a5fa">External</span></div>
+  <div class="node-type">external</div>
+  <div class="node-desc">EC weather alerts via ATOM/XML RSS feed.</div>
+  
+</div><div class="node-card " data-id="maptiler" data-status="external">
+  <div class="node-head"><span class="node-label">MapTiler SDK</span><span class="badge" style="background:#3b82f622;border-color:#3b82f655;color:#60a5fa">External</span></div>
+  <div class="node-type">external</div>
+  <div class="node-desc">Vector tile map rendering with custom style.</div>
+  
+</div><div class="node-card " data-id="mission-brief-video" data-status="external">
+  <div class="node-head"><span class="node-label">Mission Brief Video</span><span class="badge" style="background:#3b82f622;border-color:#3b82f655;color:#60a5fa">External</span></div>
+  <div class="node-type">external</div>
+  <div class="node-desc">MP4 hosted on Vercel Blob Storage.</div>
+  
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">⚡</span> API Routes / Jobs <span class="swim-count">3</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="refresh-weather-api" data-status="implemented">
+  <div class="node-head"><span class="node-label">/api/refresh-weather</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">api</div>
+  <div class="node-desc">Fetches Open-Meteo, maps to schema, upserts weather tables.</div>
+  <div class="node-files"><span class="file">src/app/api/refresh-weather/route.ts</span></div>
+</div><div class="node-card " data-id="refresh-alerts-api" data-status="implemented">
+  <div class="node-head"><span class="node-label">/api/refresh-alerts</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">api</div>
+  <div class="node-desc">Scrapes Ontario Parks + EC feeds, upserts alerts table.</div>
+  <div class="node-files"><span class="file">src/app/api/refresh-alerts/route.ts</span></div>
+</div><div class="node-card " data-id="vercel-cron" data-status="implemented">
+  <div class="node-head"><span class="node-label">Vercel Cron Jobs</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">cron</div>
+  <div class="node-desc">Daily cron: weather at 11:00 UTC, alerts at 11:15 UTC.</div>
+  <div class="node-files"><span class="file">vercel.json</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">◆</span> Data / Utilities <span class="swim-count">4</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="readiness-engine" data-status="implemented">
+  <div class="node-head"><span class="node-label">Readiness Engine</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">utility</div>
+  <div class="node-desc">Weighted scoring: gear 35%, meals 20%, weather 15%, offline 20%, timeline 10%.</div>
+  <div class="node-files"><span class="file">src/lib/helpers.ts</span></div>
+</div><div class="node-card " data-id="weather-normalization" data-status="implemented">
+  <div class="node-head"><span class="node-label">Weather Mapper</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">utility</div>
+  <div class="node-desc">Maps Open-Meteo response to Supabase weather schema with WMO codes.</div>
+  <div class="node-files"><span class="file">src/lib/weatherMapper.ts</span></div>
+</div><div class="node-card " data-id="alert-scraping-parsing" data-status="implemented">
+  <div class="node-head"><span class="node-label">Alert Scrapers</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">utility</div>
+  <div class="node-desc">HTML and ATOM/XML parsing for Ontario Parks and EC alerts.</div>
+  <div class="node-files"><span class="file">src/app/api/refresh-alerts/route.ts</span></div>
+</div><div class="node-card " data-id="helpers" data-status="implemented">
+  <div class="node-head"><span class="node-label">Helper Functions</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">utility</div>
+  <div class="node-desc">Countdown, formatting, grouping, astro helpers, theme logic.</div>
+  <div class="node-files"><span class="file">src/lib/helpers.ts</span><span class="file">src/lib/mutations.ts</span><span class="file">src/lib/fetchDashboard.ts</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">⛁</span> Supabase Persistence <span class="swim-count">3</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="supabase-store" data-status="implemented">
+  <div class="node-head"><span class="node-label">Supabase PostgreSQL</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">database</div>
+  <div class="node-desc">Primary data store with browser + admin clients.</div>
+  <div class="node-files"><span class="file">src/lib/supabase.ts</span><span class="file">src/lib/supabaseAdmin.ts</span></div>
+</div><div class="node-card " data-id="dashboard-tables" data-status="implemented">
+  <div class="node-head"><span class="node-label">12 Dashboard Tables</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">database</div>
+  <div class="node-desc">trips, weather_current, weather_forecast, gear_items, timeline_events, meals, crew_members, park_intel, offline_status, astro_data, alerts, settings.</div>
+  <div class="node-files"><span class="file">src/lib/fetchDashboard.ts</span><span class="file">src/types/index.ts</span></div>
+</div><div class="node-card " data-id="settings-table" data-status="implemented">
+  <div class="node-head"><span class="node-label">Settings Table</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">database</div>
+  <div class="node-desc">Controls card visibility (show_meals, show_crew, show_offline, show_astro) and theme override.</div>
+  <div class="node-files"><span class="file">src/types/index.ts</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">▣</span> Dashboard Modules <span class="swim-count">12</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="weather-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Weather + Forecast Cards</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Current conditions and 5-day forecast display.</div>
+  <div class="node-files"><span class="file">src/components/cards/WeatherCard.tsx</span><span class="file">src/components/cards/ForecastCard.tsx</span></div>
+</div><div class="node-card " data-id="alerts-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Alerts Card</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Active alerts with severity badges; manual add/delete.</div>
+  <div class="node-files"><span class="file">src/components/cards/AlertsCard.tsx</span><span class="file">src/components/cards/AlertFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="gear-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Gear Checklist</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Gear items grouped by category with full CRUD and pack toggle.</div>
+  <div class="node-files"><span class="file">src/components/cards/GearChecklistCard.tsx</span><span class="file">src/components/cards/GearFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="meals-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Meal Planner</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Meals grouped by day with full CRUD. Visibility: settings.show_meals.</div>
+  <div class="node-files"><span class="file">src/components/cards/MealPlannerCard.tsx</span><span class="file">src/components/cards/MealFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="timeline-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Timeline / Itinerary</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Timeline events grouped by day with full CRUD.</div>
+  <div class="node-files"><span class="file">src/components/cards/TimelineCard.tsx</span><span class="file">src/components/cards/TimelineFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="crew-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Crew Roster</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Crew with canoe assignments and load weights; full CRUD.</div>
+  <div class="node-files"><span class="file">src/components/cards/CrewRosterCard.tsx</span><span class="file">src/components/cards/CrewFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="readiness-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Readiness Score</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Composite readiness score with component breakdown.</div>
+  <div class="node-files"><span class="file">src/components/cards/ReadinessScoreCard.tsx</span></div>
+</div><div class="node-card " data-id="map-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Map / Route Card</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">MapTiler terrain map with custom styling; dynamically loaded.</div>
+  <div class="node-files"><span class="file">src/components/cards/MapRouteCard.tsx</span><span class="file">src/components/cards/MapRouteCardInner.tsx</span></div>
+</div><div class="node-card " data-id="park-intel-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Park Intel</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Fire restrictions, wildlife, ranger station, firewood, water notes.</div>
+  <div class="node-files"><span class="file">src/components/cards/ParkIntelCard.tsx</span><span class="file">src/components/cards/ParkIntelFormSheet.tsx</span></div>
+</div><div class="node-card " data-id="offline-vault-card" data-status="implemented">
+  <div class="node-head"><span class="node-label">Offline Vault</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Boolean checklist for offline readiness items with toggle.</div>
+  <div class="node-files"><span class="file">src/components/cards/OfflineVaultCard.tsx</span></div>
+</div><div class="node-card " data-id="mission-brief-modal" data-status="implemented">
+  <div class="node-head"><span class="node-label">Mission Brief Modal</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Full-screen video modal triggered from HeroHeader.</div>
+  <div class="node-files"><span class="file">src/components/ui/MissionBriefModal.tsx</span></div>
+</div><div class="node-card " data-id="project-intel-modal" data-status="implemented">
+  <div class="node-head"><span class="node-label">Project Intel Modal</span><span class="badge" style="background:#16a34a22;border-color:#16a34a55;color:#4ade80">Implemented</span></div>
+  <div class="node-type">module</div>
+  <div class="node-desc">Scrollable tech stack summary modal triggered from OfflineVaultCard.</div>
+  <div class="node-files"><span class="file">src/components/ui/ProjectIntelModal.tsx</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">◌</span> Partial / Inactive <span class="swim-count">4</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="day-night-auto-theme" data-status="partial/inactive">
+  <div class="node-head"><span class="node-label">Day/Night Auto-Theme</span><span class="badge" style="background:#eab30822;border-color:#eab30855;color:#fbbf24">Partial</span></div>
+  <div class="node-type">partial</div>
+  <div class="node-desc">getThemeModeFromTime() exists but theme is hardcoded to night.</div>
+  <div class="node-files"><span class="file">src/lib/helpers.ts</span><span class="file">src/app/page.tsx</span></div>
+</div><div class="node-card " data-id="map-route-markers" data-status="partial/inactive">
+  <div class="node-head"><span class="node-label">Map Route + Markers</span><span class="badge" style="background:#eab30822;border-color:#eab30855;color:#fbbf24">Partial</span></div>
+  <div class="node-type">partial</div>
+  <div class="node-desc">Trip lat/lng available but no polyline or markers rendered.</div>
+  <div class="node-files"><span class="file">src/components/cards/MapRouteCardInner.tsx</span></div>
+</div><div class="node-card " data-id="settings-management-ui" data-status="partial/inactive">
+  <div class="node-head"><span class="node-label">Settings UI</span><span class="badge" style="background:#eab30822;border-color:#eab30855;color:#fbbf24">Partial</span></div>
+  <div class="node-type">partial</div>
+  <div class="node-desc">Settings read from Supabase but no edit UI exists.</div>
+  
+</div><div class="node-card " data-id="legacy-python-scrapers" data-status="superseded">
+  <div class="node-head"><span class="node-label">Python Scrapers</span><span class="badge" style="background:#ef444422;border-color:#ef444455;color:#f87171">Superseded</span></div>
+  <div class="node-type">partial</div>
+  <div class="node-desc">Standalone Python scrapers superseded by Next.js API routes.</div>
+  <div class="node-files"><span class="file">tools/algonquin_alerts_scraper.py</span><span class="file">tools/ec_weather_scraper.py</span><span class="file">tools/clear_alerts.py</span></div>
+</div></div>
+</div><div class="swimlane">
+  <div class="swim-head"><span class="swim-icon">◎</span> Future Systems <span class="swim-count">3</span></div>
+  <div class="swim-nodes"><div class="node-card " data-id="modal-scheduled-jobs" data-status="future/planned">
+  <div class="node-head"><span class="node-label">Modal Scheduled Jobs</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-type">future</div>
+  <div class="node-desc">Background job runner referenced in docs as planned.</div>
+  
+</div><div class="node-card " data-id="moonrise-moonset" data-status="future/planned">
+  <div class="node-head"><span class="node-label">Moonrise/Moonset Data</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-type">future</div>
+  <div class="node-desc">Not available from Open-Meteo; field exists, defaulted to --:--.</div>
+  <div class="node-files"><span class="file">src/lib/weatherMapper.ts</span></div>
+</div><div class="node-card " data-id="alerts-phase-3" data-status="future/planned">
+  <div class="node-head"><span class="node-label">Alerts Phase 3</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-type">future</div>
+  <div class="node-desc">Enhanced Algonquin alerts feed referenced in gemini.md.</div>
+  
+</div></div>
+</div></div>
+
+    <div class="section-title">Future / Planned Systems</div>
+    <div class="future-grid"><div class="future-card">
+  <div class="node-head"><span class="node-label">Modal Scheduled Jobs</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-desc">Background job runner for automated weather/alert refresh.</div>
+  <div class="node-files"><span class="file">refresh-weather-api</span><span class="file">refresh-alerts-api</span><span class="file">vercel-cron</span></div>
+</div><div class="future-card">
+  <div class="node-head"><span class="node-label">Moonrise/Moonset Data</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-desc">Open-Meteo lacks this data; field defaulted to --:--.</div>
+  <div class="node-files"><span class="file">weather-normalization</span><span class="file">weather-card</span></div>
+</div><div class="future-card">
+  <div class="node-head"><span class="node-label">Settings Management UI</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-desc">Settings table is read but has no edit interface.</div>
+  <div class="node-files"><span class="file">settings-table</span><span class="file">app-shell</span></div>
+</div><div class="future-card">
+  <div class="node-head"><span class="node-label">Algonquin Alerts Phase 3</span><span class="badge" style="background:#8b5cf622;border-color:#8b5cf655;color:#a78bfa">Future</span></div>
+  <div class="node-desc">Enhanced alert feed referenced in gemini.md.</div>
+  <div class="node-files"><span class="file">alerts-card</span><span class="file">refresh-alerts-api</span></div>
+</div></div>
+
+    <div class="section-title">Legend</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Implemented</div><div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>External</div><div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Partial</div><div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Superseded</div><div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Future</div>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="dp-title" id="dpTitle">Select a flow</div>
+    <div id="dpStatus"></div>
+    <div class="dp-summary" id="dpSummary">Click a flow button above to see details.</div>
+    <div id="dpBody"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-line" style="text-transform:uppercase;letter-spacing:.1em">Algonquin Wilderness Mission Control · Architecture Map</div>
+  <div class="footer-note">This page reads from <code style="color:var(--accent);font-size:.55rem">docs/architecture-flow.json</code> when served via HTTP. When opened directly from the filesystem (file://), the embedded fallback data is used instead. Both sources contain the same canonical architecture data. Documentation only — no production systems are affected.</div>
+</footer>
+</div>
+
+<script>
+var DATA = {
+  "project": "Algonquin Camping Dashboard",
+  "title": "Camping Dashboard — Architecture & Field Operations Map",
+  "description": "Single-page field operations dashboard for an Algonquin camping trip with Supabase persistence, authenticated CRUD, environmental refresh jobs, mapping, readiness scoring, and mission/intel overlays.",
+  "groups": [
+    "App Shell / Auth",
+    "External Sources",
+    "API Routes / Jobs",
+    "Data / Utilities",
+    "Supabase Persistence",
+    "Dashboard Modules",
+    "User Flows",
+    "Partial / Inactive",
+    "Future Systems"
+  ],
+  "nodes": [
+    {"id":"app-shell","label":"Next.js App Shell","group":"App Shell / Auth","type":"app","status":"implemented","description":"Single-page Next.js 16 dashboard with App Router, React 19, Tailwind v4.","files":["src/app/layout.tsx","src/app/page.tsx","src/app/globals.css"]},
+    {"id":"google-oauth","label":"Google OAuth","group":"App Shell / Auth","type":"auth","status":"implemented","description":"Supabase Google OAuth with server-side callback route.","files":["src/lib/authContext.tsx","src/app/auth/callback/route.ts"]},
+    {"id":"authorization-mode","label":"Email Whitelist Auth","group":"App Shell / Auth","type":"auth","status":"implemented","description":"Whitelisted emails get full CRUD; others get read-only.","files":["src/lib/authContext.tsx"]},
+    {"id":"open-meteo","label":"Open-Meteo API","group":"External Sources","type":"external","status":"external","description":"Free weather forecast API for current + 5-day daily data.","files":[]},
+    {"id":"ontario-parks","label":"Ontario Parks Alerts","group":"External Sources","type":"external","status":"external","description":"Algonquin backcountry alerts page scraped via HTML regex.","files":[]},
+    {"id":"environment-canada","label":"Environment Canada","group":"External Sources","type":"external","status":"external","description":"EC weather alerts via ATOM/XML RSS feed.","files":[]},
+    {"id":"maptiler","label":"MapTiler SDK","group":"External Sources","type":"external","status":"external","description":"Vector tile map rendering with custom style.","files":[]},
+    {"id":"mission-brief-video","label":"Mission Brief Video","group":"External Sources","type":"external","status":"external","description":"MP4 hosted on Vercel Blob Storage.","files":[]},
+    {"id":"refresh-weather-api","label":"/api/refresh-weather","group":"API Routes / Jobs","type":"api","status":"implemented","description":"Fetches Open-Meteo, maps to schema, upserts weather tables.","files":["src/app/api/refresh-weather/route.ts"]},
+    {"id":"refresh-alerts-api","label":"/api/refresh-alerts","group":"API Routes / Jobs","type":"api","status":"implemented","description":"Scrapes Ontario Parks + EC feeds, upserts alerts table.","files":["src/app/api/refresh-alerts/route.ts"]},
+    {"id":"vercel-cron","label":"Vercel Cron Jobs","group":"API Routes / Jobs","type":"cron","status":"implemented","description":"Daily cron: weather at 11:00 UTC, alerts at 11:15 UTC.","files":["vercel.json"]},
+    {"id":"readiness-engine","label":"Readiness Engine","group":"Data / Utilities","type":"utility","status":"implemented","description":"Weighted scoring: gear 35%, meals 20%, weather 15%, offline 20%, timeline 10%.","files":["src/lib/helpers.ts"]},
+    {"id":"weather-normalization","label":"Weather Mapper","group":"Data / Utilities","type":"utility","status":"implemented","description":"Maps Open-Meteo response to Supabase weather schema with WMO codes.","files":["src/lib/weatherMapper.ts"]},
+    {"id":"alert-scraping-parsing","label":"Alert Scrapers","group":"Data / Utilities","type":"utility","status":"implemented","description":"HTML and ATOM/XML parsing for Ontario Parks and EC alerts.","files":["src/app/api/refresh-alerts/route.ts"]},
+    {"id":"helpers","label":"Helper Functions","group":"Data / Utilities","type":"utility","status":"implemented","description":"Countdown, formatting, grouping, astro helpers, theme logic.","files":["src/lib/helpers.ts","src/lib/mutations.ts","src/lib/fetchDashboard.ts"]},
+    {"id":"supabase-store","label":"Supabase PostgreSQL","group":"Supabase Persistence","type":"database","status":"implemented","description":"Primary data store with browser + admin clients.","files":["src/lib/supabase.ts","src/lib/supabaseAdmin.ts"]},
+    {"id":"dashboard-tables","label":"12 Dashboard Tables","group":"Supabase Persistence","type":"database","status":"implemented","description":"trips, weather_current, weather_forecast, gear_items, timeline_events, meals, crew_members, park_intel, offline_status, astro_data, alerts, settings.","files":["src/lib/fetchDashboard.ts","src/types/index.ts"]},
+    {"id":"settings-table","label":"Settings Table","group":"Supabase Persistence","type":"database","status":"implemented","description":"Controls card visibility (show_meals, show_crew, show_offline, show_astro) and theme override.","files":["src/types/index.ts"]},
+    {"id":"weather-card","label":"Weather + Forecast Cards","group":"Dashboard Modules","type":"module","status":"implemented","description":"Current conditions and 5-day forecast display.","files":["src/components/cards/WeatherCard.tsx","src/components/cards/ForecastCard.tsx"]},
+    {"id":"alerts-card","label":"Alerts Card","group":"Dashboard Modules","type":"module","status":"implemented","description":"Active alerts with severity badges; manual add/delete.","files":["src/components/cards/AlertsCard.tsx","src/components/cards/AlertFormSheet.tsx"]},
+    {"id":"gear-card","label":"Gear Checklist","group":"Dashboard Modules","type":"module","status":"implemented","description":"Gear items grouped by category with full CRUD and pack toggle.","files":["src/components/cards/GearChecklistCard.tsx","src/components/cards/GearFormSheet.tsx"]},
+    {"id":"meals-card","label":"Meal Planner","group":"Dashboard Modules","type":"module","status":"implemented","description":"Meals grouped by day with full CRUD. Visibility: settings.show_meals.","files":["src/components/cards/MealPlannerCard.tsx","src/components/cards/MealFormSheet.tsx"]},
+    {"id":"timeline-card","label":"Timeline / Itinerary","group":"Dashboard Modules","type":"module","status":"implemented","description":"Timeline events grouped by day with full CRUD.","files":["src/components/cards/TimelineCard.tsx","src/components/cards/TimelineFormSheet.tsx"]},
+    {"id":"crew-card","label":"Crew Roster","group":"Dashboard Modules","type":"module","status":"implemented","description":"Crew with canoe assignments and load weights; full CRUD.","files":["src/components/cards/CrewRosterCard.tsx","src/components/cards/CrewFormSheet.tsx"]},
+    {"id":"readiness-card","label":"Readiness Score","group":"Dashboard Modules","type":"module","status":"implemented","description":"Composite readiness score with component breakdown.","files":["src/components/cards/ReadinessScoreCard.tsx"]},
+    {"id":"map-card","label":"Map / Route Card","group":"Dashboard Modules","type":"module","status":"implemented","description":"MapTiler terrain map with custom styling; dynamically loaded.","files":["src/components/cards/MapRouteCard.tsx","src/components/cards/MapRouteCardInner.tsx"]},
+    {"id":"park-intel-card","label":"Park Intel","group":"Dashboard Modules","type":"module","status":"implemented","description":"Fire restrictions, wildlife, ranger station, firewood, water notes.","files":["src/components/cards/ParkIntelCard.tsx","src/components/cards/ParkIntelFormSheet.tsx"]},
+    {"id":"offline-vault-card","label":"Offline Vault","group":"Dashboard Modules","type":"module","status":"implemented","description":"Boolean checklist for offline readiness items with toggle.","files":["src/components/cards/OfflineVaultCard.tsx"]},
+    {"id":"mission-brief-modal","label":"Mission Brief Modal","group":"Dashboard Modules","type":"module","status":"implemented","description":"Full-screen video modal triggered from HeroHeader.","files":["src/components/ui/MissionBriefModal.tsx"]},
+    {"id":"project-intel-modal","label":"Project Intel Modal","group":"Dashboard Modules","type":"module","status":"implemented","description":"Scrollable tech stack summary modal triggered from OfflineVaultCard.","files":["src/components/ui/ProjectIntelModal.tsx"]},
+    {"id":"day-night-auto-theme","label":"Day/Night Auto-Theme","group":"Partial / Inactive","type":"partial","status":"partial/inactive","description":"getThemeModeFromTime() exists but theme is hardcoded to night.","files":["src/lib/helpers.ts","src/app/page.tsx"]},
+    {"id":"map-route-markers","label":"Map Route + Markers","group":"Partial / Inactive","type":"partial","status":"partial/inactive","description":"Trip lat/lng available but no polyline or markers rendered.","files":["src/components/cards/MapRouteCardInner.tsx"]},
+    {"id":"settings-management-ui","label":"Settings UI","group":"Partial / Inactive","type":"partial","status":"partial/inactive","description":"Settings read from Supabase but no edit UI exists.","files":[]},
+    {"id":"legacy-python-scrapers","label":"Python Scrapers","group":"Partial / Inactive","type":"partial","status":"superseded","description":"Standalone Python scrapers superseded by Next.js API routes.","files":["tools/algonquin_alerts_scraper.py","tools/ec_weather_scraper.py","tools/clear_alerts.py"]},
+    {"id":"modal-scheduled-jobs","label":"Modal Scheduled Jobs","group":"Future Systems","type":"future","status":"future/planned","description":"Background job runner referenced in docs as planned.","files":[]},
+    {"id":"moonrise-moonset","label":"Moonrise/Moonset Data","group":"Future Systems","type":"future","status":"future/planned","description":"Not available from Open-Meteo; field exists, defaulted to --:--.","files":["src/lib/weatherMapper.ts"]},
+    {"id":"alerts-phase-3","label":"Alerts Phase 3","group":"Future Systems","type":"future","status":"future/planned","description":"Enhanced Algonquin alerts feed referenced in gemini.md.","files":[]}
+  ],
+  "edges": [
+    {"from":"open-meteo","to":"refresh-weather-api","label":"HTTP fetch","flow":"weather-refresh-flow","description":"API route fetches forecast from Open-Meteo."},
+    {"from":"refresh-weather-api","to":"weather-normalization","label":"Raw response","flow":"weather-refresh-flow","description":"Raw Open-Meteo JSON mapped to Supabase schema."},
+    {"from":"weather-normalization","to":"supabase-store","label":"Upsert","flow":"weather-refresh-flow","description":"Mapped data upserted to weather_current and weather_forecast."},
+    {"from":"supabase-store","to":"weather-card","label":"Read","flow":"weather-refresh-flow","description":"Dashboard reads weather from Supabase on page load."},
+    {"from":"ontario-parks","to":"refresh-alerts-api","label":"HTML scrape","flow":"alerts-refresh-flow","description":"Scrapes Algonquin backcountry alerts page."},
+    {"from":"environment-canada","to":"refresh-alerts-api","label":"ATOM fetch","flow":"alerts-refresh-flow","description":"Fetches EC weather alert RSS feed."},
+    {"from":"refresh-alerts-api","to":"alert-scraping-parsing","label":"Parse","flow":"alerts-refresh-flow","description":"HTML and XML parsed into alert objects."},
+    {"from":"alert-scraping-parsing","to":"supabase-store","label":"Upsert","flow":"alerts-refresh-flow","description":"Parsed alerts deduplicated and inserted."},
+    {"from":"supabase-store","to":"alerts-card","label":"Read","flow":"alerts-refresh-flow","description":"Active alerts displayed with severity badges."},
+    {"from":"vercel-cron","to":"refresh-weather-api","label":"Daily 11:00 UTC","flow":"weather-refresh-flow","description":"Vercel cron triggers weather refresh."},
+    {"from":"vercel-cron","to":"refresh-alerts-api","label":"Daily 11:15 UTC","flow":"alerts-refresh-flow","description":"Vercel cron triggers alerts refresh."},
+    {"from":"google-oauth","to":"authorization-mode","label":"Session","flow":"auth-permission-flow","description":"OAuth session checked against email whitelist."},
+    {"from":"authorization-mode","to":"supabase-store","label":"CRUD or read-only","flow":"auth-permission-flow","description":"Authorized users get mutations; others read-only."},
+    {"from":"supabase-store","to":"gear-card","label":"Read + CRUD","flow":"gear-checklist-flow","description":"Gear items fetched and mutated via Supabase."},
+    {"from":"supabase-store","to":"meals-card","label":"Read + CRUD","flow":"meal-planning-flow","description":"Meals fetched and mutated via Supabase."},
+    {"from":"supabase-store","to":"timeline-card","label":"Read + CRUD","flow":"timeline-flow","description":"Timeline events fetched and mutated via Supabase."},
+    {"from":"supabase-store","to":"crew-card","label":"Read + CRUD","flow":"crew-flow","description":"Crew members fetched and mutated via Supabase."},
+    {"from":"supabase-store","to":"park-intel-card","label":"Read + update","flow":"supabase-crud-flow","description":"Park intel read and editable."},
+    {"from":"supabase-store","to":"offline-vault-card","label":"Read + toggle","flow":"supabase-crud-flow","description":"Offline status booleans toggled via Supabase."},
+    {"from":"gear-card","to":"readiness-engine","label":"Score input","flow":"readiness-scoring-flow","description":"Gear packed status feeds readiness calculation."},
+    {"from":"meals-card","to":"readiness-engine","label":"Score input","flow":"readiness-scoring-flow","description":"Meal completeness feeds readiness calculation."},
+    {"from":"timeline-card","to":"readiness-engine","label":"Score input","flow":"readiness-scoring-flow","description":"Timeline completeness feeds readiness calculation."},
+    {"from":"offline-vault-card","to":"readiness-engine","label":"Score input","flow":"readiness-scoring-flow","description":"Offline checklist feeds readiness calculation."},
+    {"from":"weather-card","to":"readiness-engine","label":"Score input","flow":"readiness-scoring-flow","description":"Weather conditions feed readiness calculation."},
+    {"from":"readiness-engine","to":"readiness-card","label":"Composite score","flow":"readiness-scoring-flow","description":"Weighted score rendered in readiness card."},
+    {"from":"maptiler","to":"map-card","label":"Vector tiles","flow":"map-flow","description":"MapTiler SDK renders terrain map."},
+    {"from":"mission-brief-video","to":"mission-brief-modal","label":"Video source","flow":"mission-brief-flow","description":"Vercel Blob video plays in modal."},
+    {"from":"offline-vault-card","to":"project-intel-modal","label":"Opens modal","flow":"supabase-crud-flow","description":"Project Intel button triggers tech stack modal."},
+    {"from":"settings-table","to":"app-shell","label":"Config read","flow":"supabase-crud-flow","description":"Settings control card visibility and theme override."},
+    {"from":"legacy-python-scrapers","to":"refresh-alerts-api","label":"Superseded by","flow":"alerts-refresh-flow","description":"Python scrapers replaced by Next.js API routes."},
+    {"from":"modal-scheduled-jobs","to":"refresh-weather-api","label":"Future trigger","flow":"future-jobs-flow","description":"Planned Modal jobs would trigger refresh routes."}
+  ],
+  "flows": [
+    {"id":"auth-permission-flow","title":"Auth & Permission Flow","summary":"Google OAuth with email whitelist gates CRUD vs read-only access.","status":"implemented","nodes":["google-oauth","authorization-mode","app-shell"],"edges":["google-oauth->authorization-mode","authorization-mode->supabase-store"],"files":["src/lib/authContext.tsx","src/app/auth/callback/route.ts"]},
+    {"id":"weather-refresh-flow","title":"Weather Refresh Flow","summary":"Vercel cron calls API route which fetches Open-Meteo, normalizes, and upserts to Supabase.","status":"implemented","nodes":["vercel-cron","refresh-weather-api","open-meteo","weather-normalization","supabase-store","weather-card"],"edges":["vercel-cron->refresh-weather-api","open-meteo->refresh-weather-api","refresh-weather-api->weather-normalization","weather-normalization->supabase-store","supabase-store->weather-card"],"files":["src/app/api/refresh-weather/route.ts","src/lib/weatherMapper.ts","vercel.json"]},
+    {"id":"alerts-refresh-flow","title":"Alerts Refresh Flow","summary":"Vercel cron calls API route which scrapes Ontario Parks and EC, upserts alerts.","status":"implemented","nodes":["vercel-cron","refresh-alerts-api","ontario-parks","environment-canada","alert-scraping-parsing","supabase-store","alerts-card"],"edges":["vercel-cron->refresh-alerts-api","ontario-parks->refresh-alerts-api","environment-canada->refresh-alerts-api","refresh-alerts-api->alert-scraping-parsing","alert-scraping-parsing->supabase-store","supabase-store->alerts-card"],"files":["src/app/api/refresh-alerts/route.ts","vercel.json"]},
+    {"id":"supabase-crud-flow","title":"Supabase CRUD Flow","summary":"Authenticated users perform optimistic CRUD against Supabase via centralized mutations.","status":"implemented","nodes":["authorization-mode","supabase-store","helpers"],"edges":["authorization-mode->supabase-store","supabase-store->park-intel-card","supabase-store->offline-vault-card","settings-table->app-shell"],"files":["src/lib/mutations.ts","src/lib/fetchDashboard.ts"]},
+    {"id":"readiness-scoring-flow","title":"Readiness Scoring Flow","summary":"Five domain scores weighted and composited into overall readiness.","status":"implemented","nodes":["gear-card","meals-card","timeline-card","offline-vault-card","weather-card","readiness-engine","readiness-card"],"edges":["gear-card->readiness-engine","meals-card->readiness-engine","timeline-card->readiness-engine","offline-vault-card->readiness-engine","weather-card->readiness-engine","readiness-engine->readiness-card"],"files":["src/lib/helpers.ts","src/components/cards/ReadinessScoreCard.tsx"]},
+    {"id":"gear-checklist-flow","title":"Gear Checklist Flow","summary":"Gear items with pack toggle, category grouping, and full CRUD.","status":"implemented","nodes":["gear-card","supabase-store","authorization-mode"],"edges":["supabase-store->gear-card"],"files":["src/components/cards/GearChecklistCard.tsx","src/components/cards/GearFormSheet.tsx","src/lib/mutations.ts"]},
+    {"id":"meal-planning-flow","title":"Meal Planning Flow","summary":"Meals grouped by day with full CRUD; visibility controlled by settings.","status":"implemented","nodes":["meals-card","supabase-store","authorization-mode"],"edges":["supabase-store->meals-card"],"files":["src/components/cards/MealPlannerCard.tsx","src/components/cards/MealFormSheet.tsx","src/lib/mutations.ts"]},
+    {"id":"timeline-flow","title":"Timeline / Itinerary Flow","summary":"Timeline events grouped by day with full CRUD.","status":"implemented","nodes":["timeline-card","supabase-store","authorization-mode"],"edges":["supabase-store->timeline-card"],"files":["src/components/cards/TimelineCard.tsx","src/components/cards/TimelineFormSheet.tsx","src/lib/mutations.ts"]},
+    {"id":"crew-flow","title":"Crew / Load Balance Flow","summary":"Crew with canoe assignments and load weights; full CRUD.","status":"implemented","nodes":["crew-card","supabase-store","authorization-mode"],"edges":["supabase-store->crew-card"],"files":["src/components/cards/CrewRosterCard.tsx","src/components/cards/CrewFormSheet.tsx","src/lib/mutations.ts"]},
+    {"id":"map-flow","title":"Map Flow","summary":"MapTiler terrain map dynamically loaded client-side.","status":"implemented","nodes":["maptiler","map-card"],"edges":["maptiler->map-card"],"files":["src/components/cards/MapRouteCard.tsx","src/components/cards/MapRouteCardInner.tsx"]},
+    {"id":"mission-brief-flow","title":"Mission Brief Flow","summary":"Video modal triggered from HeroHeader; hosted on Vercel Blob.","status":"implemented","nodes":["mission-brief-video","mission-brief-modal"],"edges":["mission-brief-video->mission-brief-modal"],"files":["src/components/ui/MissionBriefModal.tsx","src/components/cards/HeroHeader.tsx"]},
+    {"id":"future-jobs-flow","title":"Future Scheduled Jobs","summary":"Planned Modal background jobs for automated refresh triggers.","status":"future/planned","nodes":["modal-scheduled-jobs","refresh-weather-api","refresh-alerts-api"],"edges":["modal-scheduled-jobs->refresh-weather-api"],"files":[]}
+  ],
+  "future": [
+    {"id":"modal-scheduled-jobs","label":"Modal Scheduled Jobs","status":"future/planned","description":"Background job runner for automated weather/alert refresh.","relatedNodes":["refresh-weather-api","refresh-alerts-api","vercel-cron"],"files":[]},
+    {"id":"moonrise-moonset","label":"Moonrise/Moonset Data","status":"future/planned","description":"Open-Meteo lacks this data; field defaulted to --:--.","relatedNodes":["weather-normalization","weather-card"],"files":["src/lib/weatherMapper.ts"]},
+    {"id":"settings-management-ui","label":"Settings Management UI","status":"future/planned","description":"Settings table is read but has no edit interface.","relatedNodes":["settings-table","app-shell"],"files":[]},
+    {"id":"alerts-phase-3","label":"Algonquin Alerts Phase 3","status":"future/planned","description":"Enhanced alert feed referenced in gemini.md.","relatedNodes":["alerts-card","refresh-alerts-api"],"files":[]}
+  ]
+}
+;
+var selectedFlow = null;
+var flows = DATA.flows;
+var nodes = DATA.nodes;
+var edges = DATA.edges;
+
+function selectFlow(flowId) {
+  selectedFlow = flowId;
+  var f = flows.find(function(fl){return fl.id===flowId});
+  if(!f) return;
+
+  // Update buttons
+  document.querySelectorAll('.flow-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.flow===flowId);
+  });
+
+  // Highlight nodes
+  var fnodes = new Set(f.nodes||[]);
+  document.querySelectorAll('.node-card').forEach(function(c){
+    var inFlow = fnodes.has(c.dataset.id);
+    c.classList.toggle('highlighted', inFlow);
+    c.classList.toggle('dimmed', !inFlow);
+  });
+
+  // Dim swimlanes without any highlighted nodes
+  document.querySelectorAll('.swimlane').forEach(function(s){
+    var hasHighlighted = s.querySelector('.node-card.highlighted');
+    s.classList.toggle('dimmed', !hasHighlighted);
+  });
+
+  // Detail panel
+  document.getElementById('dpTitle').textContent = f.title;
+  var sc = {implemented:'#4ade80','partial/inactive':'#fbbf24','future/planned':'#a78bfa',external:'#60a5fa',superseded:'#f87171',mixed:'#fbbf24'};
+  var col = sc[f.status]||'#4ade80';
+  document.getElementById('dpStatus').innerHTML = '<span class="badge" style="color:'+col+';border-color:'+col+'44;background:'+col+'18">'+f.status+'</span>';
+  document.getElementById('dpSummary').textContent = f.summary;
+
+  // Build body
+  var html = '<div class="dp-section">Involved Nodes</div><div class="dp-nodes">';
+  (f.nodes||[]).forEach(function(nid){
+    var nd = nodes.find(function(x){return x.id===nid});
+    html += '<span class="dp-node-tag">'+(nd?nd.label:nid)+'</span>';
+  });
+  html += '</div>';
+
+  // Edges for this flow
+  var flowEdges = edges.filter(function(e){return e.flow===flowId});
+  if(flowEdges.length){
+    html += '<div class="dp-section">Data Flow Edges</div>';
+    flowEdges.forEach(function(e){
+      var fromN = nodes.find(function(x){return x.id===e.from});
+      var toN = nodes.find(function(x){return x.id===e.to});
+      html += '<div class="edge-row"><span class="edge-from">'+(fromN?fromN.label:e.from)+'</span><span class="edge-arrow">→</span><span class="edge-to">'+(toN?toN.label:e.to)+'</span><span class="edge-label">'+e.label+'</span></div>';
+    });
+  }
+
+  // Files
+  if(f.files && f.files.length){
+    html += '<div class="dp-section">Key Files</div><div class="node-files">';
+    f.files.forEach(function(fi){html += '<span class="file">'+fi+'</span>';});
+    html += '</div>';
+  }
+
+  document.getElementById('dpBody').innerHTML = html;
+}
+
+// Click on node cards to find related flows
+document.addEventListener('click', function(e){
+  var card = e.target.closest('.node-card');
+  if(!card) return;
+  var nid = card.dataset.id;
+  var relFlow = flows.find(function(f){return (f.nodes||[]).indexOf(nid)!==-1});
+  if(relFlow) selectFlow(relFlow.id);
+});
+
+// Flow button clicks
+document.querySelectorAll('.flow-btn').forEach(function(b){
+  b.addEventListener('click', function(){selectFlow(b.dataset.flow)});
+});
+
+// Attempt to load live JSON, fall back to embedded DATA
+function initWithData(source, label, cssClass) {
+  flows = source.flows;
+  nodes = source.nodes;
+  edges = source.edges;
+  var el = document.getElementById('data-source');
+  el.textContent = label;
+  el.className = 'data-source-badge ' + cssClass;
+  var defaultFlow = flows.find(function(f){return f.id==='weather-refresh-flow'}) || flows[0];
+  if(defaultFlow) selectFlow(defaultFlow.id);
+}
+
+(function() {
+  // Only attempt fetch if served via HTTP (not file://)
+  if (window.location.protocol !== 'file:') {
+    fetch('architecture-flow.json')
+      .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d) { initWithData(d, 'live JSON', 'live'); })
+      .catch(function() { initWithData(DATA, 'embedded fallback', 'fallback'); });
+  } else {
+    initWithData(DATA, 'embedded fallback', 'fallback');
+  }
+})();
+</script>
+</body>
+</html>
