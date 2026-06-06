@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { PrepFeedItem, PrepFeedCategory } from '@/types';
 import { Card, Badge } from '@/components/ui/Primitives';
 import PrepFeedFormSheet from './PrepFeedFormSheet';
+import PrepFeedLightbox from '@/components/ui/PrepFeedLightbox';
 import { Camera, Plus, Trash2, Clock, User } from 'lucide-react';
 
 // ── Category → badge variant mapping ────────────────────────
@@ -44,6 +45,7 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
     const [sheetOpen, setSheetOpen] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
     async function confirmDelete() {
         if (!pendingDeleteId) return;
@@ -103,11 +105,11 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
                                     className="prep-feed-entry group"
                                 >
                                     {/* Thumbnail */}
-                                    <a
-                                        href={item.image_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <button
+                                        type="button"
                                         className="prep-feed-entry__thumb-wrap"
+                                        onClick={() => setLightboxIndex(items.indexOf(item))}
+                                        aria-label={`View ${item.caption || item.category}`}
                                     >
                                         <img
                                             src={item.image_url}
@@ -115,7 +117,7 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
                                             className="prep-feed-entry__thumb"
                                             loading="lazy"
                                         />
-                                    </a>
+                                    </button>
 
                                     {/* Details */}
                                     <div className="prep-feed-entry__details">
@@ -179,6 +181,15 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
                     onClose={() => setSheetOpen(false)}
                     onSubmit={onAdd}
                     defaultUploader={defaultUploader}
+                />
+            )}
+
+            {lightboxIndex !== null && (
+                <PrepFeedLightbox
+                    items={items}
+                    currentIndex={lightboxIndex}
+                    onClose={() => setLightboxIndex(null)}
+                    onNavigate={(i) => setLightboxIndex(i)}
                 />
             )}
         </Card>
