@@ -1,6 +1,6 @@
 # 🏕️ gemini.md — Camping Dashboard Project Constitution
 > **This file is law.** Only update when: a schema changes, a rule is added, or the architecture is modified.
-> Last Updated: 2026-03-06
+> Last Updated: 2026-06-06
 
 ---
 
@@ -152,6 +152,14 @@
     "preferred_units": "enum(metric|imperial)",
     "show_astro": "boolean", "show_meals": "boolean",
     "show_offline": "boolean", "show_crew": "boolean"
+  },
+  "prep_feed_items": {
+    "id": "uuid", "trip_id": "uuid",
+    "image_url": "text",
+    "caption": "text",
+    "category": "enum(Gear|Food|Shelter|Cook Kit|Route|Campsite|Misc)",
+    "uploaded_by": "string",
+    "created_at": "timestamp"
   }
 }
 ```
@@ -171,6 +179,7 @@
   "offlineStatus": "OfflineStatus",
   "astro": "AstroData",
   "alerts": "Alert[]",
+  "prepFeed": "PrepFeedItem[]",
   "settings": "Settings",
   "derived": {
     "countdown": "CountdownResult",
@@ -262,3 +271,4 @@ When a tool fails:
 | 2026-03-20 | Replaced `moonrise_time` with `visibility` in `weather_current` schema | System Pilot |
 | 2026-04-02 | Added `architecture/project-summary.md` to track tech stack and tools | System Pilot |
 | 2026-05-12 | Added `daily_vehicle_permit_saved` to `offline_status` schema | Antigravity |
+| 2026-06-06 | Added `prep_feed_items` table + `prep-feed` storage bucket; Field Prep Feed module | Antigravity |

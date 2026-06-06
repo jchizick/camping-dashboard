@@ -16,6 +16,7 @@ import type {
     OfflineStatus,
     AstroData,
     Alert,
+    PrepFeedItem,
     Settings,
 } from '@/types';
 
@@ -35,6 +36,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
         astroResult,
         alertsResult,
         settingsResult,
+        prepFeedResult,
     ] = await Promise.all([
         supabase.from('trips').select('*').eq('id', TRIP_ID).single(),
         supabase.from('weather_current').select('*').eq('id', 'weather-maple-lake-current').single(),
@@ -48,6 +50,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
         supabase.from('astro_data').select('*').eq('trip_id', TRIP_ID).single(),
         supabase.from('alerts').select('*').eq('trip_id', TRIP_ID).eq('is_active', true).order('created_at', { ascending: false }),
         supabase.from('settings').select('*').eq('trip_id', TRIP_ID).single(),
+        supabase.from('prep_feed_items').select('*').eq('trip_id', TRIP_ID).order('created_at', { ascending: false }),
     ]);
 
     if (tripResult.error || !tripResult.data) {
@@ -66,6 +69,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
         offlineStatus: offlineResult.data as OfflineStatus,
         astro: astroResult.data as AstroData,
         alerts: alertsResult.data as Alert[],
+        prepFeed: (prepFeedResult.data as PrepFeedItem[]) ?? [],
         settings: settingsResult.data as Settings,
     };
 }

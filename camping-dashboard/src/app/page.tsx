@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, DashboardData, OfflineStatus, ParkIntel } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, DashboardData, OfflineStatus, ParkIntel, PrepFeedItem, PrepFeedCategory } from '@/types';
 import { fetchDashboardData } from '@/lib/fetchDashboard';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import {
@@ -19,6 +19,8 @@ import {
   updateOfflineStatus,
   // Park Intel
   updateParkIntel,
+  // Prep Feed
+  uploadPrepFeedImage, createPrepFeedItem, deletePrepFeedItem,
 } from '@/lib/mutations';
 import {
   getTripCountdown,
@@ -45,6 +47,7 @@ import CrewRosterCard from '@/components/cards/CrewRosterCard';
 import OfflineVaultCard from '@/components/cards/OfflineVaultCard';
 import AstroCard from '@/components/cards/AstroCard';
 import AlertsCard from '@/components/cards/AlertsCard';
+import FieldPrepFeedCard from '@/components/cards/FieldPrepFeedCard';
 import MissionBriefModal from '@/components/ui/MissionBriefModal';
 import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
 
@@ -188,7 +191,7 @@ function DashboardLoader() {
 
 function DashboardContent({ data }: { data: DashboardData }) {
   // ── Auth ──────────────────────────────────────────────────────────
-  const { isAuthorized } = useAuth();
+  const { isAuthorized, user } = useAuth();
 
   // ── User-authored state slices ───────────────────────────────────
 
@@ -199,6 +202,7 @@ function DashboardContent({ data }: { data: DashboardData }) {
   const [alerts, setAlerts] = useState<Alert[]>(data.alerts);
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>(data.offlineStatus);
   const [parkIntel, setParkIntel] = useState<ParkIntel>(data.parkIntel);
+  const [prepFeed, setPrepFeed] = useState<PrepFeedItem[]>(data.prepFeed);
 
   // ── Theme (locked to night) ───────────────────────────────────────
   const themeMode = 'night' as const;
@@ -339,6 +343,32 @@ function DashboardContent({ data }: { data: DashboardData }) {
     setParkIntel(updated as ParkIntel);
   }
 
+  // ── Prep Feed mutations ───────────────────────────────────────
+  // Map signed-in email → friendly name for the "uploaded by" field
+  const uploaderName = (() => {
+    const email = (user?.email ?? '').toLowerCase();
+    if (email.includes('esheridan')) return 'Liz';
+    return 'Jordan';
+  })();
+
+  async function handlePrepFeedAdd(payload: { file: File; caption: string; category: PrepFeedCategory; uploaded_by: string }) {
+    const imageUrl = await uploadPrepFeedImage(payload.file);
+    const { data: newItem, error } = await createPrepFeedItem({
+      image_url: imageUrl,
+      caption: payload.caption,
+      category: payload.category,
+      uploaded_by: payload.uploaded_by,
+    });
+    if (error || !newItem) { console.error('[createPrepFeed]', error?.message); throw error; }
+    setPrepFeed(prev => [newItem as PrepFeedItem, ...prev]);
+  }
+
+  async function handlePrepFeedDelete(id: string) {
+    const { error } = await deletePrepFeedItem(id);
+    if (error) { console.error('[deletePrepFeed]', error.message); throw error; }
+    setPrepFeed(prev => prev.filter(i => i.id !== id));
+  }
+
   // ── Mission Brief modal ──────────────────────────────────────────
   const [missionBriefOpen, setMissionBriefOpen] = useState(false);
   const [projectIntelOpen, setProjectIntelOpen] = useState(false);
@@ -422,8 +452,16 @@ function DashboardContent({ data }: { data: DashboardData }) {
             />
           </div>
 
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-4">
             <ParkIntelCard intel={parkIntel} onUpdate={isAuthorized ? handleParkIntelUpdate : undefined} />
+          </div>
+          <div className="lg:col-span-4">
+            <FieldPrepFeedCard
+              items={prepFeed}
+              onAdd={isAuthorized ? handlePrepFeedAdd : undefined}
+              onDelete={isAuthorized ? handlePrepFeedDelete : undefined}
+              defaultUploader={uploaderName}
+            />
           </div>
           <div className="lg:col-span-4">
             <AlertsCard

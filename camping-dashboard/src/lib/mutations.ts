@@ -5,7 +5,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, PrepFeedItem } from '@/types';
 
 const TRIP_ID = 'trip-maple-lake-001';
 
@@ -189,4 +189,29 @@ export async function updateOfflineStatus(
         .eq('id', id)
         .select()
         .single();
+}
+
+// ─── Prep Feed ────────────────────────────────────────────
+
+export async function uploadPrepFeedImage(file: File): Promise<string> {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${TRIP_ID}/${generateId()}.${ext}`;
+    const { error } = await supabase.storage.from('prep-feed').upload(path, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from('prep-feed').getPublicUrl(path);
+    return data.publicUrl;
+}
+
+export async function createPrepFeedItem(
+    item: Omit<PrepFeedItem, 'id' | 'trip_id' | 'created_at'>
+) {
+    return supabase
+        .from('prep_feed_items')
+        .insert({ id: generateId(), ...item, trip_id: TRIP_ID })
+        .select()
+        .single();
+}
+
+export async function deletePrepFeedItem(id: string) {
+    return supabase.from('prep_feed_items').delete().eq('id', id);
 }

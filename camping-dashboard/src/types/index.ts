@@ -12,6 +12,7 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type PrepType = 'dehydrated' | 'fresh' | 'fire' | 'restaurant';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
+export type PrepFeedCategory = 'Gear' | 'Food' | 'Shelter' | 'Cook Kit' | 'Route' | 'Campsite' | 'Misc';
 
 // ─── Core Entities ────────────────────────────────────────
 export interface Trip {
@@ -159,6 +160,16 @@ export interface Alert {
   created_at: string;
 }
 
+export interface PrepFeedItem {
+  id: string;
+  trip_id: string;
+  image_url: string;
+  caption: string;
+  category: PrepFeedCategory;
+  uploaded_by: string;
+  created_at: string;
+}
+
 export interface Settings {
   id: string;
   trip_id: string;
@@ -203,5 +214,6 @@ export interface DashboardData {
   offlineStatus: OfflineStatus;
   astro: AstroData;
   alerts: Alert[];
+  prepFeed: PrepFeedItem[];
   settings: Settings;
 }
