@@ -57,9 +57,9 @@ export function calculateGearReadiness(gear: GearItem[]): number {
     if (gear.length === 0) return 0;
     const criticalItems = gear.filter((g) => g.priority === 'critical');
     const critical = criticalItems.length > 0
-        ? criticalItems.filter((g) => g.packed).length / criticalItems.length
+        ? criticalItems.filter((g) => g.acquired).length / criticalItems.length
         : 1;
-    const total = gear.filter((g) => g.packed).length / gear.length;
+    const total = gear.filter((g) => g.acquired).length / gear.length;
     // Weight critical items higher
     return Math.round((critical * 0.6 + total * 0.4) * 100);
 }
