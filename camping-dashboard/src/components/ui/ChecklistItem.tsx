@@ -22,9 +22,9 @@ export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, 
                 tabIndex={0}
                 onClick={() => onToggle?.(item.id)}
                 onKeyDown={(e) => e.key === 'Enter' && onToggle?.(item.id)}
-                aria-label={`${item.name} — ${item.packed ? 'packed' : 'not packed'}`}
+                aria-label={`${item.name} — ${item.acquired ? 'acquired' : 'not acquired'}`}
             >
-                {item.packed ? (
+                {item.acquired ? (
                     <CheckCircle2 size={16} className="text-accent-green shrink-0" />
                 ) : item.priority === 'critical' ? (
                     <Circle size={16} className="text-accent-red shrink-0" />
@@ -34,7 +34,7 @@ export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, 
                     <Circle size={16} className="text-accent-yellow shrink-0" />
                 )}
                 
-                <span className={`text-sm ${item.packed ? 'text-text-muted line-through' : 'text-text-main'}`}>
+                <span className={`text-sm ${item.acquired ? 'text-text-muted line-through' : 'text-text-main'}`}>
                     {item.name}
                 </span>
 

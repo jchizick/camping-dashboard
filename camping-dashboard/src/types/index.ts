@@ -69,6 +69,7 @@ export interface GearItem {
   name: string;
   category: string;
   packed: boolean;
+  acquired: boolean;
   owner: string;
   priority: Priority;
   notes: string;

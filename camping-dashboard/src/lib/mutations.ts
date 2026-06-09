@@ -56,6 +56,13 @@ export async function toggleGearPacked(id: string, packed: boolean) {
         .eq('id', id);
 }
 
+export async function toggleGearAcquired(id: string, acquired: boolean) {
+    return supabase
+        .from('gear_items')
+        .update({ acquired })
+        .eq('id', id);
+}
+
 // ─── Meals ────────────────────────────────────────────────
 
 export async function createMeal(

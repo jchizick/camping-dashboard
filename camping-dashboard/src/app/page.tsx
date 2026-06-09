@@ -6,7 +6,7 @@ import { fetchDashboardData } from '@/lib/fetchDashboard';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import {
   // Gear
-  createGearItem, updateGearItem, deleteGearItem, toggleGearPacked,
+  createGearItem, updateGearItem, deleteGearItem, toggleGearPacked, toggleGearAcquired,
   // Meals
   createMeal, updateMeal, deleteMeal,
   // Timeline
@@ -236,14 +236,26 @@ function DashboardContent({ data }: { data: DashboardData }) {
   );
 
   // ── Gear mutations ────────────────────────────────────────────────
-  async function handleGearToggle(id: string) {
+  async function handleGearToggleAcquired(id: string) {
+    const item = gear.find(g => g.id === id);
+    if (!item) return;
+    const newAcquired = !item.acquired;
+    setGear(prev => prev.map(g => g.id === id ? { ...g, acquired: newAcquired } : g));
+    const { error } = await toggleGearAcquired(id, newAcquired);
+    if (error) {
+      console.error('[toggleGearAcquired] Supabase write failed, reverting:', error.message);
+      setGear(prev => prev.map(g => g.id === id ? { ...g, acquired: item.acquired } : g));
+    }
+  }
+
+  async function handleGearTogglePacked(id: string) {
     const item = gear.find(g => g.id === id);
     if (!item) return;
     const newPacked = !item.packed;
     setGear(prev => prev.map(g => g.id === id ? { ...g, packed: newPacked } : g));
     const { error } = await toggleGearPacked(id, newPacked);
     if (error) {
-      console.error('[toggleGear] Supabase write failed, reverting:', error.message);
+      console.error('[toggleGearPacked] Supabase write failed, reverting:', error.message);
       setGear(prev => prev.map(g => g.id === id ? { ...g, packed: item.packed } : g));
     }
   }
@@ -436,8 +448,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
           <div className="lg:col-span-6">
             <GearChecklistCard
               gear={gear}
-              onToggle={isAuthorized ? handleGearToggle : undefined}
-              onTogglePacked={isAuthorized ? handleGearToggle : undefined}
+              onToggle={isAuthorized ? handleGearToggleAcquired : undefined}
+              onTogglePacked={isAuthorized ? handleGearTogglePacked : undefined}
               onAdd={isAuthorized ? handleGearAdd : undefined}
               onUpdate={isAuthorized ? handleGearUpdate : undefined}
               onDelete={isAuthorized ? handleGearDelete : undefined}

@@ -18,6 +18,7 @@ const defaultForm = {
     owner: '',
     weight_kg: 0,
     notes: '',
+    acquired: false,
     packed: false,
 };
 
@@ -134,6 +135,17 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
                         rows={2}
                         placeholder="Optional notes…"
                     />
+                </div>
+
+                <div className="crud-form__field crud-form__field--checkbox">
+                    <input
+                        id="gear-acquired"
+                        className="crud-form__checkbox"
+                        type="checkbox"
+                        checked={form.acquired}
+                        onChange={(e) => set('acquired', e.target.checked)}
+                    />
+                    <label className="crud-form__label" htmlFor="gear-acquired">Acquired / on-hand</label>
                 </div>
 
                 <div className="crud-form__field crud-form__field--checkbox">

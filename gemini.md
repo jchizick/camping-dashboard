@@ -96,7 +96,8 @@
   "gear_items": {
     "id": "uuid", "trip_id": "uuid",
     "name": "string", "category": "string",
-    "packed": "boolean", "owner": "string",
+    "packed": "boolean", "acquired": "boolean",
+    "owner": "string",
     "priority": "enum(critical|high|low)",
     "notes": "text", "weight_kg": "float"
   },
@@ -272,3 +273,4 @@ When a tool fails:
 | 2026-04-02 | Added `architecture/project-summary.md` to track tech stack and tools | System Pilot |
 | 2026-05-12 | Added `daily_vehicle_permit_saved` to `offline_status` schema | Antigravity |
 | 2026-06-06 | Added `prep_feed_items` table + `prep-feed` storage bucket; Field Prep Feed module | Antigravity |
+| 2026-06-08 | Added `acquired` boolean to `gear_items` schema; decoupled left-circle (acquired) from backpack (packed) | Antigravity |
