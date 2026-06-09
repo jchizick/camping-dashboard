@@ -1,0 +1,2748 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "5fe3c7cb928c5f1b0d35f7c8c9ff82468a0c8231",
+  "generatedAt": "2026-05-27T12:45:24.605Z",
+  "files": {
+    "eslint.config.mjs": {
+      "filePath": "eslint.config.mjs",
+      "contentHash": "870f1adccecf3051cbcd9fd307cef51d7633cf510979c181a81f4b1797273493",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "eslint/config",
+          "specifiers": [
+            "defineConfig",
+            "globalIgnores"
+          ]
+        },
+        {
+          "source": "eslint-config-next/core-web-vitals",
+          "specifiers": [
+            "nextVitals"
+          ]
+        },
+        {
+          "source": "eslint-config-next/typescript",
+          "specifiers": [
+            "nextTs"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "next.config.ts": {
+      "filePath": "next.config.ts",
+      "contentHash": "614bce25b089c3f19b1e17a6346c74b858034040154c6621e7d35303004767cc",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next",
+          "specifiers": [
+            "NextConfig"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "package.json": {
+      "filePath": "package.json",
+      "contentHash": "f7cc48b95e6413c674e680da3f5c9049f0a3acafaadf60502def618420d4ba17",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "postcss.config.mjs": {
+      "filePath": "postcss.config.mjs",
+      "contentHash": "c57f173b0b8e2d46219bcd0e8b81e85be28645b078905654e2c3d08f87f87dc0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "60b55ff7df79af72590f9524208e46642bc32bdc175cdad41349681c0e2f958f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 37,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/refresh-alerts/route.ts": {
+      "filePath": "src/app/api/refresh-alerts/route.ts",
+      "contentHash": "b3651a0242dd2c484b9898bf6fb774eebfebc86b8c38a5ab0ba7c17fc4302a84",
+      "functions": [
+        {
+          "name": "isAuthorized",
+          "params": [
+            "req"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "scrapeAlgonquinAlerts",
+          "params": [],
+          "exported": false,
+          "lineCount": 46
+        },
+        {
+          "name": "scrapeWeatherAlerts",
+          "params": [],
+          "exported": false,
+          "lineCount": 44
+        },
+        {
+          "name": "GET",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 39
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/supabaseAdmin",
+          "specifiers": [
+            "supabaseAdmin"
+          ]
+        }
+      ],
+      "exports": [
+        "GET"
+      ],
+      "totalLines": 151,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/refresh-weather/route.ts": {
+      "filePath": "src/app/api/refresh-weather/route.ts",
+      "contentHash": "8fda6f421b906d0b86416290f0a8f037f3cb103b2cff4bd9fd0934dcec33f9d2",
+      "functions": [
+        {
+          "name": "isAuthorized",
+          "params": [
+            "req"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "GET",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 133
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/supabaseAdmin",
+          "specifiers": [
+            "supabaseAdmin"
+          ]
+        },
+        {
+          "source": "@/lib/weatherMapper",
+          "specifiers": [
+            "mapOpenMeteoToSupabase"
+          ]
+        },
+        {
+          "source": "@/lib/weatherMapper",
+          "specifiers": [
+            "OpenMeteoResponse"
+          ]
+        }
+      ],
+      "exports": [
+        "GET"
+      ],
+      "totalLines": 168,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/auth/callback/route.ts": {
+      "filePath": "src/app/auth/callback/route.ts",
+      "contentHash": "a85cda81e8cbfae0e2345f63214b968e94bed1b63ed2eb7535fdb928957706f6",
+      "functions": [
+        {
+          "name": "GET",
+          "params": [
+            "request"
+          ],
+          "exported": true,
+          "lineCount": 31
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@supabase/ssr",
+          "specifiers": [
+            "createServerClient"
+          ]
+        },
+        {
+          "source": "next/headers",
+          "specifiers": [
+            "cookies"
+          ]
+        },
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        }
+      ],
+      "exports": [
+        "GET"
+      ],
+      "totalLines": 42,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/globals.css": {
+      "filePath": "src/app/globals.css",
+      "contentHash": "b23806fd87698804159eadbfe9d30e7c4f5d2cce96e9f98364c9e1cb30dc6007",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 309,
+      "hasStructuralAnalysis": false
+    },
+    "src/app/layout.tsx": {
+      "filePath": "src/app/layout.tsx",
+      "contentHash": "f5ccf9258a30356c73409a0c22d15f4d2ee2e789eb728fef7d7555956481c587",
+      "functions": [
+        {
+          "name": "RootLayout",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next",
+          "specifiers": [
+            "Metadata",
+            "Viewport"
+          ]
+        },
+        {
+          "source": "./globals.css",
+          "specifiers": []
+        },
+        {
+          "source": "@/components/ui/TopoBackground",
+          "specifiers": [
+            "TopoBackground"
+          ]
+        }
+      ],
+      "exports": [
+        "metadata",
+        "viewport",
+        "RootLayout"
+      ],
+      "totalLines": 43,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/page.module.css": {
+      "filePath": "src/app/page.module.css",
+      "contentHash": "8529c4894dbefa30848e7ad724ae63abcd63deb9d8b40b0d1b4aa33e5db6a40f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 142,
+      "hasStructuralAnalysis": false
+    },
+    "src/app/page.tsx": {
+      "filePath": "src/app/page.tsx",
+      "contentHash": "19cbc998b2f83b6d540d07f8d0e5ae35fa286c48a8594054a054e3b891e91607",
+      "functions": [
+        {
+          "name": "TripDashboardPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "DashboardLoader",
+          "params": [],
+          "exported": false,
+          "lineCount": 129
+        },
+        {
+          "name": "DashboardContent",
+          "params": [
+            "{ data }"
+          ],
+          "exported": false,
+          "lineCount": 297
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState",
+            "useEffect",
+            "useMemo"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "GearItem",
+            "Meal",
+            "TimelineEvent",
+            "CrewMember",
+            "Alert",
+            "DashboardData",
+            "OfflineStatus",
+            "ParkIntel"
+          ]
+        },
+        {
+          "source": "@/lib/fetchDashboard",
+          "specifiers": [
+            "fetchDashboardData"
+          ]
+        },
+        {
+          "source": "@/lib/authContext",
+          "specifiers": [
+            "AuthProvider",
+            "useAuth"
+          ]
+        },
+        {
+          "source": "@/lib/mutations",
+          "specifiers": [
+            "createGearItem",
+            "updateGearItem",
+            "deleteGearItem",
+            "toggleGearPacked",
+            "createMeal",
+            "updateMeal",
+            "deleteMeal",
+            "createTimelineEvent",
+            "updateTimelineEvent",
+            "deleteTimelineEvent",
+            "createCrewMember",
+            "updateCrewMember",
+            "deleteCrewMember",
+            "createAlert",
+            "deleteAlert",
+            "updateOfflineStatus",
+            "updateParkIntel"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "getTripCountdown",
+            "calculateGearReadiness",
+            "calculateMealCompleteness",
+            "calculateOfflineReadiness",
+            "calculateTimelineCompleteness",
+            "calculateWeatherPreparedness",
+            "calculateOverallReadiness",
+            "getTripDays"
+          ]
+        },
+        {
+          "source": "@/components/cards/HeroHeader",
+          "specifiers": [
+            "HeroHeader"
+          ]
+        },
+        {
+          "source": "@/components/cards/CountdownCard",
+          "specifiers": [
+            "CountdownCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/WeatherCard",
+          "specifiers": [
+            "WeatherCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/ForecastCard",
+          "specifiers": [
+            "ForecastCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/MapRouteCard",
+          "specifiers": [
+            "MapRouteCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/GearChecklistCard",
+          "specifiers": [
+            "GearChecklistCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/TimelineCard",
+          "specifiers": [
+            "TimelineCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/ParkIntelCard",
+          "specifiers": [
+            "ParkIntelCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/ReadinessScoreCard",
+          "specifiers": [
+            "ReadinessScoreCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/MealPlannerCard",
+          "specifiers": [
+            "MealPlannerCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/CrewRosterCard",
+          "specifiers": [
+            "CrewRosterCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/OfflineVaultCard",
+          "specifiers": [
+            "OfflineVaultCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/AstroCard",
+          "specifiers": [
+            "AstroCard"
+          ]
+        },
+        {
+          "source": "@/components/cards/AlertsCard",
+          "specifiers": [
+            "AlertsCard"
+          ]
+        },
+        {
+          "source": "@/components/ui/MissionBriefModal",
+          "specifiers": [
+            "MissionBriefModal"
+          ]
+        },
+        {
+          "source": "@/components/ui/ProjectIntelModal",
+          "specifiers": [
+            "ProjectIntelModal"
+          ]
+        }
+      ],
+      "exports": [
+        "TripDashboardPage"
+      ],
+      "totalLines": 486,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/AlertFormSheet.tsx": {
+      "filePath": "src/components/cards/AlertFormSheet.tsx",
+      "contentHash": "d1ca54cc96b1dd26a812f18e66240275c350642a1d252724de101fb8a7f059d8",
+      "functions": [
+        {
+          "name": "AlertFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit }"
+          ],
+          "exported": true,
+          "lineCount": 89
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "AlertSeverity"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        }
+      ],
+      "exports": [
+        "AlertFormSheet"
+      ],
+      "totalLines": 108,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/AlertsCard.tsx": {
+      "filePath": "src/components/cards/AlertsCard.tsx",
+      "contentHash": "d9ebbca0376093db0e29ac55ec344b21614a7c10f213094eba2da0563056988c",
+      "functions": [
+        {
+          "name": "AlertsCard",
+          "params": [
+            "{ alerts, onAddManual, onDeleteManual }"
+          ],
+          "exported": true,
+          "lineCount": 136
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Alert"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "Badge"
+          ]
+        },
+        {
+          "source": "@/components/cards/AlertFormSheet",
+          "specifiers": [
+            "AlertFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "AlertTriangle",
+            "Plus",
+            "Info",
+            "X",
+            "Trash2",
+            "ExternalLink"
+          ]
+        }
+      ],
+      "exports": [
+        "AlertsCard"
+      ],
+      "totalLines": 151,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/AstroCard.tsx": {
+      "filePath": "src/components/cards/AstroCard.tsx",
+      "contentHash": "0d261cbc5b6afd4679d9466233e543354d425f5002950953ca5f02787409ca59",
+      "functions": [
+        {
+          "name": "AstroCard",
+          "params": [
+            "{ astro, weather }"
+          ],
+          "exported": true,
+          "lineCount": 54
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "AstroData",
+            "WeatherCurrent"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "getSkyQuality",
+            "getHeadlampTime",
+            "getGoldenHourLabel"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "ProgressBar"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Star",
+            "Sunset",
+            "Flashlight",
+            "Eye",
+            "Navigation"
+          ]
+        }
+      ],
+      "exports": [
+        "AstroCard"
+      ],
+      "totalLines": 79,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/CountdownCard.tsx": {
+      "filePath": "src/components/cards/CountdownCard.tsx",
+      "contentHash": "0e1272630fe09745cdcbeb2dc703f4c8e52d4b187fe1f143f228e33e1612cccc",
+      "functions": [
+        {
+          "name": "CountdownCard",
+          "params": [
+            "{ trip }"
+          ],
+          "exported": true,
+          "lineCount": 48
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Trip"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "CountdownResult"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "getTripCountdown",
+            "padTwo"
+          ]
+        },
+        {
+          "source": "@/components/ui/GlassCard",
+          "specifiers": [
+            "GlassCard"
+          ]
+        },
+        {
+          "source": "@/components/ui/SectionHeader",
+          "specifiers": [
+            "SectionHeader"
+          ]
+        }
+      ],
+      "exports": [
+        "CountdownCard"
+      ],
+      "totalLines": 62,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/CrewFormSheet.tsx": {
+      "filePath": "src/components/cards/CrewFormSheet.tsx",
+      "contentHash": "7ba8be9aaf45a01cfbfddb278b05ff1bfafe2cb68bffe6fafc8b076e55373569",
+      "functions": [
+        {
+          "name": "CrewFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit, initialMember }"
+          ],
+          "exported": true,
+          "lineCount": 126
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "CrewMember"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        }
+      ],
+      "exports": [
+        "CrewFormSheet"
+      ],
+      "totalLines": 149,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/CrewRosterCard.tsx": {
+      "filePath": "src/components/cards/CrewRosterCard.tsx",
+      "contentHash": "6b6bf986d204182b4b929af239defbc642fc21cf65ca94f75910b9ec8dfd2fc3",
+      "functions": [
+        {
+          "name": "CrewRosterCard",
+          "params": [
+            "{ crew, onAdd, onUpdate, onDelete }"
+          ],
+          "exported": true,
+          "lineCount": 189
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "CrewMember"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "@/components/cards/CrewFormSheet",
+          "specifiers": [
+            "CrewFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "User",
+            "Plus",
+            "Tent",
+            "Scale",
+            "Pencil",
+            "Trash2"
+          ]
+        }
+      ],
+      "exports": [
+        "CrewRosterCard"
+      ],
+      "totalLines": 208,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/ForecastCard.tsx": {
+      "filePath": "src/components/cards/ForecastCard.tsx",
+      "contentHash": "4287cc217b86c4be0d3c94aeccf76fc3fd94df424ab47c5fc18dac015f3c27e0",
+      "functions": [
+        {
+          "name": "getWeatherIcon",
+          "params": [
+            "condition"
+          ],
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "ForecastCard",
+          "params": [
+            "{ forecast }"
+          ],
+          "exported": true,
+          "lineCount": 34
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "WeatherForecast"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Calendar",
+            "Droplets",
+            "Sun",
+            "CloudSun",
+            "Cloud",
+            "CloudFog",
+            "CloudDrizzle",
+            "CloudRain",
+            "CloudSnow",
+            "CloudLightning",
+            "HelpCircle"
+          ]
+        }
+      ],
+      "exports": [
+        "ForecastCard"
+      ],
+      "totalLines": 59,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/GearChecklistCard.tsx": {
+      "filePath": "src/components/cards/GearChecklistCard.tsx",
+      "contentHash": "fc6a18afd2002a9155f1c2e000e7967b4bbaa4fdad1cc6610f61bb349e973e59",
+      "functions": [
+        {
+          "name": "GearChecklistCard",
+          "params": [
+            "{ gear, onToggle, onAdd, onUpdate, onDelete }"
+          ],
+          "exported": true,
+          "lineCount": 170
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState",
+            "useMemo"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "GearItem"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "calculateGearReadiness",
+            "groupBy"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "ProgressBar"
+          ]
+        },
+        {
+          "source": "@/components/ui/ChecklistItem",
+          "specifiers": [
+            "ChecklistItem"
+          ]
+        },
+        {
+          "source": "@/components/cards/GearFormSheet",
+          "specifiers": [
+            "GearFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Tent",
+            "Plus",
+            "ChevronDown"
+          ]
+        }
+      ],
+      "exports": [
+        "GearChecklistCard"
+      ],
+      "totalLines": 203,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/GearFormSheet.tsx": {
+      "filePath": "src/components/cards/GearFormSheet.tsx",
+      "contentHash": "4b708d831443c3da26d7486f002fd9374ca33acefa888fbe4a700bce45811275",
+      "functions": [
+        {
+          "name": "GearFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit, initialItem }"
+          ],
+          "exported": true,
+          "lineCount": 140
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "GearItem",
+            "Priority"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        }
+      ],
+      "exports": [
+        "GearFormSheet"
+      ],
+      "totalLines": 164,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/HeroHeader.tsx": {
+      "filePath": "src/components/cards/HeroHeader.tsx",
+      "contentHash": "6a908a21c9d8526f383b2dfb40624e0a1ae34717a850462eeb5cdbb6262d71fd",
+      "functions": [
+        {
+          "name": "HeroHeader",
+          "params": [
+            "{\r\n    trip,\r\n    weather,\r\n    readiness,\r\n    countdown,\r\n    themeMode,\r\n    onMissionBrief,\r\n}"
+          ],
+          "exported": true,
+          "lineCount": 100
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Trip",
+            "WeatherCurrent",
+            "ReadinessScore",
+            "CountdownResult",
+            "ThemeMode"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "padTwo"
+          ]
+        },
+        {
+          "source": "@/lib/authContext",
+          "specifiers": [
+            "useAuth"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Activity",
+            "UserIcon",
+            "Star",
+            "Wind",
+            "Sunset",
+            "Radio"
+          ]
+        }
+      ],
+      "exports": [
+        "HeroHeader"
+      ],
+      "totalLines": 118,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/MapRouteCard.tsx": {
+      "filePath": "src/components/cards/MapRouteCard.tsx",
+      "contentHash": "6c094bb0a7d0718f7cc73fba768bb84663f208045e0f34b72acb43cbc07a34fc",
+      "functions": [
+        {
+          "name": "MapRouteCard",
+          "params": [
+            "{ trip }"
+          ],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Trip"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Map"
+          ]
+        }
+      ],
+      "exports": [
+        "MapRouteCard"
+      ],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/MapRouteCardInner.tsx": {
+      "filePath": "src/components/cards/MapRouteCardInner.tsx",
+      "contentHash": "b88d7589fc28b373791a98f11bcd879d5f93b85a121c0c29bd917c30e43daec2",
+      "functions": [
+        {
+          "name": "MapRouteCardInner",
+          "params": [
+            "{ trip }"
+          ],
+          "exported": true,
+          "lineCount": 52
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useRef",
+            "useEffect"
+          ]
+        },
+        {
+          "source": "@maptiler/sdk",
+          "specifiers": [
+            "* as maptilersdk"
+          ]
+        },
+        {
+          "source": "@maptiler/sdk/dist/maptiler-sdk.css",
+          "specifiers": []
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Trip"
+          ]
+        }
+      ],
+      "exports": [
+        "MapRouteCardInner"
+      ],
+      "totalLines": 64,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/MealFormSheet.tsx": {
+      "filePath": "src/components/cards/MealFormSheet.tsx",
+      "contentHash": "28d078abaf129a9ddd2d4bd0e4e9e94ac5bc18fca1f390b7e29e8f4e9cfa637c",
+      "functions": [
+        {
+          "name": "MealFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit, initialMeal, defaultDay = 1, totalDays }"
+          ],
+          "exported": true,
+          "lineCount": 166
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Meal",
+            "MealType",
+            "PrepType"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Leaf",
+            "Flame",
+            "Coffee",
+            "Store"
+          ]
+        }
+      ],
+      "exports": [
+        "MealFormSheet"
+      ],
+      "totalLines": 183,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/MealPlannerCard.tsx": {
+      "filePath": "src/components/cards/MealPlannerCard.tsx",
+      "contentHash": "4aad5865a6a4e994fb38d742e99e9d840744d63edd24711dbb9d74cbdbf09617",
+      "functions": [
+        {
+          "name": "MealPlannerCard",
+          "params": [
+            "{ meals, totalDays, onAdd, onUpdate, onDelete }"
+          ],
+          "exported": true,
+          "lineCount": 143
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "Meal"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "groupBy"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "@/components/cards/MealFormSheet",
+          "specifiers": [
+            "MealFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Utensils",
+            "Plus",
+            "Pencil",
+            "Trash2",
+            "Flame",
+            "Leaf",
+            "Coffee",
+            "Store"
+          ]
+        }
+      ],
+      "exports": [
+        "MealPlannerCard"
+      ],
+      "totalLines": 163,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/OfflineVaultCard.tsx": {
+      "filePath": "src/components/cards/OfflineVaultCard.tsx",
+      "contentHash": "bf7f1e08fd2bd27eb0dda01b34ab9d3dd0c98494e162b806a421b0378b0e2fb9",
+      "functions": [
+        {
+          "name": "OfflineVaultCard",
+          "params": [
+            "{ status, onToggle, onOpenIntel }"
+          ],
+          "exported": true,
+          "lineCount": 64
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "OfflineStatus"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "calculateOfflineReadiness"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "ProgressBar"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ShieldAlert",
+            "Map",
+            "CheckCircle2",
+            "Navigation",
+            "Radio",
+            "AlertTriangle",
+            "Circle",
+            "FolderCode",
+            "Car"
+          ]
+        }
+      ],
+      "exports": [
+        "OfflineVaultCard"
+      ],
+      "totalLines": 88,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/ParkIntelCard.tsx": {
+      "filePath": "src/components/cards/ParkIntelCard.tsx",
+      "contentHash": "adbb63c8efa7e3f2f4844af877d3d8095a390363bd8b2d1f05510c63fe758e65",
+      "functions": [
+        {
+          "name": "ParkIntelCard",
+          "params": [
+            "{ intel, onUpdate }"
+          ],
+          "exported": true,
+          "lineCount": 82
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "ParkIntel"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "ProgressBar"
+          ]
+        },
+        {
+          "source": "./ParkIntelFormSheet",
+          "specifiers": [
+            "ParkIntelFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Info",
+            "Flame",
+            "Trees",
+            "Thermometer",
+            "Droplets",
+            "Radio",
+            "MapPin",
+            "Pencil"
+          ]
+        }
+      ],
+      "exports": [
+        "ParkIntelCard"
+      ],
+      "totalLines": 96,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/ParkIntelFormSheet.tsx": {
+      "filePath": "src/components/cards/ParkIntelFormSheet.tsx",
+      "contentHash": "5d0ae099cf20e70a4825ab5eefca9f69c51ac25da1bba539189f36115cfbfa6d",
+      "functions": [
+        {
+          "name": "ParkIntelFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit, intel }"
+          ],
+          "exported": true,
+          "lineCount": 135
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "ParkIntel"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        }
+      ],
+      "exports": [
+        "ParkIntelFormSheet"
+      ],
+      "totalLines": 149,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/ReadinessScoreCard.tsx": {
+      "filePath": "src/components/cards/ReadinessScoreCard.tsx",
+      "contentHash": "6e25bb6307e68100dd1c4fe1f058192cbf708f48793b5aad3e742fca77c0065c",
+      "functions": [
+        {
+          "name": "scoreColor",
+          "params": [
+            "score"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "strokeColor",
+          "params": [
+            "score"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "textColor",
+          "params": [
+            "score"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "ReadinessScoreCard",
+          "params": [
+            "{ readiness }"
+          ],
+          "exported": true,
+          "lineCount": 72
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useState",
+            "useRef"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "ReadinessScore"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "ProgressBar"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Activity",
+            "Tent",
+            "ShieldAlert",
+            "Utensils",
+            "CloudRain",
+            "Clock"
+          ]
+        }
+      ],
+      "exports": [
+        "ReadinessScoreCard"
+      ],
+      "totalLines": 110,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/TimelineCard.tsx": {
+      "filePath": "src/components/cards/TimelineCard.tsx",
+      "contentHash": "0d2b7e0f30c74e63eb3d85873b936d2385197c4687ab9693f4bc5704bea8b8a6",
+      "functions": [
+        {
+          "name": "TimelineCard",
+          "params": [
+            "{ events, tripDays, onAdd, onUpdate, onDelete }"
+          ],
+          "exported": true,
+          "lineCount": 151
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "TimelineEvent"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "groupBy"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card",
+            "Badge"
+          ]
+        },
+        {
+          "source": "@/components/cards/TimelineFormSheet",
+          "specifiers": [
+            "TimelineFormSheet"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Clock",
+            "Plus",
+            "Pencil",
+            "Trash2"
+          ]
+        }
+      ],
+      "exports": [
+        "TimelineCard"
+      ],
+      "totalLines": 176,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/TimelineFormSheet.tsx": {
+      "filePath": "src/components/cards/TimelineFormSheet.tsx",
+      "contentHash": "bc56a94d3eea5c1557f72efdced918cb07aa98656c8bc449149bd864fe436914",
+      "functions": [
+        {
+          "name": "TimelineFormSheet",
+          "params": [
+            "{ isOpen, onClose, onSubmit, initialEvent, defaultDay = 1, tripDays, nextSortOrder = 100 }"
+          ],
+          "exported": true,
+          "lineCount": 140
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "TimelineEvent"
+          ]
+        },
+        {
+          "source": "@/components/ui/CrudSheet",
+          "specifiers": [
+            "CrudSheet"
+          ]
+        }
+      ],
+      "exports": [
+        "TimelineFormSheet"
+      ],
+      "totalLines": 157,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/cards/WeatherCard.tsx": {
+      "filePath": "src/components/cards/WeatherCard.tsx",
+      "contentHash": "40c3f181573ffe303a8596e7f91c8e7c3825d781f1ac51372db862c225538fab",
+      "functions": [
+        {
+          "name": "WeatherCard",
+          "params": [
+            "{ weather, astro }"
+          ],
+          "exported": true,
+          "lineCount": 120
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useState",
+            "useEffect"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "WeatherCurrent",
+            "AstroData"
+          ]
+        },
+        {
+          "source": "@/lib/helpers",
+          "specifiers": [
+            "getSkyQuality"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CloudRain",
+            "Star",
+            "Wind",
+            "Droplets",
+            "Sunrise",
+            "Sunset",
+            "Eye",
+            "AlertCircle"
+          ]
+        }
+      ],
+      "exports": [
+        "WeatherCard"
+      ],
+      "totalLines": 136,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/ChecklistItem.tsx": {
+      "filePath": "src/components/ui/ChecklistItem.tsx",
+      "contentHash": "e788e69221b54541892d9e3529c51c449818eb8c3c95372f5a02a48a1ea13906",
+      "functions": [
+        {
+          "name": "ChecklistItem",
+          "params": [
+            "{ item, onToggle, onEdit, onDelete }"
+          ],
+          "exported": true,
+          "lineCount": 65
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "GearItem"
+          ]
+        },
+        {
+          "source": "@/components/ui/Primitives",
+          "specifiers": [
+            "Badge"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "CheckCircle2",
+            "Circle",
+            "Pencil",
+            "Trash2"
+          ]
+        }
+      ],
+      "exports": [
+        "ChecklistItem"
+      ],
+      "totalLines": 80,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/CrudSheet.tsx": {
+      "filePath": "src/components/ui/CrudSheet.tsx",
+      "contentHash": "57f1a3a22631dc9eb5a36d7f8f50fbbca883a25e6b62c9404f9d6bb29a6429d6",
+      "functions": [
+        {
+          "name": "CrudSheet",
+          "params": [
+            "{ isOpen, onClose, title, children }"
+          ],
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useRef"
+          ]
+        },
+        {
+          "source": "react-dom",
+          "specifiers": [
+            "createPortal"
+          ]
+        }
+      ],
+      "exports": [
+        "CrudSheet"
+      ],
+      "totalLines": 81,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/GlassCard.tsx": {
+      "filePath": "src/components/ui/GlassCard.tsx",
+      "contentHash": "f2f447d6a685b40608ec65580c6a01d604c6274d6c257bec6fa3badd8928fc92",
+      "functions": [
+        {
+          "name": "GlassCard",
+          "params": [
+            "{ children, className = '', onClick, role, 'aria-label': ariaLabel }"
+          ],
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "GlassCard"
+      ],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/IconLabel.tsx": {
+      "filePath": "src/components/ui/IconLabel.tsx",
+      "contentHash": "d34136ad832a3e330a6a2f644b74ebaa2bacc1d2094fc8f7c41bdd152abbfd86",
+      "functions": [
+        {
+          "name": "IconLabel",
+          "params": [
+            "{ icon, label, sublabel, className = '' }"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "IconLabel"
+      ],
+      "totalLines": 23,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/MetricRow.tsx": {
+      "filePath": "src/components/ui/MetricRow.tsx",
+      "contentHash": "c8f3479ca09e908968604573f10fc4f7b4eb29f6ecdf2f307f4b3865d5441477",
+      "functions": [
+        {
+          "name": "MetricRow",
+          "params": [
+            "{ label, value, unit, icon, highlight = false }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "MetricRow"
+      ],
+      "totalLines": 27,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/MiniForecastDay.tsx": {
+      "filePath": "src/components/ui/MiniForecastDay.tsx",
+      "contentHash": "7f8cab5f31654698763e21be083005a238bbe02c245df6ee598c416d9160f755",
+      "functions": [
+        {
+          "name": "getShortDay",
+          "params": [
+            "dateStr"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "MiniForecastDay",
+          "params": [
+            "{ forecast }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "WeatherForecast"
+          ]
+        }
+      ],
+      "exports": [
+        "MiniForecastDay"
+      ],
+      "totalLines": 29,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/MissionBriefModal.tsx": {
+      "filePath": "src/components/ui/MissionBriefModal.tsx",
+      "contentHash": "fcd614e347df2beeec816abafa50d61b54dfb389f8cc02bb09bd94fcefd00a5f",
+      "functions": [
+        {
+          "name": "MissionBriefModal",
+          "params": [
+            "{ isOpen, onClose }"
+          ],
+          "exported": true,
+          "lineCount": 233
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useRef"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "X",
+            "Radio"
+          ]
+        }
+      ],
+      "exports": [
+        "MissionBriefModal"
+      ],
+      "totalLines": 247,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/Primitives.tsx": {
+      "filePath": "src/components/ui/Primitives.tsx",
+      "contentHash": "b518a454e112d2de02683c1412b0633f57382709fe4bc97a414e22a261827347",
+      "functions": [
+        {
+          "name": "Card",
+          "params": [
+            "{ children, className = '', title, icon: Icon, action }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "ProgressBar",
+          "params": [
+            "{ value, colorClass = 'bg-accent-yellow', bgClass = 'bg-border-subtle', height = 'h-1.5', className = '' }"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "Badge",
+          "params": [
+            "{ children, variant = 'default' }"
+          ],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "Card",
+        "ProgressBar",
+        "Badge"
+      ],
+      "totalLines": 38,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/ProgressBar.tsx": {
+      "filePath": "src/components/ui/ProgressBar.tsx",
+      "contentHash": "7b4643308e1c5715db083c256f3a5624a43afb4699104e35942caa59f93d4903",
+      "functions": [
+        {
+          "name": "ProgressBar",
+          "params": [
+            "{\r\n    value,\r\n    label,\r\n    showPercent = true,\r\n    variant = 'default',\r\n    size = 'md',\r\n    animated = true,\r\n}"
+          ],
+          "exported": true,
+          "lineCount": 31
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressBar"
+      ],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/ProjectIntelModal.tsx": {
+      "filePath": "src/components/ui/ProjectIntelModal.tsx",
+      "contentHash": "6ee46beaa0c4a19419a3b7c6a44d7d2dbe7653436b3bb3e6a631002cf82c5725",
+      "functions": [
+        {
+          "name": "ProjectIntelModal",
+          "params": [
+            "{ isOpen, onClose }"
+          ],
+          "exported": true,
+          "lineCount": 217
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "useEffect",
+            "useRef"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "X",
+            "FileText"
+          ]
+        }
+      ],
+      "exports": [
+        "ProjectIntelModal"
+      ],
+      "totalLines": 344,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/SectionHeader.tsx": {
+      "filePath": "src/components/ui/SectionHeader.tsx",
+      "contentHash": "df8eaee2ef1bf6b18859bfab8174f2ad5aa29ac1864d4f5e77f72023d408a7bc",
+      "functions": [
+        {
+          "name": "SectionHeader",
+          "params": [
+            "{ title, icon, subtitle, className = '', onAdd, addLabel = 'Add item' }"
+          ],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "SectionHeader"
+      ],
+      "totalLines": 36,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/StatusPill.tsx": {
+      "filePath": "src/components/ui/StatusPill.tsx",
+      "contentHash": "19af9f4b04b352af09bbea3d16026be54cacf1d8fcca4debf67e033be698d615",
+      "functions": [
+        {
+          "name": "StatusPill",
+          "params": [
+            "{ label, variant = 'ok', size = 'md' }"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "AlertSeverity"
+          ]
+        }
+      ],
+      "exports": [
+        "StatusPill"
+      ],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/TopoBackground.tsx": {
+      "filePath": "src/components/ui/TopoBackground.tsx",
+      "contentHash": "f9a30c77b2a665740c86fb3023a2cb4453851f0553b7c5a87016c6cce1a1e16c",
+      "functions": [
+        {
+          "name": "TopoBackground",
+          "params": [],
+          "exported": true,
+          "lineCount": 88
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        }
+      ],
+      "exports": [
+        "TopoBackground"
+      ],
+      "totalLines": 91,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/authContext.tsx": {
+      "filePath": "src/lib/authContext.tsx",
+      "contentHash": "7c536b4eddf4170564370b0b4b1791a55eb4ce2be563693b3b1fab231b93fff0",
+      "functions": [
+        {
+          "name": "AuthProvider",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "useAuth",
+          "params": [],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React",
+            "createContext",
+            "useContext",
+            "useState",
+            "useEffect",
+            "useCallback"
+          ]
+        },
+        {
+          "source": "@supabase/supabase-js",
+          "specifiers": [
+            "User"
+          ]
+        },
+        {
+          "source": "@/lib/supabase",
+          "specifiers": [
+            "supabase"
+          ]
+        }
+      ],
+      "exports": [
+        "AuthProvider",
+        "useAuth"
+      ],
+      "totalLines": 85,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/fetchDashboard.ts": {
+      "filePath": "src/lib/fetchDashboard.ts",
+      "contentHash": "2846886a7c49ec3037e754e70e89f56b72a08bc117dbf50cb4471b5a3924eebe",
+      "functions": [
+        {
+          "name": "fetchDashboardData",
+          "params": [],
+          "returnType": "Promise<DashboardData>",
+          "exported": true,
+          "lineCount": 48
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./supabase",
+          "specifiers": [
+            "supabase"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "DashboardData",
+            "Trip",
+            "WeatherCurrent",
+            "WeatherForecast",
+            "GearItem",
+            "TimelineEvent",
+            "Meal",
+            "CrewMember",
+            "ParkIntel",
+            "OfflineStatus",
+            "AstroData",
+            "Alert",
+            "Settings"
+          ]
+        }
+      ],
+      "exports": [
+        "fetchDashboardData"
+      ],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/helpers.ts": {
+      "filePath": "src/lib/helpers.ts",
+      "contentHash": "33e304da1770dc4f9f992c69b080f7d9887fcd4d3efdb0adf19c68d0277f34a6",
+      "functions": [
+        {
+          "name": "getTripCountdown",
+          "params": [
+            "startDate"
+          ],
+          "returnType": "CountdownResult",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "getThemeModeFromTime",
+          "params": [
+            "currentHour",
+            "sunriseHour",
+            "sunsetHour",
+            "override"
+          ],
+          "returnType": "ThemeMode",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "calculateGearReadiness",
+          "params": [
+            "gear"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "calculateMealCompleteness",
+          "params": [
+            "meals",
+            "totalDays"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "calculateOfflineReadiness",
+          "params": [
+            "status"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "calculateTimelineCompleteness",
+          "params": [
+            "events",
+            "totalDays"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "calculateWeatherPreparedness",
+          "params": [
+            "weather",
+            "forecast"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "getReadinessLabel",
+          "params": [
+            "score"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "calculateOverallReadiness",
+          "params": [
+            "scores"
+          ],
+          "returnType": "ReadinessScore",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "getSkyQuality",
+          "params": [
+            "weather",
+            "astro"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "getHeadlampTime",
+          "params": [
+            "astro"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "getGoldenHourLabel",
+          "params": [
+            "astro"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "formatTripDates",
+          "params": [
+            "startDate",
+            "endDate"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "getTripDays",
+          "params": [
+            "startDate",
+            "endDate"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "groupBy",
+          "params": [
+            "items",
+            "keyFn"
+          ],
+          "returnType": "Record<string, T[]>",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "padTwo",
+          "params": [
+            "n"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/types",
+          "specifiers": [
+            "CountdownResult",
+            "GearItem",
+            "Meal",
+            "OfflineStatus",
+            "TimelineEvent",
+            "WeatherCurrent",
+            "WeatherForecast",
+            "AstroData",
+            "ReadinessScore",
+            "ThemeMode",
+            "ThemeOverride"
+          ]
+        }
+      ],
+      "exports": [
+        "getTripCountdown",
+        "getThemeModeFromTime",
+        "calculateGearReadiness",
+        "calculateMealCompleteness",
+        "calculateOfflineReadiness",
+        "calculateTimelineCompleteness",
+        "calculateWeatherPreparedness",
+        "getReadinessLabel",
+        "calculateOverallReadiness",
+        "getSkyQuality",
+        "getHeadlampTime",
+        "getGoldenHourLabel",
+        "formatTripDates",
+        "getTripDays",
+        "groupBy",
+        "padTwo"
+      ],
+      "totalLines": 199,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/mutations.ts": {
+      "filePath": "src/lib/mutations.ts",
+      "contentHash": "8b3596a5275f3c735bb605302f974957695578bc4f4d6c47a0cd960d5bf9603e",
+      "functions": [
+        {
+          "name": "generateId",
+          "params": [],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "createGearItem",
+          "params": [
+            "item"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "updateGearItem",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "deleteGearItem",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "toggleGearPacked",
+          "params": [
+            "id",
+            "packed"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "createMeal",
+          "params": [
+            "meal"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "updateMeal",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "deleteMeal",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "createTimelineEvent",
+          "params": [
+            "event"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "updateTimelineEvent",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "deleteTimelineEvent",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "createCrewMember",
+          "params": [
+            "member"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "updateCrewMember",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "deleteCrewMember",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "createAlert",
+          "params": [
+            "alert"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "deactivateAlert",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "deleteAlert",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "updateParkIntel",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "updateOfflineStatus",
+          "params": [
+            "id",
+            "patch"
+          ],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./supabase",
+          "specifiers": [
+            "supabase"
+          ]
+        },
+        {
+          "source": "@/types",
+          "specifiers": [
+            "GearItem",
+            "Meal",
+            "TimelineEvent",
+            "CrewMember",
+            "Alert",
+            "OfflineStatus"
+          ]
+        }
+      ],
+      "exports": [
+        "createGearItem",
+        "updateGearItem",
+        "deleteGearItem",
+        "toggleGearPacked",
+        "createMeal",
+        "updateMeal",
+        "deleteMeal",
+        "createTimelineEvent",
+        "updateTimelineEvent",
+        "deleteTimelineEvent",
+        "createCrewMember",
+        "updateCrewMember",
+        "deleteCrewMember",
+        "createAlert",
+        "deactivateAlert",
+        "deleteAlert",
+        "updateParkIntel",
+        "updateOfflineStatus"
+      ],
+      "totalLines": 193,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/supabase.ts": {
+      "filePath": "src/lib/supabase.ts",
+      "contentHash": "2c17812671e656133b4aca9dcea042651704443d855b0d07240b48ae0bd17d01",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@supabase/ssr",
+          "specifiers": [
+            "createBrowserClient"
+          ]
+        }
+      ],
+      "exports": [
+        "supabase"
+      ],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/supabaseAdmin.ts": {
+      "filePath": "src/lib/supabaseAdmin.ts",
+      "contentHash": "e34af6af7b26b43a6e8f7386ebb668afd0cab8a04639c36c0fa18a3642779641",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@supabase/supabase-js",
+          "specifiers": [
+            "createClient"
+          ]
+        }
+      ],
+      "exports": [
+        "supabaseAdmin"
+      ],
+      "totalLines": 18,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/weatherMapper.ts": {
+      "filePath": "src/lib/weatherMapper.ts",
+      "contentHash": "192b195ad22898eacb63332c28951d603aec78edf5b56d70bd231ca2ef0b6ed7",
+      "functions": [
+        {
+          "name": "wmoLabel",
+          "params": [
+            "code"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "wmoIcon",
+          "params": [
+            "code"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "toHHMM",
+          "params": [
+            "isoString"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "mapOpenMeteoToSupabase",
+          "params": [
+            "raw",
+            "tripId",
+            "days"
+          ],
+          "returnType": "{\n    current: MappedWeatherCurrent;\n    forecasts: MappedWeatherForecast[];\n}",
+          "exported": true,
+          "lineCount": 46
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "mapOpenMeteoToSupabase"
+      ],
+      "totalLines": 182,
+      "hasStructuralAnalysis": true
+    },
+    "src/types/index.ts": {
+      "filePath": "src/types/index.ts",
+      "contentHash": "9a812df334c9e9a11b30df091ca0d5f42d9280dd1329e73ecc353e2a25875c38",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 208,
+      "hasStructuralAnalysis": true
+    },
+    "tsconfig.json": {
+      "filePath": "tsconfig.json",
+      "contentHash": "5c51df4c59f4510d8c7dadf07a5c32132228826a3b331da5e286207b4df7ef9c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "vercel.json": {
+      "filePath": "vercel.json",
+      "contentHash": "d48c80a70ffc1a5447886cd158071019e5101b618d67c20d569dbddb0bec9dfe",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

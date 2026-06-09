@@ -8,11 +8,12 @@ import { CheckCircle2, Circle, Pencil, Trash2 } from 'lucide-react';
 interface ChecklistItemProps {
     item: GearItem;
     onToggle?: (id: string) => void;
+    onTogglePacked?: (id: string) => void;
     onEdit?: (item: GearItem) => void;
     onDelete?: (id: string) => void;
 }
 
-export default function ChecklistItem({ item, onToggle, onEdit, onDelete }: ChecklistItemProps) {
+export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, onDelete }: ChecklistItemProps) {
     return (
         <div className="flex items-center justify-between p-2 hover:bg-card-hover rounded-lg group transition-colors">
             <div 
@@ -48,6 +49,22 @@ export default function ChecklistItem({ item, onToggle, onEdit, onDelete }: Chec
                     )}
                 </div>
             </div>
+
+            {/* Packed indicator — independent from left readiness circle */}
+            <button
+                className={`shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-sm transition-all ${
+                    item.packed
+                        ? 'opacity-90 hover:opacity-100'
+                        : 'opacity-30 hover:opacity-60'
+                } ${onTogglePacked ? 'cursor-pointer hover:bg-card-hover' : 'cursor-default'}`}
+                onClick={(e) => { e.stopPropagation(); onTogglePacked?.(item.id); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onTogglePacked?.(item.id); } }}
+                disabled={!onTogglePacked}
+                aria-label={item.packed ? 'Packed' : 'Mark as packed'}
+                title={item.packed ? 'Packed' : 'Mark as packed'}
+            >
+                {item.packed ? '🎒' : '—'}
+            </button>
 
             {/* Action zone — edit / delete */}
             {(onEdit || onDelete) && (

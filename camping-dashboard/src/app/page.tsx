@@ -437,6 +437,7 @@ function DashboardContent({ data }: { data: DashboardData }) {
             <GearChecklistCard
               gear={gear}
               onToggle={isAuthorized ? handleGearToggle : undefined}
+              onTogglePacked={isAuthorized ? handleGearToggle : undefined}
               onAdd={isAuthorized ? handleGearAdd : undefined}
               onUpdate={isAuthorized ? handleGearUpdate : undefined}
               onDelete={isAuthorized ? handleGearDelete : undefined}

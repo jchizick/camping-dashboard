@@ -11,6 +11,7 @@ import { Tent, Plus, ChevronDown } from 'lucide-react';
 interface GearChecklistCardProps {
     gear: GearItem[];
     onToggle?: (id: string) => void;
+    onTogglePacked?: (id: string) => void;
     onAdd?: (item: Omit<GearItem, 'id' | 'trip_id'>) => Promise<void>;
     onUpdate?: (id: string, patch: Partial<Omit<GearItem, 'id' | 'trip_id'>>) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
@@ -30,7 +31,7 @@ const CATEGORY_ORDER = [
     'Extras',
 ];
 
-export default function GearChecklistCard({ gear, onToggle, onAdd, onUpdate, onDelete }: GearChecklistCardProps) {
+export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAdd, onUpdate, onDelete }: GearChecklistCardProps) {
     const [filter, setFilter] = useState<FilterMode>('all');
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
@@ -176,6 +177,7 @@ export default function GearChecklistCard({ gear, onToggle, onAdd, onUpdate, onD
                                         key={item.id}
                                         item={item}
                                         onToggle={onToggle}
+                                        onTogglePacked={onTogglePacked}
                                         onEdit={onUpdate ? () => openEdit(item) : undefined}
                                         onDelete={onDelete ? () => setPendingDeleteId(item.id) : undefined}
                                     />

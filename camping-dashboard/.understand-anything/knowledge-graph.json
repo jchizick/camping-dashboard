@@ -1,0 +1,1606 @@
+{
+    "layers":  [
+                   {
+                       "nodeIds":  [
+                                       "file:src/lib/supabase.ts",
+                                       "file:src/lib/supabaseAdmin.ts",
+                                       "file:src/lib/fetchDashboard.ts",
+                                       "file:src/lib/mutations.ts",
+                                       "file:src/lib/authContext.tsx",
+                                       "file:src/types/index.ts"
+                                   ],
+                       "description":  "Supabase clients, data fetching, CRUD mutations, and type definitions",
+                       "name":  "Data Access",
+                       "id":  "layer:data-access"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "file:src/lib/helpers.ts",
+                                       "file:src/lib/weatherMapper.ts"
+                                   ],
+                       "description":  "Pure calculation helpers, readiness engine, weather mapping, and derived state",
+                       "name":  "Business Logic",
+                       "id":  "layer:business-logic"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "file:src/app/api/refresh-weather/route.ts",
+                                       "file:src/app/api/refresh-alerts/route.ts",
+                                       "file:src/app/auth/callback/route.ts"
+                                   ],
+                       "description":  "Next.js server-side route handlers for weather refresh, alert sync, and auth callback",
+                       "name":  "API Routes",
+                       "id":  "layer:api-routes"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "file:src/components/ui/ChecklistItem.tsx",
+                                       "file:src/components/ui/CrudSheet.tsx",
+                                       "file:src/components/ui/GlassCard.tsx",
+                                       "file:src/components/ui/IconLabel.tsx",
+                                       "file:src/components/ui/MetricRow.tsx",
+                                       "file:src/components/ui/MiniForecastDay.tsx",
+                                       "file:src/components/ui/MissionBriefModal.tsx",
+                                       "file:src/components/ui/Primitives.tsx",
+                                       "file:src/components/ui/ProgressBar.tsx",
+                                       "file:src/components/ui/ProjectIntelModal.tsx",
+                                       "file:src/components/ui/SectionHeader.tsx",
+                                       "file:src/components/ui/StatusPill.tsx",
+                                       "file:src/components/ui/TopoBackground.tsx"
+                                   ],
+                       "description":  "Reusable base components: glass cards, progress bars, badges, modals, CRUD sheets, and layout helpers",
+                       "name":  "UI Primitives",
+                       "id":  "layer:ui-primitives"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "file:src/components/cards/AlertFormSheet.tsx",
+                                       "file:src/components/cards/AlertsCard.tsx",
+                                       "file:src/components/cards/AstroCard.tsx",
+                                       "file:src/components/cards/CountdownCard.tsx",
+                                       "file:src/components/cards/CrewFormSheet.tsx",
+                                       "file:src/components/cards/CrewRosterCard.tsx",
+                                       "file:src/components/cards/ForecastCard.tsx",
+                                       "file:src/components/cards/GearChecklistCard.tsx",
+                                       "file:src/components/cards/GearFormSheet.tsx",
+                                       "file:src/components/cards/HeroHeader.tsx",
+                                       "file:src/components/cards/MapRouteCard.tsx",
+                                       "file:src/components/cards/MapRouteCardInner.tsx",
+                                       "file:src/components/cards/MealFormSheet.tsx",
+                                       "file:src/components/cards/MealPlannerCard.tsx",
+                                       "file:src/components/cards/OfflineVaultCard.tsx",
+                                       "file:src/components/cards/ParkIntelCard.tsx",
+                                       "file:src/components/cards/ParkIntelFormSheet.tsx",
+                                       "file:src/components/cards/ReadinessScoreCard.tsx",
+                                       "file:src/components/cards/TimelineCard.tsx",
+                                       "file:src/components/cards/TimelineFormSheet.tsx",
+                                       "file:src/components/cards/WeatherCard.tsx"
+                                   ],
+                       "description":  "Domain-specific dashboard cards and their CRUD form sheets for each data entity",
+                       "name":  "Feature Cards",
+                       "id":  "layer:feature-cards"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "file:src/app/page.tsx",
+                                       "file:src/app/layout.tsx",
+                                       "file:src/app/globals.css",
+                                       "file:src/app/page.module.css"
+                                   ],
+                       "description":  "Next.js app router entry points: root layout, main dashboard page, and global styles",
+                       "name":  "App Shell",
+                       "id":  "layer:app-shell"
+                   },
+                   {
+                       "nodeIds":  [
+                                       "config:package.json",
+                                       "config:tsconfig.json",
+                                       "config:vercel.json",
+                                       "config:next.config.ts",
+                                       "config:eslint.config.mjs",
+                                       "config:postcss.config.mjs",
+                                       "document:README.md"
+                                   ],
+                       "description":  "Build, deployment, TypeScript, and tooling configuration files",
+                       "name":  "Configuration",
+                       "id":  "layer:configuration"
+                   }
+               ],
+    "version":  "1.0.0",
+    "edges":  [
+                  {
+                      "source":  "document:README.md",
+                      "target":  "config:package.json",
+                      "type":  "documents",
+                      "direction":  "forward",
+                      "weight":  0.5
+                  },
+                  {
+                      "source":  "config:tsconfig.json",
+                      "target":  "file:src/app/page.tsx",
+                      "type":  "configures",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  },
+                  {
+                      "source":  "config:vercel.json",
+                      "target":  "file:src/app/api/refresh-weather/route.ts",
+                      "type":  "configures",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  },
+                  {
+                      "source":  "config:vercel.json",
+                      "target":  "file:src/app/api/refresh-alerts/route.ts",
+                      "type":  "configures",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  },
+                  {
+                      "source":  "config:next.config.ts",
+                      "target":  "file:src/app/page.tsx",
+                      "type":  "configures",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  },
+                  {
+                      "source":  "config:postcss.config.mjs",
+                      "target":  "file:src/app/globals.css",
+                      "type":  "configures",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/lib/fetchDashboard.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/lib/authContext.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/lib/mutations.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/lib/helpers.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/HeroHeader.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/CountdownCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/WeatherCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/ForecastCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/MapRouteCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/GearChecklistCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/TimelineCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/ParkIntelCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/ReadinessScoreCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/MealPlannerCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/CrewRosterCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/OfflineVaultCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/AstroCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/cards/AlertsCard.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/ui/MissionBriefModal.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/components/ui/ProjectIntelModal.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "function:src/app/page.tsx:DashboardLoader",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "function:src/app/page.tsx:DashboardContent",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/components/cards/AlertsCard.tsx",
+                      "target":  "file:src/components/cards/AlertFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/GearChecklistCard.tsx",
+                      "target":  "file:src/components/cards/GearFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/CrewRosterCard.tsx",
+                      "target":  "file:src/components/cards/CrewFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/MealPlannerCard.tsx",
+                      "target":  "file:src/components/cards/MealFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/MapRouteCard.tsx",
+                      "target":  "file:src/components/cards/MapRouteCardInner.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/api/refresh-weather/route.ts",
+                      "target":  "file:src/lib/supabaseAdmin.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/api/refresh-alerts/route.ts",
+                      "target":  "file:src/lib/supabaseAdmin.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/api/refresh-weather/route.ts",
+                      "target":  "file:src/lib/weatherMapper.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/auth/callback/route.ts",
+                      "target":  "file:src/lib/supabase.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/layout.tsx",
+                      "target":  "file:src/app/globals.css",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/TimelineCard.tsx",
+                      "target":  "file:src/components/cards/TimelineFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/ParkIntelCard.tsx",
+                      "target":  "file:src/components/cards/ParkIntelFormSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/WeatherCard.tsx",
+                      "target":  "file:src/components/ui/MiniForecastDay.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/ForecastCard.tsx",
+                      "target":  "file:src/components/ui/MiniForecastDay.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/GearChecklistCard.tsx",
+                      "target":  "file:src/components/ui/ChecklistItem.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/AlertFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/GearFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/MealFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/TimelineFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/CrewFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/ParkIntelFormSheet.tsx",
+                      "target":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/ReadinessScoreCard.tsx",
+                      "target":  "file:src/components/ui/ProgressBar.tsx",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/components/cards/ReadinessScoreCard.tsx",
+                      "target":  "function:src/components/cards/ReadinessScoreCard.tsx:ScoreBar",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/authContext.tsx",
+                      "target":  "file:src/lib/supabase.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/lib/authContext.tsx",
+                      "target":  "function:src/lib/authContext.tsx:AuthProvider",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/fetchDashboard.ts",
+                      "target":  "file:src/lib/supabase.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/lib/fetchDashboard.ts",
+                      "target":  "function:src/lib/fetchDashboard.ts:fetchDashboardData",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/mutations.ts",
+                      "target":  "file:src/lib/supabase.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/lib/helpers.ts",
+                      "target":  "function:src/lib/helpers.ts:calculateOverallReadiness",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/helpers.ts",
+                      "target":  "function:src/lib/helpers.ts:getTripCountdown",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/weatherMapper.ts",
+                      "target":  "function:src/lib/weatherMapper.ts:mapCurrentWeather",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/weatherMapper.ts",
+                      "target":  "function:src/lib/weatherMapper.ts:mapForecast",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1.0
+                  },
+                  {
+                      "source":  "file:src/lib/helpers.ts",
+                      "target":  "file:src/types/index.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/lib/mutations.ts",
+                      "target":  "file:src/types/index.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/lib/fetchDashboard.ts",
+                      "target":  "file:src/types/index.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/page.tsx",
+                      "target":  "file:src/types/index.ts",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:src/app/api/refresh-weather/route.ts",
+                      "target":  "file:src/lib/weatherMapper.ts",
+                      "type":  "depends_on",
+                      "direction":  "forward",
+                      "weight":  0.6
+                  }
+              ],
+    "nodes":  [
+                  {
+                      "id":  "document:README.md",
+                      "type":  "document",
+                      "name":  "README.md",
+                      "filePath":  "README.md",
+                      "summary":  "Project overview for the Camping Dashboard Next.js application, describing setup instructions and the tech stack used.",
+                      "tags":  [
+                                   "documentation",
+                                   "entry-point",
+                                   "overview"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:package.json",
+                      "type":  "config",
+                      "name":  "package.json",
+                      "filePath":  "package.json",
+                      "summary":  "NPM package manifest defining dependencies (Next.js 16, React 19, Supabase, Leaflet, MapTiler, TailwindCSS v4) and build scripts for the camping dashboard application.",
+                      "tags":  [
+                                   "configuration",
+                                   "build-system",
+                                   "dependencies"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:tsconfig.json",
+                      "type":  "config",
+                      "name":  "tsconfig.json",
+                      "filePath":  "tsconfig.json",
+                      "summary":  "TypeScript compiler configuration enabling strict mode with the @/ path alias mapping to ./src for clean imports throughout the project.",
+                      "tags":  [
+                                   "configuration",
+                                   "typescript",
+                                   "build-system"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:vercel.json",
+                      "type":  "config",
+                      "name":  "vercel.json",
+                      "filePath":  "vercel.json",
+                      "summary":  "Vercel deployment configuration defining cron job schedules for automated weather and alert data refresh endpoints.",
+                      "tags":  [
+                                   "configuration",
+                                   "deployment",
+                                   "ci-cd"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:eslint.config.mjs",
+                      "type":  "config",
+                      "name":  "eslint.config.mjs",
+                      "filePath":  "eslint.config.mjs",
+                      "summary":  "ESLint flat configuration extending Next.js core web vitals and TypeScript rules for code quality enforcement.",
+                      "tags":  [
+                                   "configuration",
+                                   "build-system",
+                                   "linting"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:next.config.ts",
+                      "type":  "config",
+                      "name":  "next.config.ts",
+                      "filePath":  "next.config.ts",
+                      "summary":  "Next.js configuration file enabling TypeScript-based config with minimal overrides for the App Router setup.",
+                      "tags":  [
+                                   "configuration",
+                                   "build-system",
+                                   "next-js"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "config:postcss.config.mjs",
+                      "type":  "config",
+                      "name":  "postcss.config.mjs",
+                      "filePath":  "postcss.config.mjs",
+                      "summary":  "PostCSS configuration enabling the TailwindCSS v4 PostCSS plugin for CSS processing.",
+                      "tags":  [
+                                   "configuration",
+                                   "build-system",
+                                   "css"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/app/api/refresh-alerts/route.ts",
+                      "type":  "file",
+                      "name":  "route.ts",
+                      "filePath":  "src/app/api/refresh-alerts/route.ts",
+                      "summary":  "Next.js API route handler that scrapes Algonquin Park alerts from the provincial parks website and syncs them to the Supabase alerts table, deactivating stale entries.",
+                      "tags":  [
+                                   "api-handler",
+                                   "data-pipeline",
+                                   "supabase",
+                                   "alerts"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/app/api/refresh-weather/route.ts",
+                      "type":  "file",
+                      "name":  "route.ts",
+                      "filePath":  "src/app/api/refresh-weather/route.ts",
+                      "summary":  "Next.js API route that fetches current weather and 5-day forecast data from Open-Meteo API for the Maple Lake coordinates, then upserts records into Supabase weather tables.",
+                      "tags":  [
+                                   "api-handler",
+                                   "weather",
+                                   "supabase",
+                                   "data-pipeline"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/app/auth/callback/route.ts",
+                      "type":  "file",
+                      "name":  "route.ts",
+                      "filePath":  "src/app/auth/callback/route.ts",
+                      "summary":  "Supabase OAuth callback handler that exchanges the auth code for a session and redirects the user to the dashboard.",
+                      "tags":  [
+                                   "api-handler",
+                                   "authentication",
+                                   "supabase"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/app/globals.css",
+                      "type":  "file",
+                      "name":  "globals.css",
+                      "filePath":  "src/app/globals.css",
+                      "summary":  "Global CSS design system defining the Day/Night theme token variables (colors, fonts), topographic background layers, custom scrollbar styles, and the CRUD slide-out sheet form component styles.",
+                      "tags":  [
+                                   "css",
+                                   "design-system",
+                                   "theming",
+                                   "component"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Uses CSS custom properties (variables) for dual-theme switching and TailwindCSS v4 @theme blocks for token registration."
+                  },
+                  {
+                      "id":  "file:src/app/layout.tsx",
+                      "type":  "file",
+                      "name":  "layout.tsx",
+                      "filePath":  "src/app/layout.tsx",
+                      "summary":  "Root Next.js App Router layout that imports Google Fonts (Inter and JetBrains Mono), sets HTML metadata, and wraps the application in the global CSS context.",
+                      "tags":  [
+                                   "entry-point",
+                                   "layout",
+                                   "next-js",
+                                   "typography"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/app/page.module.css",
+                      "type":  "file",
+                      "name":  "page.module.css",
+                      "filePath":  "src/app/page.module.css",
+                      "summary":  "CSS module providing dashboard grid layout styles, background topography overlay, and card positioning utilities for the main page.",
+                      "tags":  [
+                                   "css",
+                                   "layout",
+                                   "component"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/app/page.tsx",
+                      "type":  "file",
+                      "name":  "page.tsx",
+                      "filePath":  "src/app/page.tsx",
+                      "summary":  "Main dashboard page orchestrating all 13 card components. Manages Supabase data fetching, optimistic state for all user-authored entities (gear, meals, timeline, crew, alerts, offline status, park intel), auth-gated CRUD mutations, and the live countdown timer.",
+                      "tags":  [
+                                   "entry-point",
+                                   "component",
+                                   "state-management",
+                                   "data-model"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Uses a DashboardLoader/DashboardContent split to handle async Supabase data loading with a cinematic spinner before hydration."
+                  },
+                  {
+                      "id":  "function:src/app/page.tsx:DashboardLoader",
+                      "type":  "function",
+                      "name":  "DashboardLoader",
+                      "filePath":  "src/app/page.tsx",
+                      "lineRange":  [
+                                        59,
+                                        187
+                                    ],
+                      "summary":  "React component that fetches all dashboard data from Supabase on mount, shows a compass-themed loading animation, and renders DashboardContent once data is ready.",
+                      "tags":  [
+                                   "component",
+                                   "data-fetching",
+                                   "loading-state"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:src/app/page.tsx:DashboardContent",
+                      "type":  "function",
+                      "name":  "DashboardContent",
+                      "filePath":  "src/app/page.tsx",
+                      "lineRange":  [
+                                        189,
+                                        485
+                                    ],
+                      "summary":  "Core dashboard component holding all state slices and CRUD mutation handlers. Composes the full 12-column grid layout of all feature cards, with auth-gated edit controls and the readiness score engine.",
+                      "tags":  [
+                                   "component",
+                                   "state-management",
+                                   "event-handler",
+                                   "dashboard"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/AlertFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "AlertFormSheet.tsx",
+                      "filePath":  "src/components/cards/AlertFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for creating manual alerts with title, body, severity level, and source fields.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "alerts"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/AlertsCard.tsx",
+                      "type":  "file",
+                      "name":  "AlertsCard.tsx",
+                      "filePath":  "src/components/cards/AlertsCard.tsx",
+                      "summary":  "Dashboard card displaying active trip alerts with severity color-coding (info/warning/critical), delete controls for manual entries, and a button to add new manual alerts.",
+                      "tags":  [
+                                   "component",
+                                   "alerts",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/AstroCard.tsx",
+                      "type":  "file",
+                      "name":  "AstroCard.tsx",
+                      "filePath":  "src/components/cards/AstroCard.tsx",
+                      "summary":  "Dashboard card showing astronomical data: golden hour window, moon phase and illumination percentage, Milky Way visibility, and computed sky quality rating.",
+                      "tags":  [
+                                   "component",
+                                   "astronomy",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/CountdownCard.tsx",
+                      "type":  "file",
+                      "name":  "CountdownCard.tsx",
+                      "filePath":  "src/components/cards/CountdownCard.tsx",
+                      "summary":  "Dashboard card rendering a live countdown clock to trip departure, displaying days, hours, minutes, and seconds with a mission-style display.",
+                      "tags":  [
+                                   "component",
+                                   "countdown",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/cards/CrewFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "CrewFormSheet.tsx",
+                      "filePath":  "src/components/cards/CrewFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for adding or editing crew member records including name, role, canoe assignment, load item, and weight.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "crew"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/CrewRosterCard.tsx",
+                      "type":  "file",
+                      "name":  "CrewRosterCard.tsx",
+                      "filePath":  "src/components/cards/CrewRosterCard.tsx",
+                      "summary":  "Dashboard card displaying the expedition crew roster grouped by canoe, showing each member\u0027s role, gear load, and weight with edit/delete controls.",
+                      "tags":  [
+                                   "component",
+                                   "crew",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/ForecastCard.tsx",
+                      "type":  "file",
+                      "name":  "ForecastCard.tsx",
+                      "filePath":  "src/components/cards/ForecastCard.tsx",
+                      "summary":  "Dashboard card showing a 5-day weather forecast as a horizontal row of mini forecast tiles with high/low temps, rain chance, and condition icons.",
+                      "tags":  [
+                                   "component",
+                                   "weather",
+                                   "forecast",
+                                   "card"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/cards/GearChecklistCard.tsx",
+                      "type":  "file",
+                      "name":  "GearChecklistCard.tsx",
+                      "filePath":  "src/components/cards/GearChecklistCard.tsx",
+                      "summary":  "Dashboard card displaying the gear checklist grouped by category, with pack/unpack toggles, priority color indicators, and CRUD controls for adding/editing/deleting gear items.",
+                      "tags":  [
+                                   "component",
+                                   "gear",
+                                   "checklist",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/GearFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "GearFormSheet.tsx",
+                      "filePath":  "src/components/cards/GearFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for creating or editing gear items with name, category, owner, priority, weight, and packed status fields.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "gear"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/HeroHeader.tsx",
+                      "type":  "file",
+                      "name":  "HeroHeader.tsx",
+                      "filePath":  "src/components/cards/HeroHeader.tsx",
+                      "summary":  "Dashboard hero header displaying the trip identity (park, lake, site), current weather summary, overall readiness score badge, live countdown, and buttons for Mission Brief and auth login.",
+                      "tags":  [
+                                   "component",
+                                   "header",
+                                   "dashboard",
+                                   "entry-point"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/MapRouteCard.tsx",
+                      "type":  "file",
+                      "name":  "MapRouteCard.tsx",
+                      "filePath":  "src/components/cards/MapRouteCard.tsx",
+                      "summary":  "Client-side wrapper that dynamically loads the Leaflet map component with SSR disabled to avoid hydration errors.",
+                      "tags":  [
+                                   "component",
+                                   "map",
+                                   "lazy-loading",
+                                   "card"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/cards/MapRouteCardInner.tsx",
+                      "type":  "file",
+                      "name":  "MapRouteCardInner.tsx",
+                      "filePath":  "src/components/cards/MapRouteCardInner.tsx",
+                      "summary":  "Leaflet-based interactive map showing the canoe route from launch point to campsite with markers and a polyline, using MapTiler vector tiles as the base layer.",
+                      "tags":  [
+                                   "component",
+                                   "map",
+                                   "leaflet",
+                                   "visualization"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/MealFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "MealFormSheet.tsx",
+                      "filePath":  "src/components/cards/MealFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for planning meals with day number, meal type, title, prep type, calories, and assignment fields.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "meals"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/MealPlannerCard.tsx",
+                      "type":  "file",
+                      "name":  "MealPlannerCard.tsx",
+                      "filePath":  "src/components/cards/MealPlannerCard.tsx",
+                      "summary":  "Dashboard card organizing meals by day and type (breakfast/lunch/dinner/snack), showing prep type icons, calorie counts, and CRUD controls.",
+                      "tags":  [
+                                   "component",
+                                   "meals",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/OfflineVaultCard.tsx",
+                      "type":  "file",
+                      "name":  "OfflineVaultCard.tsx",
+                      "filePath":  "src/components/cards/OfflineVaultCard.tsx",
+                      "summary":  "Dashboard card showing offline readiness checklist (maps cached, permit saved, route downloaded, satellite device, emergency contact) with toggle controls and a link to the Project Intel modal.",
+                      "tags":  [
+                                   "component",
+                                   "offline",
+                                   "checklist",
+                                   "card"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/ParkIntelCard.tsx",
+                      "type":  "file",
+                      "name":  "ParkIntelCard.tsx",
+                      "filePath":  "src/components/cards/ParkIntelCard.tsx",
+                      "summary":  "Dashboard card displaying park intelligence: fire restrictions, wildlife notes, water quality, firewood availability percentage, and ranger station info with inline editing support.",
+                      "tags":  [
+                                   "component",
+                                   "park-intel",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/ParkIntelFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "ParkIntelFormSheet.tsx",
+                      "filePath":  "src/components/cards/ParkIntelFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for editing park intelligence fields including fire restriction status, wildlife notes, water notes, firewood percentage, and custom notes.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "park-intel"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/ReadinessScoreCard.tsx",
+                      "type":  "file",
+                      "name":  "ReadinessScoreCard.tsx",
+                      "filePath":  "src/components/cards/ReadinessScoreCard.tsx",
+                      "summary":  "Dashboard card visualizing the weighted expedition readiness score (0â€“100) with five component bars: Gear (35%), Offline Safety (20%), Meals (20%), Weather (15%), and Timeline (10%), plus a readiness label.",
+                      "tags":  [
+                                   "component",
+                                   "readiness",
+                                   "metrics",
+                                   "dashboard"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:src/components/cards/ReadinessScoreCard.tsx:ScoreBar",
+                      "type":  "function",
+                      "name":  "ScoreBar",
+                      "filePath":  "src/components/cards/ReadinessScoreCard.tsx",
+                      "lineRange":  [
+                                        1,
+                                        30
+                                    ],
+                      "summary":  "Renders a labeled progress bar for a single readiness component with color-coded fill based on score threshold.",
+                      "tags":  [
+                                   "component",
+                                   "utility",
+                                   "visualization"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/cards/TimelineCard.tsx",
+                      "type":  "file",
+                      "name":  "TimelineCard.tsx",
+                      "filePath":  "src/components/cards/TimelineCard.tsx",
+                      "summary":  "Dashboard card showing the trip timeline grouped by day, with events sorted by time, phase color-coding (Transit/Setup/Sustain/Leisure), and CRUD controls for adding/editing/deleting events.",
+                      "tags":  [
+                                   "component",
+                                   "timeline",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/cards/TimelineFormSheet.tsx",
+                      "type":  "file",
+                      "name":  "TimelineFormSheet.tsx",
+                      "filePath":  "src/components/cards/TimelineFormSheet.tsx",
+                      "summary":  "Slide-out CRUD form for creating or editing timeline events with day number, time, title, details, phase, and sort order fields.",
+                      "tags":  [
+                                   "component",
+                                   "form",
+                                   "crud",
+                                   "timeline"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/cards/WeatherCard.tsx",
+                      "type":  "file",
+                      "name":  "WeatherCard.tsx",
+                      "filePath":  "src/components/cards/WeatherCard.tsx",
+                      "summary":  "Dashboard card displaying current weather conditions: temperature, wind speed, humidity, rain chance, visibility, sunrise/sunset times, and the moon phase from astro data.",
+                      "tags":  [
+                                   "component",
+                                   "weather",
+                                   "dashboard",
+                                   "card"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/ui/ChecklistItem.tsx",
+                      "type":  "file",
+                      "name":  "ChecklistItem.tsx",
+                      "filePath":  "src/components/ui/ChecklistItem.tsx",
+                      "summary":  "Reusable checklist row component with a toggle checkbox, item label, optional priority badge, and edit/delete action buttons shown on hover.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "checklist",
+                                   "interactive"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/ui/CrudSheet.tsx",
+                      "type":  "file",
+                      "name":  "CrudSheet.tsx",
+                      "filePath":  "src/components/ui/CrudSheet.tsx",
+                      "summary":  "Shared slide-out panel primitive providing the overlay, panel container, header with close button, and scrollable body for all CRUD form sheets.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "modal",
+                                   "primitive"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/components/ui/GlassCard.tsx",
+                      "type":  "file",
+                      "name":  "GlassCard.tsx",
+                      "filePath":  "src/components/ui/GlassCard.tsx",
+                      "summary":  "Lightweight glassmorphism card wrapper component applying background blur, border, and shadow styles to any child content.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive",
+                                   "glassmorphism"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/IconLabel.tsx",
+                      "type":  "file",
+                      "name":  "IconLabel.tsx",
+                      "filePath":  "src/components/ui/IconLabel.tsx",
+                      "summary":  "Simple UI primitive pairing a Lucide icon with a text label in a flex row for consistent metric display.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/MetricRow.tsx",
+                      "type":  "file",
+                      "name":  "MetricRow.tsx",
+                      "filePath":  "src/components/ui/MetricRow.tsx",
+                      "summary":  "UI primitive rendering a label-value pair in a horizontal row with muted label and prominent value styling.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive",
+                                   "metrics"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/MiniForecastDay.tsx",
+                      "type":  "file",
+                      "name":  "MiniForecastDay.tsx",
+                      "filePath":  "src/components/ui/MiniForecastDay.tsx",
+                      "summary":  "Compact forecast tile showing a single day\u0027s weather: date, condition icon, high/low temps, and rain probability.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "weather",
+                                   "card"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/MissionBriefModal.tsx",
+                      "type":  "file",
+                      "name":  "MissionBriefModal.tsx",
+                      "filePath":  "src/components/ui/MissionBriefModal.tsx",
+                      "summary":  "Full-screen modal providing a mission briefing overlay with trip objectives, key logistics, emergency protocols, and expedition rules in a structured tabbed layout.",
+                      "tags":  [
+                                   "component",
+                                   "modal",
+                                   "ui",
+                                   "documentation"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/ui/Primitives.tsx",
+                      "type":  "file",
+                      "name":  "Primitives.tsx",
+                      "filePath":  "src/components/ui/Primitives.tsx",
+                      "summary":  "Collection of three shared UI primitives: Badge (colored status badge), Divider (horizontal separator), and Tooltip (hover text display).",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive",
+                                   "barrel"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/ProgressBar.tsx",
+                      "type":  "file",
+                      "name":  "ProgressBar.tsx",
+                      "filePath":  "src/components/ui/ProgressBar.tsx",
+                      "summary":  "Animated progress bar component with configurable fill color, percentage value display, and smooth CSS transition.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive",
+                                   "visualization"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/ProjectIntelModal.tsx",
+                      "type":  "file",
+                      "name":  "ProjectIntelModal.tsx",
+                      "filePath":  "src/components/ui/ProjectIntelModal.tsx",
+                      "summary":  "Full-screen modal documenting the technical architecture of the Camping Dashboard project itself â€” stack, data flow, schema, and deployment details â€” acting as an in-app living documentation panel.",
+                      "tags":  [
+                                   "component",
+                                   "modal",
+                                   "ui",
+                                   "documentation"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/components/ui/SectionHeader.tsx",
+                      "type":  "file",
+                      "name":  "SectionHeader.tsx",
+                      "filePath":  "src/components/ui/SectionHeader.tsx",
+                      "summary":  "Card section header primitive with a title, optional icon, and an optional action button slot for CRUD triggers.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/StatusPill.tsx",
+                      "type":  "file",
+                      "name":  "StatusPill.tsx",
+                      "filePath":  "src/components/ui/StatusPill.tsx",
+                      "summary":  "Small colored pill badge for displaying status labels (e.g. severity levels, priority states) with variant-based color mapping.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "primitive",
+                                   "status"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/components/ui/TopoBackground.tsx",
+                      "type":  "file",
+                      "name":  "TopoBackground.tsx",
+                      "filePath":  "src/components/ui/TopoBackground.tsx",
+                      "summary":  "SVG-based topographic map background component generating procedural contour lines using fractal noise, creating the wilderness mission-control aesthetic behind the dashboard.",
+                      "tags":  [
+                                   "component",
+                                   "ui",
+                                   "background",
+                                   "visualization"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/lib/authContext.tsx",
+                      "type":  "file",
+                      "name":  "authContext.tsx",
+                      "filePath":  "src/lib/authContext.tsx",
+                      "summary":  "React context providing auth state and the isAuthorized flag to control which components can perform write operations. Wraps Supabase session management and exposes a login trigger.",
+                      "tags":  [
+                                   "authentication",
+                                   "context",
+                                   "service",
+                                   "supabase"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:src/lib/authContext.tsx:AuthProvider",
+                      "type":  "function",
+                      "name":  "AuthProvider",
+                      "filePath":  "src/lib/authContext.tsx",
+                      "lineRange":  [
+                                        1,
+                                        60
+                                    ],
+                      "summary":  "Context provider that subscribes to Supabase auth state changes, exposes isAuthorized and a signIn handler, and wraps child components.",
+                      "tags":  [
+                                   "context",
+                                   "authentication",
+                                   "provider"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/lib/fetchDashboard.ts",
+                      "type":  "file",
+                      "name":  "fetchDashboard.ts",
+                      "filePath":  "src/lib/fetchDashboard.ts",
+                      "summary":  "Batch-fetches all 12 Supabase tables in parallel (trips, weather, forecast, gear, timeline, meals, crew, park intel, offline status, astro data, alerts, settings) and returns a unified DashboardData object.",
+                      "tags":  [
+                                   "data-fetching",
+                                   "supabase",
+                                   "service",
+                                   "api-handler"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:src/lib/fetchDashboard.ts:fetchDashboardData",
+                      "type":  "function",
+                      "name":  "fetchDashboardData",
+                      "filePath":  "src/lib/fetchDashboard.ts",
+                      "lineRange":  [
+                                        24,
+                                        71
+                                    ],
+                      "summary":  "Dispatches 12 parallel Supabase queries using Promise.all and assembles the full DashboardData payload, throwing on trip fetch failure.",
+                      "tags":  [
+                                   "data-fetching",
+                                   "supabase",
+                                   "async"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/lib/helpers.ts",
+                      "type":  "file",
+                      "name":  "helpers.ts",
+                      "filePath":  "src/lib/helpers.ts",
+                      "summary":  "Pure derived-logic library containing all dashboard calculations: countdown timer, readiness scoring engine (gear/meals/offline/timeline/weather), theme mode detection, astro quality helpers, date formatters, and generic utilities.",
+                      "tags":  [
+                                   "utility",
+                                   "service",
+                                   "data-model",
+                                   "readiness"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:src/lib/helpers.ts:calculateOverallReadiness",
+                      "type":  "function",
+                      "name":  "calculateOverallReadiness",
+                      "filePath":  "src/lib/helpers.ts",
+                      "lineRange":  [
+                                        131,
+                                        150
+                                    ],
+                      "summary":  "Computes the weighted overall readiness score from five component scores (gear 35%, meals 20%, weather 15%, offline 20%, timeline 10%) and returns a ReadinessScore object with label.",
+                      "tags":  [
+                                   "utility",
+                                   "readiness",
+                                   "calculation"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:src/lib/helpers.ts:getTripCountdown",
+                      "type":  "function",
+                      "name":  "getTripCountdown",
+                      "filePath":  "src/lib/helpers.ts",
+                      "lineRange":  [
+                                        21,
+                                        39
+                                    ],
+                      "summary":  "Calculates days/hours/minutes/seconds remaining until trip start date, parsing at local noon to avoid UTC-midnight timezone issues.",
+                      "tags":  [
+                                   "utility",
+                                   "countdown",
+                                   "calculation"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/lib/mutations.ts",
+                      "type":  "file",
+                      "name":  "mutations.ts",
+                      "filePath":  "src/lib/mutations.ts",
+                      "summary":  "Supabase CRUD mutation functions for all user-authored entities: gear items, meals, timeline events, crew members, alerts, offline status, and park intel. All functions are strongly typed and return Supabase response objects.",
+                      "tags":  [
+                                   "service",
+                                   "supabase",
+                                   "crud",
+                                   "data-model"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "file:src/lib/supabase.ts",
+                      "type":  "file",
+                      "name":  "supabase.ts",
+                      "filePath":  "src/lib/supabase.ts",
+                      "summary":  "Browser-side Supabase client singleton created with public ANON key for use in client components and auth flows.",
+                      "tags":  [
+                                   "service",
+                                   "supabase",
+                                   "singleton",
+                                   "authentication"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/lib/supabaseAdmin.ts",
+                      "type":  "file",
+                      "name":  "supabaseAdmin.ts",
+                      "filePath":  "src/lib/supabaseAdmin.ts",
+                      "summary":  "Server-side Supabase admin client using the SERVICE_ROLE key, used exclusively in API route handlers for privileged database operations like weather and alert syncing.",
+                      "tags":  [
+                                   "service",
+                                   "supabase",
+                                   "singleton",
+                                   "api-handler"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "file:src/lib/weatherMapper.ts",
+                      "type":  "file",
+                      "name":  "weatherMapper.ts",
+                      "filePath":  "src/lib/weatherMapper.ts",
+                      "summary":  "Maps raw Open-Meteo API response data to the Supabase weather_current and weather_forecast schema formats, including WMO weather code to condition label/icon translation.",
+                      "tags":  [
+                                   "utility",
+                                   "weather",
+                                   "data-model",
+                                   "service"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Uses WMO (World Meteorological Organization) weather interpretation codes to produce human-readable condition labels and emoji icons."
+                  },
+                  {
+                      "id":  "function:src/lib/weatherMapper.ts:mapCurrentWeather",
+                      "type":  "function",
+                      "name":  "mapCurrentWeather",
+                      "filePath":  "src/lib/weatherMapper.ts",
+                      "lineRange":  [
+                                        1,
+                                        80
+                                    ],
+                      "summary":  "Transforms the Open-Meteo current_weather object into the weather_current Supabase schema, including derived fields like rain_chance, visibility, and formatted times.",
+                      "tags":  [
+                                   "utility",
+                                   "weather",
+                                   "mapping"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:src/lib/weatherMapper.ts:mapForecast",
+                      "type":  "function",
+                      "name":  "mapForecast",
+                      "filePath":  "src/lib/weatherMapper.ts",
+                      "lineRange":  [
+                                        81,
+                                        160
+                                    ],
+                      "summary":  "Transforms Open-Meteo daily forecast arrays into an array of weather_forecast rows for Supabase, one record per forecast date.",
+                      "tags":  [
+                                   "utility",
+                                   "weather",
+                                   "mapping"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "file:src/types/index.ts",
+                      "type":  "file",
+                      "name":  "index.ts",
+                      "filePath":  "src/types/index.ts",
+                      "summary":  "Central TypeScript type definitions for the entire dashboard: Trip, WeatherCurrent, WeatherForecast, GearItem, Meal, TimelineEvent, CrewMember, ParkIntel, OfflineStatus, AstroData, Alert, Settings, DashboardData, and derived types (ReadinessScore, CountdownResult, ThemeMode).",
+                      "tags":  [
+                                   "type-definition",
+                                   "data-model",
+                                   "barrel"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Single source of truth for all application types â€” all component props and lib functions reference these interfaces via the @/types import."
+                  }
+              ],
+    "tour":  [
+                 {
+                     "title":  "Project Overview",
+                     "description":  "Start with the README for a high-level picture of the Camping Dashboard — an Algonquin wilderness mission control system built with Next.js, Supabase, and Leaflet.",
+                     "nodeIds":  [
+                                     "document:README.md",
+                                     "config:package.json"
+                                 ],
+                     "order":  1
+                 },
+                 {
+                     "title":  "Type System — The Contract",
+                     "description":  "The types/index.ts file is the single source of truth for all TypeScript interfaces. Every component, helper, and lib function references these types. Understanding this file unlocks the entire data model.",
+                     "nodeIds":  [
+                                     "file:src/types/index.ts"
+                                 ],
+                     "order":  2
+                 },
+                 {
+                     "title":  "Application Entry Point",
+                     "description":  "page.tsx is the dashboard orchestrator. It fetches all Supabase data, manages state for every user-authored entity, and renders the full card grid. The DashboardLoader/DashboardContent split handles async loading gracefully.",
+                     "nodeIds":  [
+                                     "file:src/app/page.tsx",
+                                     "file:src/app/layout.tsx",
+                                     "file:src/app/globals.css"
+                                 ],
+                     "order":  3
+                 },
+                 {
+                     "title":  "Data Layer — Supabase Clients",
+                     "description":  "Two Supabase clients power the app: a browser-safe anon client for read/write from components, and a server-side admin client for privileged API route operations like weather sync.",
+                     "nodeIds":  [
+                                     "file:src/lib/supabase.ts",
+                                     "file:src/lib/supabaseAdmin.ts",
+                                     "file:src/lib/fetchDashboard.ts"
+                                 ],
+                     "order":  4
+                 },
+                 {
+                     "title":  "Business Logic — Readiness Engine",
+                     "description":  "helpers.ts contains all pure calculation functions. The readiness engine computes a weighted score across Gear (35%), Offline (20%), Meals (20%), Weather (15%), and Timeline (10%). This is the brain of the dashboard.",
+                     "nodeIds":  [
+                                     "file:src/lib/helpers.ts",
+                                     "file:src/lib/mutations.ts"
+                                 ],
+                     "order":  5
+                 },
+                 {
+                     "title":  "Auth — Gate for Edit Controls",
+                     "description":  "authContext.tsx provides the isAuthorized flag that gates all CRUD mutations. When not authorized, card components receive undefined handlers and render in read-only mode.",
+                     "nodeIds":  [
+                                     "file:src/lib/authContext.tsx",
+                                     "file:src/app/auth/callback/route.ts"
+                                 ],
+                     "order":  6
+                 },
+                 {
+                     "title":  "Weather Pipeline",
+                     "description":  "The refresh-weather API route fetches Open-Meteo data, transforms it via weatherMapper.ts, and upserts to Supabase. The Vercel cron in vercel.json calls this on a schedule.",
+                     "nodeIds":  [
+                                     "file:src/app/api/refresh-weather/route.ts",
+                                     "file:src/lib/weatherMapper.ts",
+                                     "config:vercel.json"
+                                 ],
+                     "order":  7
+                 },
+                 {
+                     "title":  "Feature Cards — The Dashboard Grid",
+                     "description":  "Each card is a self-contained display unit receiving data and optional mutation handlers as props. The Hero header, Map, Weather, Gear, Timeline, Meals, Crew, Alerts, and Readiness cards form the 12-column mission control layout.",
+                     "nodeIds":  [
+                                     "file:src/components/cards/HeroHeader.tsx",
+                                     "file:src/components/cards/ReadinessScoreCard.tsx",
+                                     "file:src/components/cards/GearChecklistCard.tsx",
+                                     "file:src/components/cards/WeatherCard.tsx",
+                                     "file:src/components/cards/MapRouteCard.tsx"
+                                 ],
+                     "order":  8
+                 },
+                 {
+                     "title":  "UI Primitives — The Design System",
+                     "description":  "The ui/ folder contains the reusable building blocks: GlassCard for panels, CrudSheet for slide-out forms, ProgressBar for metrics, and TopoBackground for the wilderness aesthetic.",
+                     "nodeIds":  [
+                                     "file:src/components/ui/GlassCard.tsx",
+                                     "file:src/components/ui/CrudSheet.tsx",
+                                     "file:src/components/ui/ProgressBar.tsx",
+                                     "file:src/components/ui/TopoBackground.tsx"
+                                 ],
+                     "order":  9
+                 }
+             ],
+    "project":  {
+                    "gitCommitHash":  "5fe3c7cb928c5f1b0d35f7c8c9ff82468a0c8231",
+                    "name":  "Camping Dashboard",
+                    "frameworks":  [
+                                       "Next.js",
+                                       "React",
+                                       "Tailwind CSS",
+                                       "Supabase",
+                                       "Leaflet"
+                                   ],
+                    "description":  "Algonquin Wilderness Mission Control — An expedition planning dashboard for a backcountry canoe trip to Maple Lake Site 4, featuring real-time weather, gear tracking, readiness scoring, and interactive mapping.",
+                    "languages":  [
+                                      "typescript",
+                                      "css"
+                                  ],
+                    "analyzedAt":  "2026-05-27T08:44:48.3613368-04:00"
+                }
+}

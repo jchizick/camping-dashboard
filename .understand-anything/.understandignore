@@ -1,0 +1,23 @@
+# .understandignore
+# Syntax: same as .gitignore
+#
+
+# --- From .gitignore ---
+# .env
+# .vercel/
+# .DS_Store
+
+# --- Directories to exclude ---
+# docs/
+.tmp/
+avatars/
+
+# --- Legacy / scratch files in project root ---
+old_page.tsx
+old_globals.css
+old_layout.tsx
+layout_old.tsx
+pre.txt
+
+# --- Camping dashboard node scripts cache ---
+camping-dashboard/.next/
