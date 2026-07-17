@@ -4,6 +4,7 @@ import React from 'react';
 import type { OfflineStatus } from '@/types';
 import { calculateOfflineReadiness } from '@/lib/helpers';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode, Car } from 'lucide-react';
 
 interface OfflineVaultCardProps {
@@ -24,9 +25,10 @@ const checks = [
 export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: OfflineVaultCardProps) {
     const readiness = calculateOfflineReadiness(status);
     const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 60 ? 'bg-accent-yellow' : 'bg-accent-red';
+    const { labels } = useTheme();
 
     return (
-        <Card title="Offline Vault" icon={ShieldAlert} className="h-full flex flex-col">
+        <Card title={labels.offline} icon={ShieldAlert} className="h-full flex flex-col">
             <div className="flex justify-between items-end mb-2">
                 <span className="text-xs text-text-muted">Safety Readiness</span>
                 <span className="text-sm font-mono text-text-main">{readiness}%</span>

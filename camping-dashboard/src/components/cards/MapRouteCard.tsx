@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import type { Trip } from '@/types';
+import { useTheme } from '@/lib/themeContext';
 import { Card } from '@/components/ui/Primitives';
 import { Map } from 'lucide-react';
 
@@ -23,8 +24,10 @@ export default function MapRouteCard({ trip }: MapRouteCardProps) {
         });
     }, []);
 
+    const { labels } = useTheme();
+
     return (
-        <Card title="Route" icon={Map} className="h-full" action={<span className="text-xs font-mono text-text-muted">{trip.distance_km} km</span>}>
+        <Card title={labels.map} icon={Map} className="h-full" action={<span className="text-xs font-mono text-text-muted">{trip.distance_km} km</span>}>
             <div className="text-sm text-text-muted mb-4 font-mono">
                 {trip.launch_point_name} → {trip.lake_name} {trip.site_name}
             </div>

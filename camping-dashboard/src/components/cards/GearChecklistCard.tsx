@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import type { GearItem } from '@/types';
 import { calculateGearReadiness, groupBy } from '@/lib/helpers';
+import { useTheme } from '@/lib/themeContext';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
 import ChecklistItem from '@/components/ui/ChecklistItem';
 import GearFormSheet from '@/components/cards/GearFormSheet';
@@ -82,10 +83,11 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
     }
 
     const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 50 ? 'bg-accent-yellow' : 'bg-accent-red';
+    const { labels } = useTheme();
 
     return (
         <Card 
-            title="Gear Checklist" 
+            title={labels.gear} 
             icon={Tent} 
             className="h-full max-h-[600px] flex flex-col"
             action={onAdd && (

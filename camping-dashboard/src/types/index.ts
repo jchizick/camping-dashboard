@@ -7,12 +7,14 @@
 // ─── Theme ────────────────────────────────────────────────
 export type ThemeMode = 'day' | 'night';
 export type ThemeOverride = 'auto' | 'day' | 'night';
+export type ThemeVariant = 'expedition' | 'clean';
 export type Priority = 'critical' | 'high' | 'low';
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type PrepType = 'dehydrated' | 'fresh' | 'fire' | 'restaurant';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
 export type PrepFeedCategory = 'Gear' | 'Food' | 'Shelter' | 'Cook Kit' | 'Route' | 'Campsite' | 'Misc';
+export type TripMemberRole = 'owner' | 'editor' | 'viewer';
 
 // ─── Core Entities ────────────────────────────────────────
 export interface Trip {
@@ -171,6 +173,14 @@ export interface PrepFeedItem {
   created_at: string;
 }
 
+export interface TripMember {
+  id: string;
+  trip_id: string;
+  user_id: string;
+  role: TripMemberRole;
+  created_at: string;
+}
+
 export interface Settings {
   id: string;
   trip_id: string;
@@ -180,6 +190,7 @@ export interface Settings {
   show_meals: boolean;
   show_offline: boolean;
   show_crew: boolean;
+  theme_variant: ThemeVariant;
 }
 
 // ─── Derived / Computed Types ──────────────────────────────

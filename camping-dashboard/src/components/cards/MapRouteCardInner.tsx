@@ -48,12 +48,12 @@ export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {
                 ref={mapContainer}
                 style={{ position: 'absolute', width: '100%', height: '100%' }}
             />
-            <div className="absolute bottom-0 right-0 p-[2px] px-2 bg-white/90 dark:bg-black/90 backdrop-blur-md rounded-tl-lg text-[10px] border-t border-l border-white/20 z-10">
+            <div className="absolute bottom-0 right-0 p-[2px] px-2 bg-surface-raised opacity-90 backdrop-blur-md rounded-tl-lg text-[10px] border-t border-l border-border-subtle z-10">
                 <a
                     href="https://www.maptiler.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sky-600 dark:text-amber-500 hover:underline opacity-80 hover:opacity-100 transition-opacity"
+                    className="text-text-muted hover:text-text-main hover:underline opacity-80 hover:opacity-100 transition-opacity"
                 >
                     © MapTiler
                 </a>

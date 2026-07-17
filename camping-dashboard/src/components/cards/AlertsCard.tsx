@@ -69,7 +69,7 @@ export default function AlertsCard({ alerts, onAddManual, onDeleteManual }: Aler
                     {isManual && onDeleteManual ? (
                         <button 
                             onClick={() => setPendingDeleteId(alert.id)}
-                            className="p-1.5 text-text-muted hover:text-accent-red hover:bg-black/20 rounded transition-colors"
+                            className="p-1.5 text-text-muted hover:text-accent-red hover:bg-hover-bg rounded transition-colors"
                             aria-label="Delete note"
                         >
                             <Trash2 size={14} />
@@ -77,7 +77,7 @@ export default function AlertsCard({ alerts, onAddManual, onDeleteManual }: Aler
                     ) : (
                         <button 
                             onClick={() => dismiss(alert.id)}
-                            className="p-1.5 text-text-muted hover:text-text-main hover:bg-black/20 rounded transition-colors"
+                            className="p-1.5 text-text-muted hover:text-text-main hover:bg-hover-bg rounded transition-colors"
                             aria-label="Dismiss alert"
                         >
                             <X size={14} />

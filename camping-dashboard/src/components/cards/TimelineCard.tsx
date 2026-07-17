@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { TimelineEvent } from '@/types';
 import { groupBy } from '@/lib/helpers';
 import { Card, Badge } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import TimelineFormSheet from '@/components/cards/TimelineFormSheet';
 import { Clock, Plus, Pencil, Trash2 } from 'lucide-react';
 
@@ -59,9 +60,11 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
         setPendingDeleteId(null);
     }
 
+    const { labels } = useTheme();
+
     return (
         <Card 
-            title="Trip Timeline" 
+            title={labels.timeline} 
             icon={Clock} 
             className="h-full flex flex-col max-h-[600px]"
             action={onAdd && (
@@ -70,7 +73,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                 </button>
             )}
         >
-            <div className="text-sm text-text-muted mb-6">{tripDays}-day expedition plan</div>
+            <div className="text-sm text-text-muted mb-6">{tripDays}-day {labels.timeline.toLowerCase()}</div>
             
             <div className="flex gap-2 mb-6 overflow-x-auto custom-scrollbar pb-2 shrink-0">
                 {Array.from({ length: tripDays }, (_, i) => i + 1).map((day) => (

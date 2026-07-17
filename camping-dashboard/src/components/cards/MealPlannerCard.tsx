@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { Meal } from '@/types';
 import { groupBy } from '@/lib/helpers';
+import { useTheme } from '@/lib/themeContext';
 import { Card } from '@/components/ui/Primitives';
 import MealFormSheet from '@/components/cards/MealFormSheet';
 import { Utensils, Plus, Pencil, Trash2, Flame, Leaf, Coffee, Store } from 'lucide-react';
@@ -55,9 +56,11 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
         setPendingDeleteId(null);
     }
 
+    const { labels } = useTheme();
+
     return (
         <Card 
-            title="Meal Planner" 
+            title={labels.meals} 
             icon={Utensils} 
             className="h-full flex flex-col"
             action={onAdd && (

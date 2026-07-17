@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import type { ParkIntel } from '@/types';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
 import ParkIntelFormSheet from './ParkIntelFormSheet';
+import { useTheme } from '@/lib/themeContext';
 import { Info, Flame, Trees, Thermometer, Droplets, Radio, MapPin, Pencil } from 'lucide-react';
 
 interface ParkIntelCardProps {
@@ -13,10 +14,11 @@ interface ParkIntelCardProps {
 
 export default function ParkIntelCard({ intel, onUpdate }: ParkIntelCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
+    const { labels } = useTheme();
 
     return (
         <Card 
-            title="Park Intelligence" 
+            title={labels.parkIntel} 
             icon={Info} 
             className="h-full"
             action={onUpdate && (

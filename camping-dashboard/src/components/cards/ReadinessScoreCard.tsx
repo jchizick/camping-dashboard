@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import type { ReadinessScore } from '@/types';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import { Activity, Tent, ShieldAlert, Utensils, CloudRain, Clock } from 'lucide-react';
 
 interface ReadinessScoreCardProps {
@@ -36,6 +37,7 @@ function textColor(score: number): string {
 }
 
 export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProps) {
+    const { labels } = useTheme();
     const [isVisible, setIsVisible] = useState(false);
     const ringRef = useRef<HTMLDivElement>(null);
 
@@ -63,8 +65,9 @@ export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProp
     const mainColorClass = textColor(readiness.overall);
     const mainStrokeValue = strokeColor(readiness.overall);
 
+
     return (
-        <Card title="Mission Readiness" icon={Activity} className="h-full">
+        <Card title={labels.readiness} icon={Activity} className="h-full">
             <div className="flex items-center gap-6 mb-8">
                 <div ref={ringRef} className="relative w-24 h-24 flex items-center justify-center">
                     <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -86,7 +89,7 @@ export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProp
                 </div>
                 <div>
                     <div className="text-lg font-medium text-text-main mb-1">{readiness.label}</div>
-                    <div className="text-sm text-text-muted">Overall expedition readiness</div>
+                    <div className="text-sm text-text-muted">Overall {labels.readiness.toLowerCase()}</div>
                 </div>
             </div>
 

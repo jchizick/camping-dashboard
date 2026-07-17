@@ -5,6 +5,7 @@ import type { PrepFeedItem, PrepFeedCategory } from '@/types';
 import { Card, Badge } from '@/components/ui/Primitives';
 import PrepFeedFormSheet from './PrepFeedFormSheet';
 import PrepFeedLightbox from '@/components/ui/PrepFeedLightbox';
+import { useTheme } from '@/lib/themeContext';
 import { Camera, Plus, Trash2, Clock, User } from 'lucide-react';
 
 // ── Category → badge variant mapping ────────────────────────
@@ -53,9 +54,11 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
         setPendingDeleteId(null);
     }
 
+    const { labels } = useTheme();
+
     return (
         <Card
-            title="Field Prep Feed"
+            title={labels.prepFeed}
             icon={Camera}
             className="h-full"
             action={onAdd && (
@@ -155,7 +158,7 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
                                     {onDelete && (
                                         <button
                                             onClick={() => setPendingDeleteId(item.id)}
-                                            className="absolute top-2 right-2 p-1.5 text-text-muted hover:text-accent-red hover:bg-black/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                                            className="absolute top-2 right-2 p-1.5 text-text-muted hover:text-accent-red hover:bg-hover-bg rounded transition-all opacity-0 group-hover:opacity-100"
                                             aria-label="Delete entry"
                                         >
                                             <Trash2 size={12} />

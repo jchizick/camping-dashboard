@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import type { CrewMember } from '@/types';
-import { Card } from '@/components/ui/Primitives';
+import { Card, Badge } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import CrewFormSheet from '@/components/cards/CrewFormSheet';
-import { User, Plus, Tent, Scale, Pencil, Trash2 } from 'lucide-react';
+import { User, Plus, Tent, Scale, Pencil, Trash2, Weight, Info } from 'lucide-react';
 
 interface CrewRosterCardProps {
     crew: CrewMember[];
@@ -72,9 +73,11 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
         setPendingDeleteId(null);
     }
 
+    const { labels } = useTheme();
+
     return (
         <Card 
-            title="Mission Crew" 
+            title={labels.crew} 
             icon={User} 
             className="h-full flex flex-col"
             action={onAdd && (
@@ -83,7 +86,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                 </button>
             )}
         >
-            <div className="text-sm text-text-muted mb-6">{crew.length}-Person Expedition</div>
+            <div className="text-sm text-text-muted mb-6">{crew.length}-Person {labels.crew.split(' ').pop()}</div>
 
             {pendingDeleteId && (() => {
                 const member = crew.find(m => m.id === pendingDeleteId);

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import type { WeatherCurrent, AstroData } from '@/types';
 import { getSkyQuality } from '@/lib/helpers';
 import { Card } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import { CloudRain, Star, Wind, Droplets, Sunrise, Sunset, Eye, AlertCircle } from 'lucide-react';
 
 interface WeatherCardProps {
@@ -68,8 +69,10 @@ export default function WeatherCard({ weather, astro }: WeatherCardProps) {
         error: '✗ Refresh Failed',
     };
 
+    const { labels } = useTheme();
+
     return (
-        <Card title="Conditions" icon={CloudRain} className="h-full">
+        <Card title={labels.weather} icon={CloudRain} className="h-full">
             <div className="flex items-center gap-4 mb-6">
                 <Star size={48} className="text-accent-yellow fill-accent-yellow shrink-0" />
                 <div>

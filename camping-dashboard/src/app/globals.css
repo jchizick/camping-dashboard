@@ -15,6 +15,12 @@
   --color-accent-red: var(--accent-red);
   --color-accent-blue: var(--accent-blue);
   --color-accent-green: var(--accent-green);
+  
+  --color-hover-bg: var(--hover-bg);
+  --color-active-bg: var(--active-bg);
+  --color-focus-ring: var(--focus-ring);
+  --color-surface-raised: var(--surface-raised);
+  --shadow-card: var(--card-shadow);
 }
 
 :root {
@@ -28,6 +34,12 @@
   --accent-red: #DC2626;
   --accent-blue: #2563EB;
   --accent-green: #16A34A;
+  
+  --hover-bg: #F3F4F6;
+  --active-bg: #E5E7EB;
+  --focus-ring: #D97706;
+  --surface-raised: #FFFFFF;
+  --card-shadow: none;
 }
 
 .dark {
@@ -41,7 +53,95 @@
   --accent-red: #EF4444;
   --accent-blue: #3B82F6;
   --accent-green: #22C55E;
+  
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(255, 255, 255, 0.1);
+  --focus-ring: #EAB308;
+  --surface-raised: #22221F;
+  --card-shadow: none;
 }
+
+/* ─── Expedition Skin (current tactical aesthetic) ─────────────── */
+.theme-expedition {
+  --app-bg: #F9FAFB;
+  --card-bg: #FFFFFF;
+  --card-hover: #F3F4F6;
+  --border-subtle: #E5E7EB;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --accent-yellow: #D97706;
+  --accent-red: #DC2626;
+  --accent-blue: #2563EB;
+  --accent-green: #16A34A;
+  
+  --hover-bg: #F3F4F6;
+  --active-bg: #E5E7EB;
+  --focus-ring: #D97706;
+  --surface-raised: #FFFFFF;
+  --card-shadow: none;
+}
+
+.theme-expedition.dark {
+  --app-bg: #121210;
+  --card-bg: #1A1A18;
+  --card-hover: #22221F;
+  --border-subtle: #2A2A26;
+  --text-main: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --accent-yellow: #EAB308;
+  --accent-red: #EF4444;
+  --accent-blue: #3B82F6;
+  --accent-green: #22C55E;
+  
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(255, 255, 255, 0.1);
+  --focus-ring: #EAB308;
+  --surface-raised: #22221F;
+  --card-shadow: none;
+}
+
+/* ─── Clean Skin (Phase 3 infrastructure — Phase 3b polish) ──── */
+.theme-clean {
+  --app-bg: #F7F9FC;
+  --card-bg: #FFFFFF;
+  --card-hover: #F0F4F8;
+  --border-subtle: #E2E8F0;
+  --text-main: #1A202C;
+  --text-muted: #718096;
+  --accent-yellow: #2B6CB0; /* Lake blue primary */
+  --accent-red: #E53E3E;
+  --accent-blue: #2B6CB0;
+  --accent-green: #38A169;
+  
+  --hover-bg: #EDF2F7;
+  --active-bg: #E2E8F0;
+  --focus-ring: #63B3ED;
+  --surface-raised: #FFFFFF;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  
+  /* Typography compatibility shim */
+  --font-mono: var(--font-sans);
+}
+
+.theme-clean.dark {
+  --app-bg: #1A202C;
+  --card-bg: #2D3748;
+  --card-hover: #353F50;
+  --border-subtle: #4A5568;
+  --text-main: #E2E8F0;
+  --text-muted: #A0AEC0;
+  --accent-yellow: #63B3ED;
+  --accent-red: #FC8181;
+  --accent-blue: #63B3ED;
+  --accent-green: #68D391;
+  
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(255, 255, 255, 0.1);
+  --focus-ring: #63B3ED;
+  --surface-raised: #353F50;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
 
 body {
   background-color: var(--app-bg);
@@ -91,6 +191,14 @@ body {
 
 .dark .bg-topo-grid::after {
   opacity: 0.08; /* Slightly fainter grid lines in dark mode */
+}
+
+/* Clean Mode Overrides */
+.theme-clean .bg-topo-grid::before {
+  opacity: 0.05; /* Calmer in clean mode */
+}
+.theme-clean .bg-topo-grid::after {
+  opacity: 0.05;
 }
 
 /* Custom Scrollbar for a technical feel */

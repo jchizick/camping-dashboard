@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import type { Trip, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
 import { padTwo } from '@/lib/helpers';
 import { useAuth } from '@/lib/authContext';
+import { useTrip } from '@/lib/tripContext';
+import { useTheme } from '@/lib/themeContext';
 import { Activity, User as UserIcon, Star, Wind, Sunset, Radio } from 'lucide-react';
 
 interface HeroHeaderProps {
@@ -24,7 +26,9 @@ export default function HeroHeader({
     onMissionBrief,
 }: HeroHeaderProps) {
     const [tick, setTick] = useState(0);
-    const { user, isAuthorized, isLoading, signIn, signOut } = useAuth();
+    const { user, isLoading, signIn, signOut } = useAuth();
+    const { role, canEdit } = useTrip();
+    const { labels } = useTheme();
 
     // Force a re-render every second so parent can update countdown
     useEffect(() => {
@@ -40,7 +44,7 @@ export default function HeroHeader({
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2 bg-accent-yellow/10 text-accent-yellow px-3 py-1 rounded-full text-xs font-mono uppercase tracking-widest border border-accent-yellow/20">
                         <Activity size={14} />
-                        Expedition Control
+                        {labels.dashboardTitle}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <button
@@ -48,20 +52,19 @@ export default function HeroHeader({
                             onClick={onMissionBrief}
                             className="text-xs font-mono px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-text-main border-accent-yellow/40 bg-accent-yellow/10 hover:bg-accent-yellow/20 hover:border-accent-yellow/60 active:scale-95"
                         >
-                            <Radio size={14} /> Mission Brief
+                            <Radio size={14} /> {labels.missionBrief}
                         </button>
                         
                         {!isLoading && (
                             <button 
                                 onClick={user ? signOut : signIn}
                                 className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${
-                                    isAuthorized ? 'text-accent-yellow border-accent-yellow/30 bg-accent-yellow/10 hover:bg-accent-yellow/20' : 
-                                    user ? 'text-accent-red border-accent-red/30 bg-accent-red/10' :
+                                    user ? 'text-accent-yellow border-accent-yellow/30 bg-accent-yellow/10 hover:bg-accent-yellow/20' :
                                     'text-text-muted hover:text-text-main border-border-subtle hover:bg-card-hover'
                                 }`}
-                                title={isAuthorized ? `Signed in as ${user?.email}` : user ? 'Not authorized' : 'Admin sign in'}
+                                title={user ? `Signed in as ${user?.email} (${role ?? 'member'})` : 'Sign in'}
                             >
-                                <UserIcon size={12} /> {isAuthorized ? 'Admin' : user ? 'Unauthorized' : 'Sign In'}
+                                <UserIcon size={12} /> {user ? (role ?? 'Member') : 'Sign In'}
                             </button>
                         )}
                     </div>

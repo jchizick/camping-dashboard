@@ -1,14 +1,13 @@
 # 🏕️ gemini.md — Camping Dashboard Project Constitution
 > **This file is law.** Only update when: a schema changes, a rule is added, or the architecture is modified.
-> Last Updated: 2026-06-06
+> Last Updated: 2026-07-09
 
 ---
 
 ## 📌 Project Identity
-- **Project Name:** Camping Dashboard — Algonquin Wilderness Mission Control
-- **Trip:** Algonquin Park · Maple Lake — Site 4
+- **Project Name:** Camping Dashboard — Multi-User Trip Planning Platform
 - **System Pilot:** Antigravity (B.L.A.S.T. Protocol)
-- **Status:** 🟢 PHASE 2 — Supabase Data Live
+- **Status:** 🟢 PHASE 3 — Multi-User Alpha (Private Alpha Hardening)
 
 ---
 
@@ -27,12 +26,30 @@
 └── camping-dashboard/           # Next.js app (Vercel deployment target)
     ├── src/
     │   ├── app/                 # Next.js App Router
+    │   │   ├── page.tsx         # / → redirect to /trips
+    │   │   ├── trips/
+    │   │   │   ├── page.tsx     # /trips — trip list/selector
+    │   │   │   ├── new/page.tsx # /trips/new — create trip
+    │   │   │   └── [tripId]/    # /trips/[tripId] — trip dashboard
+    │   │   │       ├── layout.tsx
+    │   │   │       └── page.tsx
+    │   │   └── api/
+    │   │       ├── trips/create/ # POST: atomic trip creation
+    │   │       ├── refresh-weather/
+    │   │       └── refresh-alerts/
     │   ├── components/
+    │   │   ├── DashboardShell.tsx # Main dashboard layout
     │   │   ├── ui/              # Shared UI primitives
     │   │   └── cards/           # Feature cards
     │   ├── lib/
+    │   │   ├── authContext.tsx   # Auth session (no whitelists)
+    │   │   ├── tripContext.tsx   # Trip role provider (canEdit/isOwner)
+    │   │   ├── themeContext.tsx  # Theme variant + day/night mode
+    │   │   ├── labels.ts        # Expedition/Clean label translations
+    │   │   ├── fetchDashboard.ts # Parameterized data fetcher
+    │   │   ├── mutations.ts     # Parameterized write helpers
     │   │   ├── helpers.ts       # Derived logic functions
-    │   │   └── mockData.ts      # All mock data (single source)
+    │   │   └── supabaseAdmin.ts # Service-role client (server only)
     │   └── types/
     │       └── index.ts         # All TypeScript interfaces
     ├── package.json
@@ -152,7 +169,8 @@
     "manual_theme_override": "enum(auto|day|night)",
     "preferred_units": "enum(metric|imperial)",
     "show_astro": "boolean", "show_meals": "boolean",
-    "show_offline": "boolean", "show_crew": "boolean"
+    "show_offline": "boolean", "show_crew": "boolean",
+    "theme_variant": "enum(expedition|clean)"
   },
   "prep_feed_items": {
     "id": "uuid", "trip_id": "uuid",
@@ -160,6 +178,13 @@
     "caption": "text",
     "category": "enum(Gear|Food|Shelter|Cook Kit|Route|Campsite|Misc)",
     "uploaded_by": "string",
+    "created_at": "timestamp"
+  },
+  "trip_members": {
+    "id": "uuid",
+    "trip_id": "text (FK trips.id)",
+    "user_id": "uuid (FK auth.users.id)",
+    "role": "enum(owner|editor|viewer)",
     "created_at": "timestamp"
   }
 }
@@ -274,3 +299,4 @@ When a tool fails:
 | 2026-05-12 | Added `daily_vehicle_permit_saved` to `offline_status` schema | Antigravity |
 | 2026-06-06 | Added `prep_feed_items` table + `prep-feed` storage bucket; Field Prep Feed module | Antigravity |
 | 2026-06-08 | Added `acquired` boolean to `gear_items` schema; decoupled left-circle (acquired) from backpack (packed) | Antigravity |
+| 2026-07-09 | **Phase 3: Private Alpha Hardening** — Created `trip_members` table + `user_trip_role()` helper; replaced all email-whitelist RLS policies with 46 membership-based policies across 14 tables; parameterized `fetchDashboard.ts` and `mutations.ts` (removed hardcoded TRIP_ID); removed `WHITELISTED_EMAILS` from `authContext.tsx`; created `tripContext.tsx` (TripProvider with canEdit/isOwner); created trip routing (`/trips`, `/trips/[tripId]`, `/trips/new`); extracted `DashboardShell.tsx` from monolithic page; created `POST /api/trips/create` (atomic server-side trip creation); added `theme_variant` to settings; created `themeContext.tsx` + `labels.ts` for dual-skin infrastructure; added storage policies for `prep-feed` bucket with `{trip_id}/{user_id}/{uuid}.{ext}` path convention | Antigravity |

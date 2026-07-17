@@ -1,13 +1,11 @@
 // ============================================================
 // lib/mutations.ts — Centralized Supabase mutation helpers
 // All writes go through here. Components stay clean.
-// Every helper returns { data, error } from Supabase.
+// Every helper accepts tripId as first param — no hardcoded IDs.
 // ============================================================
 
 import { supabase } from './supabase';
 import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, PrepFeedItem } from '@/types';
-
-const TRIP_ID = 'trip-maple-lake-001';
 
 /** Generate a UUID for new rows — belt-and-suspenders alongside the DB default */
 function generateId(): string {
@@ -24,11 +22,12 @@ function generateId(): string {
 // ─── Gear Items ────────────────────────────────────────────
 
 export async function createGearItem(
+    tripId: string,
     item: Omit<GearItem, 'id' | 'trip_id'>
 ) {
     return supabase
         .from('gear_items')
-        .insert({ id: generateId(), ...item, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...item, trip_id: tripId })
         .select()
         .single();
 }
@@ -66,11 +65,12 @@ export async function toggleGearAcquired(id: string, acquired: boolean) {
 // ─── Meals ────────────────────────────────────────────────
 
 export async function createMeal(
+    tripId: string,
     meal: Omit<Meal, 'id' | 'trip_id'>
 ) {
     return supabase
         .from('meals')
-        .insert({ id: generateId(), ...meal, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...meal, trip_id: tripId })
         .select()
         .single();
 }
@@ -94,11 +94,12 @@ export async function deleteMeal(id: string) {
 // ─── Timeline Events ───────────────────────────────────────
 
 export async function createTimelineEvent(
+    tripId: string,
     event: Omit<TimelineEvent, 'id' | 'trip_id'>
 ) {
     return supabase
         .from('timeline_events')
-        .insert({ id: generateId(), ...event, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...event, trip_id: tripId })
         .select()
         .single();
 }
@@ -122,11 +123,12 @@ export async function deleteTimelineEvent(id: string) {
 // ─── Crew Members ─────────────────────────────────────────
 
 export async function createCrewMember(
+    tripId: string,
     member: Omit<CrewMember, 'id' | 'trip_id'>
 ) {
     return supabase
         .from('crew_members')
-        .insert({ id: generateId(), ...member, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...member, trip_id: tripId })
         .select()
         .single();
 }
@@ -150,11 +152,12 @@ export async function deleteCrewMember(id: string) {
 // ─── Alerts ───────────────────────────────────────────────
 
 export async function createAlert(
+    tripId: string,
     alert: Omit<Alert, 'id' | 'trip_id' | 'created_at'>
 ) {
     return supabase
         .from('alerts')
-        .insert({ id: generateId(), ...alert, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...alert, trip_id: tripId })
         .select()
         .single();
 }
@@ -200,9 +203,11 @@ export async function updateOfflineStatus(
 
 // ─── Prep Feed ────────────────────────────────────────────
 
-export async function uploadPrepFeedImage(file: File): Promise<string> {
+export async function uploadPrepFeedImage(tripId: string, file: File): Promise<string> {
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? 'anonymous';
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${TRIP_ID}/${generateId()}.${ext}`;
+    const path = `${tripId}/${userId}/${generateId()}.${ext}`;
     const { error } = await supabase.storage.from('prep-feed').upload(path, file);
     if (error) throw error;
     const { data } = supabase.storage.from('prep-feed').getPublicUrl(path);
@@ -210,11 +215,12 @@ export async function uploadPrepFeedImage(file: File): Promise<string> {
 }
 
 export async function createPrepFeedItem(
+    tripId: string,
     item: Omit<PrepFeedItem, 'id' | 'trip_id' | 'created_at'>
 ) {
     return supabase
         .from('prep_feed_items')
-        .insert({ id: generateId(), ...item, trip_id: TRIP_ID })
+        .insert({ id: generateId(), ...item, trip_id: tripId })
         .select()
         .single();
 }

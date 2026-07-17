@@ -4,7 +4,8 @@ import React from 'react';
 import type { AstroData, WeatherCurrent } from '@/types';
 import { getSkyQuality, getHeadlampTime, getGoldenHourLabel } from '@/lib/helpers';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
-import { Star, Sunset, Flashlight, Eye, Navigation } from 'lucide-react';
+import { useTheme } from '@/lib/themeContext';
+import { Star, Moon, Sunrise, Sunset, Eye, AlertCircle, Flashlight, Navigation } from 'lucide-react';
 
 interface AstroCardProps {
     astro: AstroData;
@@ -28,8 +29,10 @@ export default function AstroCard({ astro, weather }: AstroCardProps) {
     const goldenHour = getGoldenHourLabel(astro);
     const moonIcon = moonPhaseIcon[astro.moon_phase] || '🌙';
 
+    const { labels } = useTheme();
+
     return (
-        <Card title="Night Sky" icon={Star} className="h-full">
+        <Card title={labels.astro} icon={Star} className="h-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <div className="flex items-center gap-4 mb-6">

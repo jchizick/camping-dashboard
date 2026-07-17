@@ -9,7 +9,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { mapOpenMeteoToSupabase } from '@/lib/weatherMapper';
 import type { OpenMeteoResponse } from '@/lib/weatherMapper';
 
-const TRIP_ID = 'trip-maple-lake-001';
+const DEFAULT_TRIP_ID = 'trip-maple-lake-001'; // Fallback for cron backward compat
 const FORECAST_DAYS = 5;
 
 // ─── Auth guard ──────────────────────────────────────────────────────────────
@@ -36,6 +36,9 @@ export async function GET(req: NextRequest) {
     if (!isAuthorized(req)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Resolve trip_id from query param or use default
+    const TRIP_ID = req.nextUrl.searchParams.get('trip_id') || DEFAULT_TRIP_ID;
 
     // ── 1. Fetch trip coordinates from Supabase ───────────────────────────────
     const { data: trip, error: tripErr } = await supabaseAdmin

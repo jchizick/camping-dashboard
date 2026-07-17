@@ -3,6 +3,7 @@
 import React from 'react';
 import type { WeatherForecast } from '@/types';
 import { Card } from '@/components/ui/Primitives';
+import { useTheme } from '@/lib/themeContext';
 import { Calendar, Droplets, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, HelpCircle } from 'lucide-react';
 
 interface ForecastCardProps {
@@ -25,8 +26,10 @@ function getWeatherIcon(condition: string) {
 export default function ForecastCard({ forecast }: ForecastCardProps) {
     if (!forecast || forecast.length === 0) return null;
 
+    const { labels } = useTheme();
+
     return (
-        <Card title="5-Day Forecast" icon={Calendar} className="h-full">
+        <Card title={labels.forecast} icon={Calendar} className="h-full">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 h-full">
                 {forecast.map((day, i) => {
                     // Try to extract Day string properly

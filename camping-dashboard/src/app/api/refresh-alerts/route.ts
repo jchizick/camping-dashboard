@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-const TRIP_ID = 'trip-maple-lake-001';
+const DEFAULT_TRIP_ID = 'trip-maple-lake-001'; // Fallback for cron backward compat
 
 function isAuthorized(req: NextRequest): boolean {
     const cronSecret = process.env.CRON_SECRET;
@@ -17,7 +17,7 @@ function isAuthorized(req: NextRequest): boolean {
     return false;
 }
 
-async function scrapeAlgonquinAlerts() {
+async function scrapeAlgonquinAlerts(tripId: string) {
     console.log('[refresh-alerts] Scraping Algonquin alerts...');
     const url = 'https://www.ontarioparks.ca/park/algonquin/backcountry/alerts';
     let textSample = "Currently checking. Please see Ontario Parks site for full details.";
@@ -54,7 +54,7 @@ async function scrapeAlgonquinAlerts() {
     }
 
     return {
-        trip_id: TRIP_ID,
+        trip_id: tripId,
         title: 'Ontario Parks: Algonquin Backcountry',
         body: textSample,
         severity,
@@ -64,7 +64,7 @@ async function scrapeAlgonquinAlerts() {
     };
 }
 
-async function scrapeWeatherAlerts() {
+async function scrapeWeatherAlerts(tripId: string) {
     console.log('[refresh-alerts] Fetching EC ATOM feed...');
     const url = 'https://weather.gc.ca/rss/battleboard/onrm31_e.xml';
     
@@ -99,7 +99,7 @@ async function scrapeWeatherAlerts() {
     }
 
     return {
-        trip_id: TRIP_ID,
+        trip_id: tripId,
         title: 'Environment Canada',
         body: titleText,
         severity,
@@ -114,8 +114,11 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const algonquinAlert = await scrapeAlgonquinAlerts();
-    const ecAlert = await scrapeWeatherAlerts();
+    // Resolve trip_id from query param or use default
+    const TRIP_ID = req.nextUrl.searchParams.get('trip_id') || DEFAULT_TRIP_ID;
+
+    const algonquinAlert = await scrapeAlgonquinAlerts(TRIP_ID);
+    const ecAlert = await scrapeWeatherAlerts(TRIP_ID);
 
     const alerts = [algonquinAlert, ecAlert];
 
