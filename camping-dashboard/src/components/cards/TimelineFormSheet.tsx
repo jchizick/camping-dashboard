@@ -117,9 +117,13 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
                     <select
                         id="event-phase"
                         className="crud-form__select"
-                        value={form.phase || 'None'}
-                        onChange={(e) => set('phase', e.target.value as TimelineEvent['phase'])}
+                        value={form.phase ?? ''}
+                        onChange={(e) => set(
+                            'phase',
+                            e.target.value === '' ? null : e.target.value as TimelineEvent['phase']
+                        )}
                     >
+                        <option value="">Uncategorized</option>
                         <option value="None">None</option>
                         <option value="Transit">Transit</option>
                         <option value="Setup">Setup</option>

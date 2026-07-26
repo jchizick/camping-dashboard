@@ -24,6 +24,7 @@ import type {
   PrepFeedItem,
   Settings,
   TimelineEvent,
+  TimelinePhase,
   TripDashboard,
   TripMemberRole,
   WeatherCurrent,
@@ -98,16 +99,31 @@ export function toGearItem(row: GearItemRow): GearItem {
 
 export function toTimelineEvent(row: TimelineEventRow): TimelineEvent {
   requireColumns(row, 'timeline_events', [
-    'day_number', 'details', 'event_time', 'phase', 'sort_order', 'title', 'trip_id',
+    'day_number', 'details', 'event_time', 'sort_order', 'title', 'trip_id',
   ]);
   return {
     ...row,
-    phase: checkedValue(
-      row.phase,
-      ['Transit', 'Setup', 'Sustain', 'Leisure', 'None'],
-      'timeline_events.phase'
-    ),
+    phase: row.phase === null
+      ? null
+      : checkedValue<TimelinePhase>(
+          row.phase,
+          ['Transit', 'Setup', 'Sustain', 'Leisure', 'None'],
+          'timeline_events.phase'
+        ),
   };
+}
+
+export function toTimelineEvents(rows: TimelineEventRow[]): TimelineEvent[] {
+  return rows.flatMap((row) => {
+    try {
+      return [toTimelineEvent(row)];
+    } catch {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[dashboardMapper] Omitting a malformed timeline event.');
+      }
+      return [];
+    }
+  });
 }
 
 export function toMeal(row: MealRow): Meal {

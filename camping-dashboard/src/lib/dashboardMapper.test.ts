@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   PrepFeedItemRow,
+  TimelineEventRow,
   TripRow,
   WeatherCurrentRow,
 } from '@/types/database';
 import {
   parsePrepFeedItem,
   toPrepFeedItem,
+  toTimelineEvent,
+  toTimelineEvents,
   toTripDashboard,
   toTripMemberRole,
   toWeatherCurrent,
@@ -66,7 +69,22 @@ const newTripRow: TripRow = {
   updated_at: '2026-07-26T12:00:00.000Z',
 };
 
+const timelineRow: TimelineEventRow = {
+  id: 'timeline-test',
+  trip_id: 'trip-test',
+  day_number: 1,
+  event_time: '09:00',
+  title: 'Legacy event',
+  details: '',
+  sort_order: 10,
+  phase: null,
+};
+
 describe('dashboard row transformations', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('validates nullable columns separately from optional row absence', () => {
     expect(toWeatherCurrent(weatherRow)).toEqual(weatherRow);
     expect(() => toWeatherCurrent({ ...weatherRow, humidity: null })).toThrow(
@@ -93,6 +111,20 @@ describe('dashboard row transformations', () => {
     expect(parsePrepFeedItem(prepFeedRow)).toEqual(prepFeedRow);
     expect(() => parsePrepFeedItem({ ...prepFeedRow, category: 'Unknown' })).toThrow(
       'prep_feed_items.category has unsupported value'
+    );
+  });
+
+  it('preserves a null timeline phase as an uncategorized event', () => {
+    expect(toTimelineEvent(timelineRow)).toEqual(timelineRow);
+  });
+
+  it('omits one malformed timeline event without rejecting valid rows', () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const malformed = { ...timelineRow, id: 'timeline-invalid', phase: 'Unknown' };
+
+    expect(toTimelineEvents([malformed, timelineRow])).toEqual([timelineRow]);
+    expect(warning).toHaveBeenCalledWith(
+      '[dashboardMapper] Omitting a malformed timeline event.'
     );
   });
 

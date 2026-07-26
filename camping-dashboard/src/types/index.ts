@@ -87,8 +87,8 @@ export type GearItem = PresentColumns<
 > & { priority: Priority };
 export type TimelineEvent = PresentColumns<
   TimelineEventRow,
-  Exclude<keyof TimelineEventRow, 'id'>
-> & { phase: TimelinePhase };
+  Exclude<keyof TimelineEventRow, 'id' | 'phase'>
+> & { phase: TimelinePhase | null };
 export type Meal = PresentColumns<MealRow, Exclude<keyof MealRow, 'id'>> & {
   meal_type: MealType;
   prep_type: PrepType;

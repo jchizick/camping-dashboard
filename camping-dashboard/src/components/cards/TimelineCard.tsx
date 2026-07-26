@@ -68,7 +68,11 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
             icon={Clock} 
             className="h-full flex flex-col max-h-[600px]"
             action={onAdd && (
-                <button onClick={openAdd} className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors">
+                <button
+                    aria-label="Add timeline event"
+                    onClick={openAdd}
+                    className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors"
+                >
                     <Plus size={16} />
                 </button>
             )}
@@ -118,7 +122,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                         {/* Vertical line that spans all content with original alignment */}
                         <div className="absolute left-[60px] top-2 bottom-2 w-px bg-border-subtle z-0" />
                         
-                        {dayEvents.map((event, i) => (
+                        {dayEvents.map((event) => (
                             <div key={event.id} className="relative flex gap-6 group hover:bg-card-hover/30 p-2 -my-2 -mx-2 rounded-lg transition-colors z-10">
                                 <div className="w-12 text-xs font-mono text-accent-yellow pt-0.5 shrink-0 text-right">{event.event_time}</div>
                                 
@@ -128,7 +132,10 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                                 <div className="flex-1 pb-6 border-b border-border-subtle/30 last:border-0 last:pb-0">
                                     <div className="flex items-center gap-2 mb-1">
                                         <h4 className="text-sm font-medium text-text-main group-hover:text-accent-yellow transition-colors">{event.title}</h4>
-                                        {event.phase && event.phase !== 'None' && (
+                                        {event.phase === null && (
+                                            <Badge>Uncategorized</Badge>
+                                        )}
+                                        {event.phase !== null && event.phase !== 'None' && (
                                             <Badge variant={event.phase === 'Transit' ? 'info' : event.phase === 'Setup' ? 'warning' : 'success'}>
                                                 {event.phase}
                                             </Badge>
@@ -141,6 +148,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-3">
                                             {onUpdate && (
                                                 <button 
+                                                    aria-label={`Edit ${event.title}`}
                                                     className="p-1 text-text-muted hover:text-accent-yellow rounded hover:bg-border-subtle transition-colors"
                                                     onClick={() => openEdit(event)}
                                                 >
@@ -149,6 +157,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                                             )}
                                             {onDelete && (
                                                 <button 
+                                                    aria-label={`Remove ${event.title}`}
                                                     className="p-1 text-text-muted hover:text-accent-red rounded hover:bg-border-subtle transition-colors"
                                                     onClick={() => setPendingDeleteId(event.id)}
                                                 >
