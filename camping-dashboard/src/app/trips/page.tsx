@@ -9,6 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/lib/authContext';
+import { getAuthErrorMessage } from '@/lib/authRedirect';
 import { ThemeProvider } from '@/lib/themeContext';
 import { fetchUserTrips, type UserTrip } from '@/lib/fetchDashboard';
 import { MapPin, Calendar, Plus, LogIn, Loader2, Trash2 } from 'lucide-react';
@@ -43,7 +44,14 @@ function TripsContent() {
   }>({ userId: null, trips: [] });
   const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [callbackError, setCallbackError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const errorCode = new URLSearchParams(window.location.search).get('auth_error');
+    setCallbackError(getAuthErrorMessage(errorCode));
+  }, []);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -91,6 +99,15 @@ function TripsContent() {
     }
   }
 
+  async function handleSignIn() {
+    setSignInError(null);
+    try {
+      await signIn();
+    } catch {
+      setSignInError('Google sign-in could not be started. Please try again.');
+    }
+  }
+
   // ── Not signed in ────────────────────────────────────────────────
   if (!authLoading && !user) {
     return (
@@ -103,8 +120,16 @@ function TripsContent() {
           <p className="text-text-muted text-base mb-8 leading-relaxed">
             Plan, pack, and prepare for your next outdoor adventure.
           </p>
+          {(callbackError || signInError) && (
+            <p
+              role="alert"
+              className="mb-5 rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-sm text-accent-red"
+            >
+              {signInError ?? callbackError}
+            </p>
+          )}
           <button
-            onClick={signIn}
+            onClick={handleSignIn}
             className="inline-flex items-center gap-2.5 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
             style={{
               background: 'var(--accent-yellow)',

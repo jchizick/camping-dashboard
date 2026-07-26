@@ -10,6 +10,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { buildOAuthCallbackUrl } from '@/lib/authRedirect';
+import { returnToSignIn } from '@/lib/authNavigation';
 
 // ── Context shape ─────────────────────────────────────────────────────────────
 interface AuthContextValue {
@@ -48,17 +50,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = useCallback(async () => {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: buildOAuthCallbackUrl(window.location),
       },
     });
+
+    if (error) throw error;
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      setUser(null);
+      returnToSignIn();
+    }
   }, []);
 
   return (
