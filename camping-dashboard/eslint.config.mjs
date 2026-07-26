@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "generate_magic_link.js",
     "get_trip_id.js",
+    "supabase/functions/process-prep-feed-cleanup/index.ts",
     "take_screenshots.js",
     "toggle_theme.js",
   ]),

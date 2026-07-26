@@ -357,26 +357,53 @@ export type Database = {
       }
       prep_feed_storage_cleanup_jobs: {
         Row: {
+          attempt_count: number
           completed_at: string | null
           created_at: string
+          failed_at: string | null
           id: string
           item_id: string | null
+          last_attempt_at: string | null
+          last_error_code: string | null
+          last_error_summary: string | null
+          locked_at: string | null
+          locked_by: string | null
+          next_attempt_at: string
+          status: string
           storage_path: string
           trip_id: string
         }
         Insert: {
+          attempt_count?: number
           completed_at?: string | null
           created_at?: string
+          failed_at?: string | null
           id?: string
           item_id?: string | null
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_attempt_at?: string
+          status?: string
           storage_path: string
           trip_id: string
         }
         Update: {
+          attempt_count?: number
           completed_at?: string | null
           created_at?: string
+          failed_at?: string | null
           id?: string
           item_id?: string | null
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_attempt_at?: string
+          status?: string
           storage_path?: string
           trip_id?: string
         }
@@ -691,6 +718,23 @@ export type Database = {
     }
     Functions: {
       begin_trip_deletion: { Args: { p_trip_id: string }; Returns: string }
+      claim_prep_feed_storage_cleanup_jobs: {
+        Args: {
+          p_batch_size?: number
+          p_stale_after_seconds?: number
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          id: string
+          storage_path: string
+          trip_id: string
+        }[]
+      }
+      complete_prep_feed_storage_cleanup_job: {
+        Args: { p_job_id: string; p_worker_id: string }
+        Returns: boolean
+      }
       complete_trip_deletion: {
         Args: { p_deletion_token: string; p_trip_id: string }
         Returns: boolean
@@ -711,6 +755,16 @@ export type Database = {
         }
         Returns: string
       }
+      fail_prep_feed_storage_cleanup_job: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_job_id: string
+          p_worker_id: string
+        }
+        Returns: boolean
+      }
+      get_prep_feed_storage_cleanup_summary: { Args: never; Returns: Json }
       replace_prep_feed_image: {
         Args: {
           p_actor_user_id: string
@@ -719,6 +773,20 @@ export type Database = {
           p_storage_path: string
         }
         Returns: Json
+      }
+      retry_failed_prep_feed_storage_cleanup_job: {
+        Args: { p_job_id: string }
+        Returns: boolean
+      }
+      retry_prep_feed_storage_cleanup_job: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_job_id: string
+          p_next_attempt_at: string
+          p_worker_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

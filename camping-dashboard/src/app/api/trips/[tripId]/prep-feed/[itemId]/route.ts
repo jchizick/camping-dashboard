@@ -185,7 +185,7 @@ export async function PUT(
     async completeCleanup(cleanupId) {
       const { error } = await supabaseAdmin
         .from('prep_feed_storage_cleanup_jobs')
-        .update({ completed_at: new Date().toISOString() })
+        .delete()
         .eq('id', cleanupId);
       return { error };
     },
