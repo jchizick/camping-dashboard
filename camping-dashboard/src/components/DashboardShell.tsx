@@ -27,7 +27,6 @@ import {
   // Park Intel
   updateParkIntel,
   // Prep Feed
-  uploadPrepFeedImage, createPrepFeedItem, deletePrepFeedItem,
   updateTripCampsite,
 } from '@/lib/mutations';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
@@ -238,20 +237,31 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   const uploaderName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Unknown';
 
   async function handlePrepFeedAdd(payload: { file: File; caption: string; category: PrepFeedCategory; uploaded_by: string }) {
-    const imageUrl = await uploadPrepFeedImage(tripId, payload.file);
-    const { data: newItem, error } = await createPrepFeedItem(tripId, {
-      image_url: imageUrl,
-      caption: payload.caption,
-      category: payload.category,
-      uploaded_by: payload.uploaded_by,
+    const form = new FormData();
+    form.set('file', payload.file);
+    form.set('caption', payload.caption);
+    form.set('category', payload.category);
+    form.set('uploaded_by', payload.uploaded_by);
+    const response = await fetch(`/api/trips/${encodeURIComponent(tripId)}/prep-feed`, {
+      method: 'POST',
+      body: form,
     });
-    if (error || !newItem) { console.error('[createPrepFeed]', error?.message); throw error; }
-    setPrepFeed(prev => [newItem as PrepFeedItem, ...prev]);
+    const result = await response.json();
+    if (!response.ok || !result.item) {
+      throw new Error(result.error ?? 'The prep-feed item could not be saved.');
+    }
+    setPrepFeed(prev => [result.item as PrepFeedItem, ...prev]);
   }
 
   async function handlePrepFeedDelete(id: string) {
-    const { error } = await deletePrepFeedItem(id);
-    if (error) { console.error('[deletePrepFeed]', error.message); throw error; }
+    const response = await fetch(
+      `/api/trips/${encodeURIComponent(tripId)}/prep-feed/${encodeURIComponent(id)}`,
+      { method: 'DELETE' }
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error ?? 'The prep-feed item could not be deleted.');
+    }
     setPrepFeed(prev => prev.filter(i => i.id !== id));
   }
 

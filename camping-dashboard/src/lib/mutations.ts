@@ -5,7 +5,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, PrepFeedItem, Trip } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, Trip } from '@/types';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 
 /** Generate a UUID for new rows — belt-and-suspenders alongside the DB default */
@@ -242,29 +242,3 @@ export async function updateTripCampsite(
 }
 
 // ─── Prep Feed ────────────────────────────────────────────
-
-export async function uploadPrepFeedImage(tripId: string, file: File): Promise<string> {
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id ?? 'anonymous';
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${tripId}/${userId}/${generateId()}.${ext}`;
-    const { error } = await supabase.storage.from('prep-feed').upload(path, file);
-    if (error) throw error;
-    const { data } = supabase.storage.from('prep-feed').getPublicUrl(path);
-    return data.publicUrl;
-}
-
-export async function createPrepFeedItem(
-    tripId: string,
-    item: Omit<PrepFeedItem, 'id' | 'trip_id' | 'created_at'>
-) {
-    return supabase
-        .from('prep_feed_items')
-        .insert({ id: generateId(), ...item, trip_id: tripId })
-        .select()
-        .single();
-}
-
-export async function deletePrepFeedItem(id: string) {
-    return supabase.from('prep_feed_items').delete().eq('id', id);
-}

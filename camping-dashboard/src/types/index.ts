@@ -169,7 +169,8 @@ export interface Alert {
 export interface PrepFeedItem {
   id: string;
   trip_id: string;
-  image_url: string;
+  image_url: string | null;
+  storage_path: string | null;
   caption: string;
   category: PrepFeedCategory;
   uploaded_by: string;

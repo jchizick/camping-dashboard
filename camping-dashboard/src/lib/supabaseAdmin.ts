@@ -4,6 +4,7 @@
 // Used only inside Next.js API routes (server-side)
 // ============================================================
 
+import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

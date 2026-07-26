@@ -112,15 +112,20 @@ export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploa
                                     <button
                                         type="button"
                                         className="prep-feed-entry__thumb-wrap"
-                                        onClick={() => setLightboxIndex(items.indexOf(item))}
+                                        onClick={item.image_url ? () => setLightboxIndex(items.indexOf(item)) : undefined}
+                                        disabled={!item.image_url}
                                         aria-label={`View ${item.caption || item.category}`}
                                     >
-                                        <img
-                                            src={item.image_url}
-                                            alt={item.caption || item.category}
-                                            className="prep-feed-entry__thumb"
-                                            loading="lazy"
-                                        />
+                                        {item.image_url ? (
+                                            <img
+                                                src={item.image_url}
+                                                alt={item.caption || item.category}
+                                                className="prep-feed-entry__thumb"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <Camera size={24} className="text-text-muted opacity-40" aria-hidden="true" />
+                                        )}
                                     </button>
 
                                     {/* Details */}

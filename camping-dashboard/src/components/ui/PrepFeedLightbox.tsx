@@ -118,11 +118,15 @@ export default function PrepFeedLightbox({ items, currentIndex, onClose, onNavig
                         </button>
                     )}
 
-                    <img
-                        src={item.image_url}
-                        alt={item.caption || item.category}
-                        className="lightbox-image"
-                    />
+                    {item.image_url ? (
+                        <img
+                            src={item.image_url}
+                            alt={item.caption || item.category}
+                            className="lightbox-image"
+                        />
+                    ) : (
+                        <p className="text-text-muted">This prep-feed item has no image.</p>
+                    )}
 
                     {/* Next button */}
                     {hasNext && (

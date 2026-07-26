@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { ThemeProvider } from '@/lib/themeContext';
 import { fetchUserTrips, type UserTrip } from '@/lib/fetchDashboard';
-import { MapPin, Calendar, Plus, LogIn, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Plus, LogIn, Loader2, Trash2 } from 'lucide-react';
 
 // Default settings for app-shell pages (no trip context yet)
 const APP_SHELL_SETTINGS = {
@@ -41,6 +41,8 @@ function TripsContent() {
     userId: string | null;
     trips: UserTrip[];
   }>({ userId: null, trips: [] });
+  const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -62,6 +64,32 @@ function TripsContent() {
 
   const trips = tripsState.userId === user?.id ? tripsState.trips : [];
   const isLoading = authLoading || Boolean(user && tripsState.userId !== user.id);
+
+  async function handleDeleteTrip(trip: UserTrip) {
+    if (deletingTripId) return;
+    const confirmed = window.confirm(
+      `Delete "${trip.name}"? This also permanently deletes its prep-feed photos and cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingTripId(trip.id);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/trips/${encodeURIComponent(trip.id)}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? 'The trip could not be deleted.');
+      setTripsState((current) => ({
+        ...current,
+        trips: current.trips.filter((candidate) => candidate.id !== trip.id),
+      }));
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'The trip could not be deleted.');
+    } finally {
+      setDeletingTripId(null);
+    }
+  }
 
   // ── Not signed in ────────────────────────────────────────────────
   if (!authLoading && !user) {
@@ -128,6 +156,11 @@ function TripsContent() {
         </div>
 
         {/* Trip cards */}
+        {deleteError && (
+          <p className="mb-4 rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-sm text-accent-red">
+            {deleteError}
+          </p>
+        )}
         {trips.length === 0 ? (
           <div className="text-center py-16 px-8">
             <div className="text-5xl mb-4">🗺️</div>
@@ -137,46 +170,64 @@ function TripsContent() {
         ) : (
           <div className="flex flex-col gap-3">
             {trips.map((trip) => (
-              <button
+              <div
                 key={trip.id}
-                onClick={() => router.push(`/trips/${trip.id}`)}
-                className="flex justify-between items-center p-5 bg-card-bg border border-border-subtle rounded-xl cursor-pointer transition-all duration-200 text-left w-full hover:border-accent-yellow/30 hover:bg-card-hover hover:shadow-card group"
+                className="flex items-stretch bg-card-bg border border-border-subtle rounded-xl transition-all duration-200 hover:border-accent-yellow/30 hover:bg-card-hover hover:shadow-card group"
               >
-                <div>
-                  <h3 className="text-text-main text-lg font-semibold mb-1 group-hover:text-accent-yellow transition-colors">
-                    {trip.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-4 text-text-muted text-xs">
-                    {trip.park_name && (
+                <button
+                  onClick={() => router.push(`/trips/${trip.id}`)}
+                  className="flex flex-1 justify-between items-center p-5 cursor-pointer text-left min-w-0"
+                >
+                  <div>
+                    <h3 className="text-text-main text-lg font-semibold mb-1 group-hover:text-accent-yellow transition-colors">
+                      {trip.name}
+                    </h3>
+                    <div className="flex flex-wrap gap-4 text-text-muted text-xs">
+                      {trip.park_name && (
+                        <span className="flex items-center gap-1.5">
+                          <MapPin size={13} /> {trip.park_name}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1.5">
-                        <MapPin size={13} /> {trip.park_name}
+                        <Calendar size={13} /> {trip.start_date} → {trip.end_date}
                       </span>
-                    )}
-                    <span className="flex items-center gap-1.5">
-                      <Calendar size={13} /> {trip.start_date} → {trip.end_date}
-                    </span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-xs font-medium uppercase tracking-wide px-2.5 py-1 rounded-full"
-                    style={{
-                      background: trip.role === 'owner'
-                        ? 'color-mix(in srgb, var(--accent-yellow) 12%, transparent)'
-                        : 'color-mix(in srgb, var(--accent-blue) 12%, transparent)',
-                      color: trip.role === 'owner'
-                        ? 'var(--accent-yellow)'
-                        : 'var(--accent-blue)',
-                      border: `1px solid ${trip.role === 'owner'
-                        ? 'color-mix(in srgb, var(--accent-yellow) 25%, transparent)'
-                        : 'color-mix(in srgb, var(--accent-blue) 25%, transparent)'}`,
-                    }}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="text-xs font-medium uppercase tracking-wide px-2.5 py-1 rounded-full"
+                      style={{
+                        background: trip.role === 'owner'
+                          ? 'color-mix(in srgb, var(--accent-yellow) 12%, transparent)'
+                          : 'color-mix(in srgb, var(--accent-blue) 12%, transparent)',
+                        color: trip.role === 'owner'
+                          ? 'var(--accent-yellow)'
+                          : 'var(--accent-blue)',
+                        border: `1px solid ${trip.role === 'owner'
+                          ? 'color-mix(in srgb, var(--accent-yellow) 25%, transparent)'
+                          : 'color-mix(in srgb, var(--accent-blue) 25%, transparent)'}`,
+                      }}
+                    >
+                      {trip.role}
+                    </span>
+                    <span className="text-text-muted text-lg group-hover:translate-x-0.5 transition-transform">→</span>
+                  </div>
+                </button>
+                {trip.role === 'owner' && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTrip(trip)}
+                    disabled={deletingTripId !== null}
+                    className="m-3 ml-0 self-center rounded-lg p-2 text-text-muted transition-colors hover:bg-accent-red/10 hover:text-accent-red disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={`Delete ${trip.name}`}
+                    title="Delete trip"
                   >
-                    {trip.role}
-                  </span>
-                  <span className="text-text-muted text-lg group-hover:translate-x-0.5 transition-transform">→</span>
-                </div>
-              </button>
+                    {deletingTripId === trip.id
+                      ? <Loader2 size={16} className="animate-spin" />
+                      : <Trash2 size={16} />}
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
