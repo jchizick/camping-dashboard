@@ -12,6 +12,7 @@ import type {
   TripRow,
   WeatherCurrentRow,
   WeatherForecastRow,
+  WeatherRefreshStateRow,
 } from '@/types/database';
 import type {
   Alert,
@@ -29,6 +30,7 @@ import type {
   TripMemberRole,
   WeatherCurrent,
   WeatherForecast,
+  WeatherRefreshState,
 } from '@/types';
 
 function requireColumns<T, K extends keyof T>(
@@ -74,17 +76,27 @@ export function toTripMemberRole(value: string): TripMemberRole {
 
 export function toWeatherCurrent(row: WeatherCurrentRow): WeatherCurrent {
   requireColumns(row, 'weather_current', [
-    'condition_label', 'humidity', 'icon', 'moonset_time', 'rain_chance',
-    'sunrise_time', 'sunset_time', 'temperature_c', 'updated_at', 'visibility', 'wind_kph',
+    'condition_label', 'icon', 'temperature_c', 'updated_at',
   ]);
   return row;
 }
 
 export function toWeatherForecast(row: WeatherForecastRow): WeatherForecast {
   requireColumns(row, 'weather_forecast', [
-    'condition_label', 'high_c', 'icon', 'low_c', 'rain_chance', 'wind_kph',
+    'condition_label', 'icon',
   ]);
   return row;
+}
+
+export function toWeatherRefreshState(row: WeatherRefreshStateRow): WeatherRefreshState {
+  return {
+    ...row,
+    status: checkedValue(
+      row.status,
+      ['idle', 'refreshing', 'retry', 'failed'],
+      'weather_refresh_state.status'
+    ),
+  };
 }
 
 export function toGearItem(row: GearItemRow): GearItem {

@@ -27,6 +27,7 @@ export type WeatherCurrentRow = TableRow<'weather_current'>;
 export type WeatherCurrentInsert = TableInsert<'weather_current'>;
 export type WeatherForecastRow = TableRow<'weather_forecast'>;
 export type WeatherForecastInsert = TableInsert<'weather_forecast'>;
+export type WeatherRefreshStateRow = TableRow<'weather_refresh_state'>;
 
 export type CreateTripArgs = PublicSchema['Functions']['create_trip']['Args'];
 export type CreateTripResult = PublicSchema['Functions']['create_trip']['Returns'];

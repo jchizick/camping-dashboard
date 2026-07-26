@@ -85,10 +85,11 @@ describe('dashboard row transformations', () => {
     vi.restoreAllMocks();
   });
 
-  it('validates nullable columns separately from optional row absence', () => {
+  it('preserves provider-optional values while validating required weather identity', () => {
     expect(toWeatherCurrent(weatherRow)).toEqual(weatherRow);
-    expect(() => toWeatherCurrent({ ...weatherRow, humidity: null })).toThrow(
-      'weather_current.humidity is unexpectedly null'
+    expect(toWeatherCurrent({ ...weatherRow, humidity: null }).humidity).toBeNull();
+    expect(() => toWeatherCurrent({ ...weatherRow, temperature_c: null })).toThrow(
+      'weather_current.temperature_c is unexpectedly null'
     );
   });
 

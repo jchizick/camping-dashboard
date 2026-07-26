@@ -1,116 +1,162 @@
-# Follow-up: multi-trip weather refresh on Supabase Cron
+# Multi-trip weather refresh architecture
 
-## Scope and non-goals
+## Decision
 
-This is a separate architecture proposal, not part of the prep-feed cleanup
-worker diff. The current Vercel Cron entries and weather routes remain
-unchanged until this replacement is implemented, deployed, and verified.
+Camping Dashboard weather refresh moves to one provider-neutral Supabase Edge
+Function, `refresh-trip-weather`, coordinated by one hourly Supabase Cron job,
+`refresh-due-trip-weather`. It does not create one job per trip and does not
+assume a default or Maple Lake trip.
 
-The replacement should use one Supabase Cron coordinator for all eligible
-trips. It must not create one job per trip, assume Maple Lake, or bind the
-orchestrator to one weather provider.
+This document records the reviewed local design. The hosted migration, Edge
+Function deployment, Vault secret, Cron activation, and Vercel cutover remain
+staged operations. The existing Vercel weather schedule stays in place until a
+real hosted Supabase cycle succeeds, even though its missing `trip_id` contract
+currently makes it ineffective.
 
-## Pattern to reuse from Our Adventures
+The prep-feed cleanup scheduler and `/api/refresh-alerts` are independent and
+must not be changed by the weather rollout.
 
-The hosted Our Adventures `weather-for-adventure` Edge Function provides the
-provider-boundary pattern to carry forward:
+## Existing failure
 
-- resolve latitude, longitude, timezone, date, and time from the record rather
-  than from a global default;
-- isolate Open-Meteo request construction and response normalization;
-- apply a finite provider timeout;
-- distinguish missing coordinates, too-early forecasts, historical weather,
-  provider unavailability, and a successful forecast;
-- fingerprint provider inputs and retain provider/fetched/expiry metadata in a
-  cache;
-- vary freshness by how soon the event occurs;
-- keep server credentials inside the Edge runtime.
+`vercel.json` invokes `/api/refresh-weather` daily at 11:00 UTC without query
+parameters. The legacy route requires `trip_id`, so scheduled calls return 400.
+The route also performed three independent writes: current upsert, forecast
+upsert, then stale-row deletion. A later failure could therefore leave a
+half-new weather view.
 
-The camping implementation should reuse the pattern, not copy its
-adventure-specific schema or user-request authorization. A scheduled worker
-needs service-only claim and transition RPCs, while manual refresh still needs
-an authenticated membership/permission boundary.
+`/api/refresh-alerts` runs daily at 11:15 UTC, is hardcoded to
+`trip-maple-lake-001`, and uses Ontario/Canada-specific sources. It remains
+unchanged pending the separate alerts proposal.
 
-## Proposed architecture
+## Our Adventures comparison
 
-Use a single Supabase Cron job to invoke a coordinator Edge Function at a
-modest fixed interval, initially every 15 minutes. Supabase Vault should hold a
-dedicated scheduler bearer secret; the service-role key remains an automatic
-Edge Function secret.
+The accessible Our Adventures implementation supplied useful patterns:
 
-The coordinator claims at most 10 due trips per run through a service-only,
-atomic `FOR UPDATE SKIP LOCKED` RPC. Eligibility should require:
+- an isolated Open-Meteo request/normalization boundary;
+- a nine-second provider timeout;
+- coordinates and provider timezone rather than a global default;
+- nullable provider fields instead of fabricated values;
+- deterministic request fingerprinting;
+- persisted provider, fetched, expiry, and payload metadata;
+- stale content retained when the provider fails.
 
-- valid campsite latitude and longitude;
-- a trip date/status that still benefits from forecast or current conditions;
-- no active worker lock;
-- `weather_current.updated_at` or dedicated refresh metadata older than the
-  freshness threshold;
-- `next_attempt_at <= now()` after a prior provider failure.
+Camping Dashboard does not copy its per-adventure invocation, raw JSON cache,
+adventure lifecycle rules, or logs containing record identifiers. Camping adds
+a bounded multi-trip coordinator, relational atomic persistence, shared manual
+and scheduled locks, and aggregate-only logs.
 
-Freshness should be explicit and testable. A reasonable starting policy is one
-hour for active/near-term trips, three hours for trips within seven days, and
-12 hours for later trips inside the provider forecast window. Trips outside
-the forecast window can be deferred until their next eligibility time rather
-than repeatedly calling the provider.
+## Eligibility and freshness
 
-Each claimed trip is passed to a provider-neutral weather service:
+Camping requests five calendar days from Open-Meteo. A scheduled trip is
+eligible only when:
 
-```text
-trip coordinates + timezone + requested window
-  -> provider adapter
-  -> normalized current/forecast result
-  -> atomic persistence + refresh metadata
-```
+- latitude and longitude are both present and within valid ranges;
+- canonical start and end dates are present and ordered;
+- deletion is not pending;
+- the trip is active, or starts within the next four provider-local calendar
+  days; and
+- its per-trip refresh state is due.
 
-Start with an `open-meteo` adapter that reuses the current mapper semantics.
-The normalized contract, not the coordinator, owns provider-specific fields.
-Persist `provider`, `fetched_at`, `expires_at`, input fingerprint, last status,
-and sanitized failure metadata so another provider can be added without
-changing trip selection or scheduling.
+Completed trips, distant-future trips, missing/invalid dates, missing/invalid
+coordinates, and deletion-pending trips are not claimed. There is no current
+archive/live-module column, so no display label is treated as archive state.
 
-Process the bounded batch with limited concurrency, for example two or three
-provider requests at once. Retry transient timeouts, rate limits, and 5xx
-responses with backoff and jitter. Treat invalid coordinates or normalization
-failures as operator-visible failures rather than fabricating weather. Logs
-and HTTP responses should contain aggregate counts and internal run IDs, not
-trip names, coordinates, provider payloads, or credentials.
+The provider timezone persisted after a successful response determines the
+local date around midnight. A trip with no known provider timezone initially
+uses UTC; the first valid response replaces that bootstrap value.
 
-## Alerts
+One hourly coordinator selects only due trips:
 
-The existing `/api/refresh-alerts` route combines two different concerns:
-Environment Canada weather alerts and Ontario Parks Algonquin operations
-alerts. A future replacement should model these as provider adapters with
-explicit geographic applicability, not apply Algonquin/Ontario feeds to every
-trip. They may share the coordinator infrastructure, but they should retain
-separate normalized contracts and freshness rules.
+| Trip state | Successful refresh interval |
+| --- | --- |
+| Active | 2 hours |
+| Starts within 48 hours | 3 hours |
+| Other upcoming trip inside five-day horizon | 6 hours |
+| Distant future or completed | Not scheduled |
 
-Removing the `trip-maple-lake-001` fallback is a required migration outcome.
-No scheduled path should infer a default trip.
+Manual owner/editor refresh bypasses freshness and date-horizon selection, but
+still requires valid canonical coordinates, a shared lock, and a ten-minute
+cooldown.
 
-## Manual refresh
+## Provider and persistence boundaries
 
-Preserve manual refresh by making it call the same provider-neutral service or
-enqueue the selected trip with immediate priority. Authorization should come
-from the authenticated user and trip membership/edit permission; it should not
-depend on a browser-exposed secret or select a default trip. Return a localized
-status for that trip while keeping the background batch independent.
+`supabase/functions/_shared/weatherProvider.ts` defines the small provider
+contract and the single Open-Meteo adapter. It constructs a deterministic
+five-day metric request with `timezone=auto`, validates aligned arrays and
+required current fields, converts the provider-local observation time to UTC,
+maps WMO codes, and preserves unavailable optional fields as `null`.
 
-## Rollout and retirement
+The request fingerprint contains only stable provider inputs. The payload
+fingerprint contains normalized source data and excludes request time, secrets,
+headers, and unstable object ordering. Open-Meteo exposes processing duration,
+not a provider-generation timestamp, so `providerGeneratedAt` remains null.
 
-1. Add reviewed schema/RPC changes, provider adapter tests, due-selection
-   tests, bounded-batch tests, and manual-refresh authorization tests.
-2. Deploy the Supabase function and one inactive or shadow-mode Cron job.
-3. Compare normalized results, freshness decisions, provider failures, and
-   manual refresh behavior across multiple trips with different coordinates.
-4. Activate Supabase scheduling while preventing duplicate writes, then
-   observe successful runs, retry behavior, and rate limits through at least
-   one complete refresh window.
-5. Verify trips with no coordinates are skipped safely and no code path uses
-   Maple Lake or another default.
-6. Only after production QA, remove the two Vercel Cron entries and retire the
-   legacy scheduled behavior. Keep manual refresh available through the new
-   service.
+`persist_trip_weather` is the transaction boundary. It verifies the held trip
+lock, canonical trip coordinates, normalized schema, timezone, timestamps, and
+fingerprints. It then upserts current weather, deliberately replaces that
+trip's forecast rows, records synchronization metadata, and releases the lock
+in one transaction. An exception rolls back every content and state change.
+Older requests cannot overwrite newer weather. An identical payload fingerprint
+updates freshness metadata without rewriting content.
 
-The prep-feed cleanup scheduler is independent of this plan and provides no
-authorization to alter the current weather jobs.
+## Locking, retries, and stale data
+
+`weather_refresh_state` owns operational state separately from content. Both
+scheduled and manual paths transition a trip to `refreshing` with the same
+`locked_by`/`locked_at` contract.
+
+Scheduled claims use deterministic oldest-due ordering and
+`FOR UPDATE SKIP LOCKED`, with batch size 10, concurrency 2, a nine-second
+provider timeout, and a 15-minute stale-lock threshold. A missing worker can be
+reclaimed until three automatic attempts are exhausted.
+
+Retryable failures include timeout, network/DNS failure, HTTP 429, HTTP 5xx,
+and unexpected transient pipeline/database errors. Backoff is approximately
+15 minutes, one hour, then six hours, with up to 60 seconds of database-side
+jitter. Provider request rejection and normalized contract mismatch are
+operator-action failures.
+
+Failures never delete current or forecast content. State distinguishes:
+
+- `idle`: last successful weather is usable;
+- `refreshing`: a refresh is in progress;
+- `retry`: stale weather is usable while an automatic retry is scheduled;
+- `failed`: stale weather remains usable, or weather is unavailable if no
+  successful content exists.
+
+## Authentication and exposure
+
+Scheduled invocation uses a dedicated `WEATHER_REFRESH_CRON_SECRET`; it is not
+the prep-feed secret. The secret is stored as an Edge Function secret and in
+Vault for the Cron request. The service-role key remains server-only.
+
+The Next.js `/api/refresh-weather` route is POST-only. It validates the signed-in
+user with `getUser()`, obtains that session's access token server-side, and
+invokes the Edge Function manual mode. The database manual claim permits only
+owners and editors through the hardened trip authorization helper. Viewers,
+non-members, anonymous users, lock collisions, and cooldown collisions cannot
+force a refresh. Coordinates always come from the claimed trip row.
+
+Responses and logs contain aggregate counts, duration, run ID, and sanitized
+error category only. They do not contain trip IDs, names, coordinates, provider
+URLs/bodies, user identifiers, cookies, authorization headers, or secrets.
+
+## Rollout boundary
+
+After explicit local approval:
+
+1. Apply the exact reviewed migration to hosted Supabase.
+2. Deploy `refresh-trip-weather`.
+3. Set a distinct Edge Function scheduler secret and matching Vault value.
+4. Create exactly one hourly `refresh-due-trip-weather` job.
+5. Perform staged scheduled and authenticated manual QA while the Vercel
+   weather entry still exists.
+6. Confirm an immediate second run skips fresh work, transient failure retains
+   valid weather, ineligible trips are skipped, and function/pg_cron/pg_net
+   logs are sanitized.
+7. Only then remove `/api/refresh-weather` from `vercel.json`, leaving
+   `/api/refresh-alerts` unchanged, deploy, and observe a real scheduled cycle.
+
+Rollback disables the Supabase Cron without deleting content. The last valid
+weather remains available. Re-adding the Vercel schedule is safe only after its
+request contract is corrected.

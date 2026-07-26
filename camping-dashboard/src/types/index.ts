@@ -12,6 +12,7 @@ import type {
   TripRow,
   WeatherCurrentRow,
   WeatherForecastRow,
+  WeatherRefreshStateRow,
 } from './database';
 
 export type ThemeMode = 'day' | 'night';
@@ -75,12 +76,16 @@ export interface CreateTripRequest {
 
 export type WeatherCurrent = PresentColumns<
   WeatherCurrentRow,
-  Exclude<keyof WeatherCurrentRow, 'trip_id'>
+  'condition_label' | 'icon' | 'temperature_c' | 'updated_at'
 >;
 export type WeatherForecast = PresentColumns<
   WeatherForecastRow,
-  Exclude<keyof WeatherForecastRow, 'id' | 'trip_id' | 'forecast_date'>
+  'condition_label' | 'icon'
 >;
+export type WeatherRefreshStatus = 'idle' | 'refreshing' | 'retry' | 'failed';
+export type WeatherRefreshState = WeatherRefreshStateRow & {
+  status: WeatherRefreshStatus;
+};
 export type GearItem = PresentColumns<
   GearItemRow,
   Exclude<keyof GearItemRow, 'id' | 'name' | 'acquired'>
@@ -138,6 +143,7 @@ export interface TripDashboardData {
   trip: TripDashboard;
   currentWeather: WeatherCurrent | null;
   forecast: WeatherForecast[];
+  weatherRefresh: WeatherRefreshState | null;
   gear: GearItem[];
   timeline: TimelineEvent[];
   meals: Meal[];

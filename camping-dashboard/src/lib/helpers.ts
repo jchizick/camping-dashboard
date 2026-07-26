@@ -104,11 +104,15 @@ export function calculateWeatherPreparedness(
     if (!weather) return 0;
     let score = 100;
     // Penalise for high rain chance in forecast
-    const maxRain = Math.max(weather.rain_chance, ...forecast.map((f) => f.rain_chance));
+    const rainValues = [weather.rain_chance, ...forecast.map((f) => f.rain_chance)]
+        .filter((value): value is number => typeof value === 'number');
+    const maxRain = rainValues.length > 0 ? Math.max(...rainValues) : 0;
     if (maxRain > 70) score -= 30;
     else if (maxRain > 40) score -= 15;
     // Penalise for high wind
-    const maxWind = Math.max(weather.wind_kph, ...forecast.map((f) => f.wind_kph));
+    const windValues = [weather.wind_kph, ...forecast.map((f) => f.wind_kph)]
+        .filter((value): value is number => typeof value === 'number');
+    const maxWind = windValues.length > 0 ? Math.max(...windValues) : 0;
     if (maxWind > 40) score -= 20;
     else if (maxWind > 25) score -= 10;
     return Math.max(score, 0);
@@ -154,8 +158,8 @@ export function calculateOverallReadiness(scores: {
 // ─── Astro Helpers ────────────────────────────────────────
 export function getSkyQuality(weather: WeatherCurrent | null, astro: AstroData): string {
     if (!weather) return 'Unavailable';
-    if (weather.rain_chance > 60) return 'Poor — Overcast';
-    if (weather.rain_chance > 30) return 'Fair — Partly Cloudy';
+    if (weather.rain_chance !== null && weather.rain_chance > 60) return 'Poor — Overcast';
+    if (weather.rain_chance !== null && weather.rain_chance > 30) return 'Fair — Partly Cloudy';
     if (astro.moon_illumination > 80) return 'Good — Bright Moon';
     if (astro.moon_illumination > 50) return 'Good — Moon Affects Faint Objects';
     return 'Excellent — Dark Skies';

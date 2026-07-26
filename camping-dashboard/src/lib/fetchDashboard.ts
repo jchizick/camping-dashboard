@@ -19,6 +19,7 @@ import {
     toTripMemberRole,
     toWeatherCurrent,
     toWeatherForecast,
+    toWeatherRefreshState,
 } from './dashboardMapper';
 import type { DashboardData, TripWithAccess } from '@/types';
 
@@ -50,6 +51,7 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         tripResult,
         weatherResult,
         forecastResult,
+        weatherRefreshResult,
         gearResult,
         timelineResult,
         mealsResult,
@@ -64,6 +66,7 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         supabase.from('trips').select('*').eq('id', tripId).single(),
         supabase.from('weather_current').select('*').eq('trip_id', tripId).maybeSingle(),
         supabase.from('weather_forecast').select('*').eq('trip_id', tripId).order('forecast_date'),
+        supabase.from('weather_refresh_state').select('*').eq('trip_id', tripId).maybeSingle(),
         supabase.from('gear_items').select('*').eq('trip_id', tripId).order('category').order('name'),
         supabase.from('timeline_events').select('*').eq('trip_id', tripId).order('day_number').order('sort_order'),
         supabase.from('meals').select('*').eq('trip_id', tripId).order('day_number').order('meal_type'),
@@ -85,7 +88,6 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
     }
 
     const optionalErrors = [
-        weatherResult.error,
         parkIntelResult.error,
         offlineResult.error,
         astroResult.error,
@@ -94,10 +96,61 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         throw new Error(`[fetchDashboard] Failed to fetch optional trip data: ${optionalErrors[0]?.message}`);
     }
 
+    let currentWeather: DashboardData['currentWeather'] = null;
+    let forecast: DashboardData['forecast'] = [];
+    let weatherRefresh: DashboardData['weatherRefresh'] = null;
+    if (weatherResult.error) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('[fetchDashboard] Current weather could not be loaded.');
+        }
+    } else {
+        try {
+            currentWeather = weatherResult.data ? toWeatherCurrent(weatherResult.data) : null;
+        } catch {
+            if (process.env.NODE_ENV !== 'production') {
+                console.warn('[fetchDashboard] Current weather is malformed.');
+            }
+        }
+    }
+
+    if (forecastResult.error) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('[fetchDashboard] Weather forecast could not be loaded.');
+        }
+    } else {
+        forecast = (forecastResult.data ?? []).flatMap((row) => {
+            try {
+                return [toWeatherForecast(row)];
+            } catch {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[fetchDashboard] Omitting malformed weather forecast data.');
+                }
+                return [];
+            }
+        });
+    }
+
+    if (weatherRefreshResult.error) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('[fetchDashboard] Weather refresh status could not be loaded.');
+        }
+    } else {
+        try {
+            weatherRefresh = weatherRefreshResult.data
+                ? toWeatherRefreshState(weatherRefreshResult.data)
+                : null;
+        } catch {
+            if (process.env.NODE_ENV !== 'production') {
+                console.warn('[fetchDashboard] Weather refresh status is malformed.');
+            }
+        }
+    }
+
     return {
         trip: toTripDashboard(tripResult.data),
-        currentWeather: weatherResult.data ? toWeatherCurrent(weatherResult.data) : null,
-        forecast: (forecastResult.data ?? []).map(toWeatherForecast),
+        currentWeather,
+        forecast,
+        weatherRefresh,
         gear: (gearResult.data ?? []).map(toGearItem),
         timeline: toTimelineEvents(timelineResult.data ?? []),
         meals: (mealsResult.data ?? []).map(toMeal),

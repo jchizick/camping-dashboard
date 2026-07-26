@@ -19,6 +19,10 @@ vi.mock('@/lib/themeContext', () => ({
     }),
 }));
 
+vi.mock('@/lib/tripContext', () => ({
+    useTrip: () => ({ canEdit: true }),
+}));
+
 describe('optional dashboard module empty states', () => {
     beforeEach(() => {
         window.history.pushState({}, '', '/trips/test-trip?dev=true');
@@ -72,14 +76,25 @@ describe('optional dashboard module empty states', () => {
             json: async () => ({ error: 'test failure' }),
         });
         vi.stubGlobal('fetch', fetchMock);
-        vi.stubEnv('NEXT_PUBLIC_WEATHER_REFRESH_SECRET', 'test-secret');
-        vi.spyOn(console, 'error').mockImplementation(() => {});
 
-        render(<WeatherCard tripId="test-trip" weather={null} astro={null} />);
+        render(
+            <WeatherCard
+                tripId="test-trip"
+                weather={null}
+                weatherRefresh={null}
+                astro={null}
+            />
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Refresh Weather' }));
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-        expect(String(fetchMock.mock.calls[0][0])).toContain('trip_id=test-trip');
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/api/refresh-weather',
+            expect.objectContaining({
+                method: 'POST',
+                body: JSON.stringify({ tripId: 'test-trip' }),
+            })
+        );
         expect(screen.getByText('Weather has not been refreshed for this campsite yet.')).toBeTruthy();
     });
 });

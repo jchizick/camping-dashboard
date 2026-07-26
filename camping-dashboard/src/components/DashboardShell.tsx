@@ -317,8 +317,8 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   return (
     <ThemeProvider
       settings={data.settings}
-      sunriseTime={data.currentWeather?.sunrise_time}
-      sunsetTime={data.currentWeather?.sunset_time}
+      sunriseTime={data.currentWeather?.sunrise_time ?? undefined}
+      sunsetTime={data.currentWeather?.sunset_time ?? undefined}
     >
       <div className="bg-topography" />
       <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 relative z-10">
@@ -350,7 +350,12 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
             />
           </div>
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <WeatherCard tripId={trip.id} weather={data.currentWeather} astro={data.astro} />
+            <WeatherCard
+              tripId={trip.id}
+              weather={data.currentWeather}
+              weatherRefresh={data.weatherRefresh}
+              astro={data.astro}
+            />
           </div>
 
           <div className="lg:col-span-8">

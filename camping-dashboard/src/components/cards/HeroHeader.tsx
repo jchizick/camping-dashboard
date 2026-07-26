@@ -86,7 +86,7 @@ export default function HeroHeader({
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-border-subtle" />
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Wind size={14} className="shrink-0" /> {weather ? `${weather.wind_kph} km/h` : '—'}
+                        <Wind size={14} className="shrink-0" /> {weather?.wind_kph !== null && weather?.wind_kph !== undefined ? `${weather.wind_kph} km/h` : '—'}
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-border-subtle" />
                     <div className="flex items-center gap-2 whitespace-nowrap">

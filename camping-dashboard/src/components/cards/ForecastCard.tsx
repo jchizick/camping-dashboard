@@ -46,10 +46,15 @@ export default function ForecastCard({ forecast }: ForecastCardProps) {
                             <div className={`mb-4 flex items-center justify-center ${isTomorrow ? 'drop-shadow-sm text-text-main' : 'opacity-70 text-text-muted'}`}>
                                 {IconComponent}
                             </div>
-                            <div className="font-mono text-lg text-text-main font-medium mb-1">{Math.round(day.high_c)}°</div>
-                            <div className="font-mono text-sm text-text-muted mb-3">{Math.round(day.low_c)}°</div>
+                            <div className="font-mono text-lg text-text-main font-medium mb-1">
+                                {day.high_c === null ? '—' : `${Math.round(day.high_c)}°`}
+                            </div>
+                            <div className="font-mono text-sm text-text-muted mb-3">
+                                {day.low_c === null ? '—' : `${Math.round(day.low_c)}°`}
+                            </div>
                             <div className="flex items-center gap-1 text-xs font-mono text-accent-blue">
-                                <Droplets size={10} /> {day.rain_chance}%
+                                <Droplets size={10} />
+                                {day.rain_chance === null ? '—' : `${day.rain_chance}%`}
                             </div>
                         </div>
                     );

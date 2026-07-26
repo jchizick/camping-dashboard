@@ -712,12 +712,100 @@ export type Database = {
           },
         ]
       }
+      weather_refresh_state: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          last_attempt_at: string | null
+          last_error_code: string | null
+          last_error_summary: string | null
+          last_success_at: string | null
+          locked_at: string | null
+          locked_by: string | null
+          next_refresh_at: string
+          payload_fingerprint: string | null
+          provider: string | null
+          provider_generated_at: string | null
+          provider_timezone: string | null
+          request_fingerprint: string | null
+          source_observed_at: string | null
+          status: string
+          trip_id: string
+          updated_at: string
+          utc_offset_seconds: number | null
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          last_success_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_refresh_at?: string
+          payload_fingerprint?: string | null
+          provider?: string | null
+          provider_generated_at?: string | null
+          provider_timezone?: string | null
+          request_fingerprint?: string | null
+          source_observed_at?: string | null
+          status?: string
+          trip_id: string
+          updated_at?: string
+          utc_offset_seconds?: number | null
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          last_success_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_refresh_at?: string
+          payload_fingerprint?: string | null
+          provider?: string | null
+          provider_generated_at?: string | null
+          provider_timezone?: string | null
+          request_fingerprint?: string | null
+          source_observed_at?: string | null
+          status?: string
+          trip_id?: string
+          updated_at?: string
+          utc_offset_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weather_refresh_state_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       begin_trip_deletion: { Args: { p_trip_id: string }; Returns: string }
+      claim_due_trip_weather: {
+        Args: {
+          p_batch_size?: number
+          p_stale_after_seconds?: number
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          latitude: number
+          longitude: number
+          timezone: string
+          trip_id: string
+        }[]
+      }
       claim_prep_feed_storage_cleanup_jobs: {
         Args: {
           p_batch_size?: number
@@ -728,6 +816,21 @@ export type Database = {
           attempt_count: number
           id: string
           storage_path: string
+          trip_id: string
+        }[]
+      }
+      claim_trip_weather_manual: {
+        Args: {
+          p_cooldown_seconds?: number
+          p_stale_after_seconds?: number
+          p_trip_id: string
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          latitude: number
+          longitude: number
+          timezone: string
           trip_id: string
         }[]
       }
@@ -764,7 +867,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      fail_trip_weather: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_trip_id: string
+          p_worker_id: string
+        }
+        Returns: boolean
+      }
       get_prep_feed_storage_cleanup_summary: { Args: never; Returns: Json }
+      persist_trip_weather: {
+        Args: { p_payload: Json; p_trip_id: string; p_worker_id: string }
+        Returns: string
+      }
       replace_prep_feed_image: {
         Args: {
           p_actor_user_id: string
@@ -784,6 +900,15 @@ export type Database = {
           p_error_summary: string
           p_job_id: string
           p_next_attempt_at: string
+          p_worker_id: string
+        }
+        Returns: boolean
+      }
+      retry_trip_weather: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_trip_id: string
           p_worker_id: string
         }
         Returns: boolean
