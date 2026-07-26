@@ -10,8 +10,7 @@ import { AuthProvider } from '@/lib/authContext';
 import { TripProvider } from '@/lib/tripContext';
 
 export default function TripLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams();
-  const tripId = params.tripId as string;
+  const { tripId } = useParams<{ tripId: string }>();
 
   return (
     <AuthProvider>

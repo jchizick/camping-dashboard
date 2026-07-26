@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import type { Trip } from '@/types';
+import type { TripDashboard } from '@/types';
 import CampsiteMapSelector, { type CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 
 interface MapRouteCardInnerProps {
-    trip: Trip;
+    trip: TripDashboard;
 }
 
 export default function MapRouteCardInner({ trip }: MapRouteCardInnerProps) {

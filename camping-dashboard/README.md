@@ -30,6 +30,33 @@ empty `supabase/seed.sql`. Tests create synthetic users and trips inside
 transactions and roll them back; no hosted users, trips, memberships, URLs, or
 Storage objects are copied locally.
 
+### Generated database types
+
+The canonical database definition is generated from the reset local schema
+with the repository-pinned Supabase CLI (`2.109.1`). With the local stack
+running and migrations reset, regenerate and verify it with:
+
+```bash
+npm run types:supabase
+npm run types:supabase:check
+```
+
+The check generates into a temporary directory, compares the result with
+`src/types/supabase.ts`, and removes the temporary output. It exits non-zero
+when the generated file is stale. Neither the default test suite nor the
+production build runs this Docker-dependent check.
+
+Regenerate after any migration that changes public tables, columns,
+relationships, functions, views, enums, or composite types. Before merging
+database-changing work, run:
+
+```bash
+npx supabase db reset
+npm run types:supabase
+npm run types:supabase:check
+npm run test:db
+```
+
 Get the local URL and keys with:
 
 ```bash

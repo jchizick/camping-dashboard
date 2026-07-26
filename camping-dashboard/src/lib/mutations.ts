@@ -5,7 +5,8 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, Trip } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus } from '@/types';
+import type { TripUpdate } from '@/types/database';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 
 /** Generate a UUID for new rows — belt-and-suspenders alongside the DB default */
@@ -235,7 +236,7 @@ export async function updateTripCampsite(
             campsite_osm_id: selection.osmId,
             site_lat: selection.latitude,
             site_lng: selection.longitude,
-        } satisfies Partial<Trip>)
+        } satisfies TripUpdate)
         .eq('id', tripId)
         .select()
         .single();

@@ -14,8 +14,7 @@ import { useTrip } from '@/lib/tripContext';
 import DashboardShell from '@/components/DashboardShell';
 
 export default function TripDashboardPage() {
-  const params = useParams();
-  const tripId = params.tripId as string;
+  const { tripId } = useParams<{ tripId: string }>();
   const { isLoading: roleLoading, error: roleError } = useTrip();
 
   const [data, setData] = useState<DashboardData | null>(null);

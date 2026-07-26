@@ -4,28 +4,26 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type {
-    DashboardData,
-    Trip,
-    WeatherCurrent,
-    WeatherForecast,
-    GearItem,
-    TimelineEvent,
-    Meal,
-    CrewMember,
-    ParkIntel,
-    OfflineStatus,
-    AstroData,
-    Alert,
-    PrepFeedItem,
-    Settings,
-    TripMemberRole,
-} from '@/types';
+import {
+    toAlert,
+    toAstroData,
+    toCrewMember,
+    toGearItem,
+    toMeal,
+    toOfflineStatus,
+    toParkIntel,
+    toPrepFeedItem,
+    toSettings,
+    toTimelineEvent,
+    toTripDashboard,
+    toTripMemberRole,
+    toWeatherCurrent,
+    toWeatherForecast,
+} from './dashboardMapper';
+import type { DashboardData, TripWithAccess } from '@/types';
 
 // ─── Fetch all trips for the authenticated user ──────────────────
-export interface UserTrip extends Trip {
-    role: TripMemberRole;
-}
+export type UserTrip = TripWithAccess;
 
 export async function fetchUserTrips(): Promise<UserTrip[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -41,13 +39,9 @@ export async function fetchUserTrips(): Promise<UserTrip[]> {
         return [];
     }
 
-    // Supabase returns { role, trips: { ...tripFields } }
-    return data
-        .filter((row: Record<string, unknown>) => row.trips)
-        .map((row: Record<string, unknown>) => ({
-            ...(row.trips as Trip),
-            role: row.role as TripMemberRole,
-        }));
+    return data.flatMap((row) => row.trips
+        ? [{ ...toTripDashboard(row.trips), role: toTripMemberRole(row.role) }]
+        : []);
 }
 
 // ─── Fetch full dashboard data for a specific trip ───────────────
@@ -101,18 +95,18 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
     }
 
     return {
-        trip: tripResult.data as Trip,
-        currentWeather: (weatherResult.data as WeatherCurrent | null) ?? null,
-        forecast: (forecastResult.data as WeatherForecast[]) ?? [],
-        gear: (gearResult.data as GearItem[]) ?? [],
-        timeline: (timelineResult.data as TimelineEvent[]) ?? [],
-        meals: (mealsResult.data as Meal[]) ?? [],
-        crew: (crewResult.data as CrewMember[]) ?? [],
-        parkIntel: (parkIntelResult.data as ParkIntel | null) ?? null,
-        offlineStatus: (offlineResult.data as OfflineStatus | null) ?? null,
-        astro: (astroResult.data as AstroData | null) ?? null,
-        alerts: (alertsResult.data as Alert[]) ?? [],
-        prepFeed: (prepFeedResult.data as PrepFeedItem[]) ?? [],
-        settings: settingsResult.data as Settings,
+        trip: toTripDashboard(tripResult.data),
+        currentWeather: weatherResult.data ? toWeatherCurrent(weatherResult.data) : null,
+        forecast: (forecastResult.data ?? []).map(toWeatherForecast),
+        gear: (gearResult.data ?? []).map(toGearItem),
+        timeline: (timelineResult.data ?? []).map(toTimelineEvent),
+        meals: (mealsResult.data ?? []).map(toMeal),
+        crew: (crewResult.data ?? []).map(toCrewMember),
+        parkIntel: parkIntelResult.data ? toParkIntel(parkIntelResult.data) : null,
+        offlineStatus: offlineResult.data ? toOfflineStatus(offlineResult.data) : null,
+        astro: astroResult.data ? toAstroData(astroResult.data) : null,
+        alerts: (alertsResult.data ?? []).map(toAlert),
+        prepFeed: (prepFeedResult.data ?? []).map(toPrepFeedItem),
+        settings: toSettings(settingsResult.data),
     };
 }

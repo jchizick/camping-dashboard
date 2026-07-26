@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { TripMemberRole } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { toTripMemberRole } from './dashboardMapper';
 
 // ── Context shape ─────────────────────────────────────────────────────────────
 interface TripContextValue {
@@ -68,7 +69,7 @@ export function TripProvider({
             setRole(null);
             setError('You are not a member of this trip');
           } else {
-            setRole(data.role as TripMemberRole);
+            setRole(toTripMemberRole(data.role));
             setError(null);
           }
           setIsLoading(false);

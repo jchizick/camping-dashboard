@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "supabase test db"
+    "test:db": "supabase test db",
+    "types:supabase": "node scripts/supabase-types.mjs",
+    "types:supabase:check": "node scripts/supabase-types.mjs --check"
   },
   "dependencies": {
     "@maptiler/geocoding-control": "3.0.0",

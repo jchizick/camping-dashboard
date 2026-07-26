@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import type { Trip } from '@/types';
+import type { TripDashboard } from '@/types';
 import type { CountdownResult } from '@/types';
 import { getTripCountdown, padTwo } from '@/lib/helpers';
 import GlassCard from '@/components/ui/GlassCard';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 interface CountdownCardProps {
-    trip: Trip;
+    trip: TripDashboard;
 }
 
 export default function CountdownCard({ trip }: CountdownCardProps) {

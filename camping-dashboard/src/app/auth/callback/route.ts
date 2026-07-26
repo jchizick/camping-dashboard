@@ -5,6 +5,8 @@
 // ============================================================
 
 import { createServerClient } from '@supabase/ssr';
+import type { Database } from '@/types/database';
+import { requiredEnvironmentVariable } from '@/lib/env';
 import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -16,9 +18,15 @@ export async function GET(request: NextRequest) {
   if (code) {
     const cookieStore = await cookies();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    const supabase = createServerClient<Database>(
+      requiredEnvironmentVariable(
+        'NEXT_PUBLIC_SUPABASE_URL',
+        process.env.NEXT_PUBLIC_SUPABASE_URL
+      ),
+      requiredEnvironmentVariable(
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ),
       {
         cookies: {
           getAll() {

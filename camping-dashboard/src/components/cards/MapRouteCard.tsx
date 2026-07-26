@@ -2,13 +2,13 @@
 
 import React, { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import type { Trip } from '@/types';
+import type { TripDashboard } from '@/types';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import { Card } from '@/components/ui/Primitives';
 import { Map, MapPin, Pencil } from 'lucide-react';
 
 interface MapRouteCardProps {
-    trip: Trip;
+    trip: TripDashboard;
     onSaveLocation?: (selection: CampsiteSelection) => Promise<void>;
 }
 
@@ -26,7 +26,7 @@ const CampsiteLocationSheet = dynamic(
     { ssr: false }
 );
 
-function hasCoordinates(trip: Trip) {
+function hasCoordinates(trip: TripDashboard) {
     return typeof trip.campsite_latitude === 'number'
         && Number.isFinite(trip.campsite_latitude)
         && typeof trip.campsite_longitude === 'number'

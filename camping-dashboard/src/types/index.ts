@@ -1,10 +1,19 @@
-// ============================================================
-// Camping Dashboard — All TypeScript Interfaces
-// Source of truth: gemini.md Data Schema
-// DO NOT define types inline in components
-// ============================================================
+import type {
+  AlertRow,
+  AstroDataRow,
+  CrewMemberRow,
+  GearItemRow,
+  MealRow,
+  OfflineStatusRow,
+  ParkIntelRow,
+  PrepFeedItemRow,
+  SettingsRow,
+  TimelineEventRow,
+  TripRow,
+  WeatherCurrentRow,
+  WeatherForecastRow,
+} from './database';
 
-// ─── Theme ────────────────────────────────────────────────
 export type ThemeMode = 'day' | 'night';
 export type ThemeOverride = 'auto' | 'day' | 'night';
 export type ThemeVariant = 'expedition' | 'clean';
@@ -13,190 +22,99 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type PrepType = 'dehydrated' | 'fresh' | 'fire' | 'restaurant';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
-export type PrepFeedCategory = 'Gear' | 'Food' | 'Shelter' | 'Cook Kit' | 'Route' | 'Campsite' | 'Misc';
+export type PrepFeedCategory =
+  | 'Gear'
+  | 'Food'
+  | 'Shelter'
+  | 'Cook Kit'
+  | 'Route'
+  | 'Campsite'
+  | 'Misc';
 export type TripMemberRole = 'owner' | 'editor' | 'viewer';
 export type TripMapStyle = 'openstreetmap' | 'expedition';
-
-// ─── Core Entities ────────────────────────────────────────
-export interface Trip {
-  id: string;
-  name: string;
-  park_name: string;
-  lake_name: string;
-  site_name: string;
-  start_date: string; // ISO date string
-  end_date: string;   // ISO date string
-  launch_point_name: string;
-  launch_lat: number;
-  launch_lng: number;
-  site_lat: number;
-  site_lng: number;
-  campsite_latitude: number | null;
-  campsite_longitude: number | null;
-  campsite_label: string | null;
-  campsite_source: string | null;
-  campsite_osm_id: string | null;
-  map_style: TripMapStyle | null;
-  distance_km: number | null;
-  notes: string;
-  theme_mode: ThemeOverride;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface WeatherCurrent {
-  trip_id: string;
-  temperature_c: number;
-  wind_kph: number;
-  humidity: number;
-  rain_chance: number;
-  sunset_time: string;   // "HH:MM"
-  sunrise_time: string;  // "HH:MM"
-  moonset_time: string;
-  visibility: number;
-  condition_label: string;
-  icon: string;
-  updated_at: string;
-}
-
-export interface WeatherForecast {
-  id: string;
-  trip_id: string;
-  forecast_date: string; // ISO date string
-  high_c: number;
-  low_c: number;
-  condition_label: string;
-  rain_chance: number;
-  wind_kph: number;
-  icon: string;
-}
-
-export interface GearItem {
-  id: string;
-  trip_id: string;
-  name: string;
-  category: string;
-  packed: boolean;
-  acquired: boolean;
-  owner: string;
-  priority: Priority;
-  notes: string;
-  weight_kg: number;
-}
-
 export type TimelinePhase = 'Transit' | 'Setup' | 'Sustain' | 'Leisure' | 'None';
 
-export interface TimelineEvent {
-  id: string;
-  trip_id: string;
-  day_number: number;
-  event_time: string; // "HH:MM"
-  title: string;
-  details: string;
-  sort_order: number;
-  phase?: TimelinePhase;
-}
+type PresentColumns<T, K extends keyof T> = T & {
+  [P in K]-?: NonNullable<T[P]>;
+};
 
-export interface Meal {
-  id: string;
-  trip_id: string;
-  day_number: number;
-  meal_type: MealType;
-  title: string;
-  prep_type: PrepType;
-  calories: number;
-  assigned_to: string;
-  notes: string;
-}
+export type TripDashboard = PresentColumns<
+  TripRow,
+  'end_date' | 'start_date'
+> & {
+  map_style: TripMapStyle | null;
+  theme_mode: ThemeOverride | null;
+};
 
-export interface CrewMember {
-  id: string;
-  trip_id: string;
-  name: string;
-  role: string;
-  load_item: string;
-  load_weight_kg: number;
-  canoe_number: number;
-  notes: string;
-}
-
-export interface ParkIntel {
-  trip_id: string;
-  fire_restriction: string;
-  wildlife_notes: string;
-  ranger_station: string;
-  firewood_percent: number;
-  water_notes: string;
-  custom_notes: string;
-  updated_at: string;
-}
-
-export interface OfflineStatus {
-  trip_id: string;
-  maps_cached: boolean;
-  permit_saved: boolean;
-  daily_vehicle_permit_saved: boolean;
-  route_downloaded: boolean;
-  satellite_device_connected: boolean;
-  satellite_device_name: string;
-  emergency_contact_ready: boolean;
-  updated_at: string;
-}
-
-export interface AstroData {
-  trip_id: string;
-  golden_hour_start: string;
-  golden_hour_end: string;
-  blue_hour_end: string;
-  moon_phase: string;
-  moon_illumination: number;
-  milky_way_visibility: string;
-  stargazing_notes: string;
-  updated_at: string;
-}
-
-export interface Alert {
-  id: string;
-  trip_id: string;
-  title: string;
-  body: string;
-  severity: AlertSeverity;
-  source: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface PrepFeedItem {
-  id: string;
-  trip_id: string;
-  image_url: string | null;
-  storage_path: string | null;
-  caption: string;
-  category: PrepFeedCategory;
-  uploaded_by: string;
-  created_at: string;
-}
-
-export interface TripMember {
-  id: string;
-  trip_id: string;
-  user_id: string;
+export type TripWithAccess = TripDashboard & {
   role: TripMemberRole;
-  created_at: string;
+};
+
+export interface TripFormValues {
+  name: string;
+  parkName: string;
+  lakeName: string;
+  siteName: string;
+  startDate: string;
+  endDate: string;
 }
 
-export interface Settings {
-  trip_id: string;
+export interface CreateTripRequest {
+  name: string;
+  park_name?: string;
+  lake_name?: string;
+  site_name?: string;
+  start_date: string;
+  end_date: string;
+  campsite_latitude: number;
+  campsite_longitude: number;
+  campsite_label?: string | null;
+  campsite_source?: string | null;
+  campsite_osm_id?: string | null;
+}
+
+export type WeatherCurrent = PresentColumns<
+  WeatherCurrentRow,
+  Exclude<keyof WeatherCurrentRow, 'trip_id'>
+>;
+export type WeatherForecast = PresentColumns<
+  WeatherForecastRow,
+  Exclude<keyof WeatherForecastRow, 'id' | 'trip_id' | 'forecast_date'>
+>;
+export type GearItem = PresentColumns<
+  GearItemRow,
+  Exclude<keyof GearItemRow, 'id' | 'name' | 'acquired'>
+> & { priority: Priority };
+export type TimelineEvent = PresentColumns<
+  TimelineEventRow,
+  Exclude<keyof TimelineEventRow, 'id'>
+> & { phase: TimelinePhase };
+export type Meal = PresentColumns<MealRow, Exclude<keyof MealRow, 'id'>> & {
+  meal_type: MealType;
+  prep_type: PrepType;
+};
+export type CrewMember = PresentColumns<
+  CrewMemberRow,
+  Exclude<keyof CrewMemberRow, 'id' | 'name'>
+>;
+export type ParkIntel = PresentColumns<ParkIntelRow, Exclude<keyof ParkIntelRow, 'trip_id'>>;
+export type OfflineStatus = PresentColumns<
+  OfflineStatusRow,
+  Exclude<keyof OfflineStatusRow, 'trip_id'>
+>;
+export type AstroData = PresentColumns<AstroDataRow, Exclude<keyof AstroDataRow, 'trip_id'>>;
+export type Alert = PresentColumns<AlertRow, Exclude<keyof AlertRow, 'id'>> & {
+  severity: AlertSeverity;
+};
+export type PrepFeedItem = PresentColumns<PrepFeedItemRow, 'caption'> & {
+  category: PrepFeedCategory;
+};
+export type Settings = PresentColumns<SettingsRow, Exclude<keyof SettingsRow, 'trip_id'>> & {
   manual_theme_override: ThemeOverride;
   preferred_units: Units;
-  show_astro: boolean;
-  show_meals: boolean;
-  show_offline: boolean;
-  show_crew: boolean;
   theme_variant: ThemeVariant;
-}
+};
 
-// ─── Derived / Computed Types ──────────────────────────────
 export interface CountdownResult {
   days: number;
   hours: number;
@@ -207,8 +125,8 @@ export interface CountdownResult {
 }
 
 export interface ReadinessScore {
-  overall: number;           // 0–100
-  label: string;             // "Locked In" | "Nearly Ready" | etc.
+  overall: number;
+  label: string;
   gear: number;
   meals: number;
   weather: number;
@@ -216,9 +134,8 @@ export interface ReadinessScore {
   timeline: number;
 }
 
-// ─── Dashboard Payload (root state) ───────────────────────
-export interface DashboardData {
-  trip: Trip;
+export interface TripDashboardData {
+  trip: TripDashboard;
   currentWeather: WeatherCurrent | null;
   forecast: WeatherForecast[];
   gear: GearItem[];
@@ -232,3 +149,5 @@ export interface DashboardData {
   prepFeed: PrepFeedItem[];
   settings: Settings;
 }
+
+export type DashboardData = TripDashboardData;

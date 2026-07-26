@@ -4,22 +4,13 @@
 // ============================================================
 
 import { createServerClient } from '@supabase/ssr';
+import type { CreateTripArgs, Database } from '@/types/database';
+import type { CreateTripRequest } from '@/types';
+import { requiredEnvironmentVariable } from '@/lib/env';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-interface CreateTripBody {
-    name?: string;
-    park_name?: string;
-    lake_name?: string;
-    site_name?: string;
-    start_date?: string;
-    end_date?: string;
-    campsite_latitude?: number;
-    campsite_longitude?: number;
-    campsite_label?: string | null;
-    campsite_source?: string | null;
-    campsite_osm_id?: string | null;
-}
+type CreateTripBody = Partial<CreateTripRequest>;
 
 function rpcErrorResponse(error: {
     code?: string;
@@ -53,9 +44,15 @@ function rpcErrorResponse(error: {
 
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    const supabase = createServerClient<Database>(
+        requiredEnvironmentVariable(
+            'NEXT_PUBLIC_SUPABASE_URL',
+            process.env.NEXT_PUBLIC_SUPABASE_URL
+        ),
+        requiredEnvironmentVariable(
+            'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        ),
         {
             cookies: {
                 getAll() {
@@ -129,7 +126,9 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const { data: tripId, error: createError } = await supabase.rpc('create_trip', {
+    const campsiteLabel = body.campsite_label?.trim() || undefined;
+    const campsiteOsmId = body.campsite_osm_id?.trim() || undefined;
+    const createTripArgs = {
         p_name: name,
         p_start_date: body.start_date,
         p_end_date: body.end_date,
@@ -138,10 +137,12 @@ export async function POST(request: NextRequest) {
         p_park_name: body.park_name?.trim() ?? '',
         p_lake_name: body.lake_name?.trim() ?? '',
         p_site_name: body.site_name?.trim() ?? '',
-        p_campsite_label: body.campsite_label?.trim() || null,
         p_campsite_source: body.campsite_source?.trim() || 'manual_map_selection',
-        p_campsite_osm_id: body.campsite_osm_id?.trim() || null,
-    });
+        ...(campsiteLabel ? { p_campsite_label: campsiteLabel } : {}),
+        ...(campsiteOsmId ? { p_campsite_osm_id: campsiteOsmId } : {}),
+    } satisfies CreateTripArgs;
+    const { data: tripId, error: createError } =
+        await supabase.rpc('create_trip', createTripArgs);
 
     if (createError || typeof tripId !== 'string') {
         console.error('[POST /api/trips/create] RPC failed', {

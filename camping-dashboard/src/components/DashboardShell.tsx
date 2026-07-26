@@ -8,6 +8,19 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, DashboardData, OfflineStatus, ParkIntel, PrepFeedItem, PrepFeedCategory } from '@/types';
+import {
+  parsePrepFeedItem,
+  readApiError,
+  readApiItem,
+  toAlert,
+  toCrewMember,
+  toGearItem,
+  toMeal,
+  toOfflineStatus,
+  toParkIntel,
+  toTimelineEvent,
+  toTripDashboard,
+} from '@/lib/dashboardMapper';
 import { useAuth } from '@/lib/authContext';
 import { useTrip } from '@/lib/tripContext';
 import { ThemeProvider, useTheme } from '@/lib/themeContext';
@@ -141,13 +154,13 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleGearAdd(item: Omit<GearItem, 'id' | 'trip_id'>) {
     const { data: newItem, error } = await createGearItem(tripId, item);
     if (error || !newItem) { console.error('[createGear]', error?.message); throw error; }
-    setGear(prev => [...prev, newItem as GearItem]);
+    setGear(prev => [...prev, toGearItem(newItem)]);
   }
 
   async function handleGearUpdate(id: string, patch: Partial<Omit<GearItem, 'id' | 'trip_id'>>) {
     const { data: updated, error } = await updateGearItem(id, patch);
     if (error || !updated) { console.error('[updateGear]', error?.message); throw error; }
-    setGear(prev => prev.map(g => g.id === id ? updated as GearItem : g));
+    setGear(prev => prev.map(g => g.id === id ? toGearItem(updated) : g));
   }
 
   async function handleGearDelete(id: string) {
@@ -160,13 +173,13 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleMealAdd(item: Omit<Meal, 'id' | 'trip_id'>) {
     const { data: newMeal, error } = await createMeal(tripId, item);
     if (error || !newMeal) { console.error('[createMeal]', error?.message); throw error; }
-    setMeals(prev => [...prev, newMeal as Meal]);
+    setMeals(prev => [...prev, toMeal(newMeal)]);
   }
 
   async function handleMealUpdate(id: string, patch: Partial<Omit<Meal, 'id' | 'trip_id'>>) {
     const { data: updated, error } = await updateMeal(id, patch);
     if (error || !updated) { console.error('[updateMeal]', error?.message); throw error; }
-    setMeals(prev => prev.map(m => m.id === id ? updated as Meal : m));
+    setMeals(prev => prev.map(m => m.id === id ? toMeal(updated) : m));
   }
 
   async function handleMealDelete(id: string) {
@@ -179,13 +192,13 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleTimelineAdd(event: Omit<TimelineEvent, 'id' | 'trip_id'>) {
     const { data: newEvent, error } = await createTimelineEvent(tripId, event);
     if (error || !newEvent) { console.error('[createTimeline]', error?.message); throw error; }
-    setTimeline(prev => [...prev, newEvent as TimelineEvent]);
+    setTimeline(prev => [...prev, toTimelineEvent(newEvent)]);
   }
 
   async function handleTimelineUpdate(id: string, patch: Partial<Omit<TimelineEvent, 'id' | 'trip_id'>>) {
     const { data: updated, error } = await updateTimelineEvent(id, patch);
     if (error || !updated) { console.error('[updateTimeline]', error?.message); throw error; }
-    setTimeline(prev => prev.map(e => e.id === id ? updated as TimelineEvent : e));
+    setTimeline(prev => prev.map(e => e.id === id ? toTimelineEvent(updated) : e));
   }
 
   async function handleTimelineDelete(id: string) {
@@ -198,13 +211,13 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleCrewAdd(member: Omit<CrewMember, 'id' | 'trip_id'>) {
     const { data: newMember, error } = await createCrewMember(tripId, member);
     if (error || !newMember) { console.error('[createCrew]', error?.message); throw error; }
-    setCrew(prev => [...prev, newMember as CrewMember]);
+    setCrew(prev => [...prev, toCrewMember(newMember)]);
   }
 
   async function handleCrewUpdate(id: string, patch: Partial<Omit<CrewMember, 'id' | 'trip_id'>>) {
     const { data: updated, error } = await updateCrewMember(id, patch);
     if (error || !updated) { console.error('[updateCrew]', error?.message); throw error; }
-    setCrew(prev => prev.map(m => m.id === id ? updated as CrewMember : m));
+    setCrew(prev => prev.map(m => m.id === id ? toCrewMember(updated) : m));
   }
 
   async function handleCrewDelete(id: string) {
@@ -217,7 +230,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleAlertAdd(alertData: { title: string; body: string; severity: Alert['severity']; source: string; is_active: boolean }) {
     const { data: newAlert, error } = await createAlert(tripId, alertData);
     if (error || !newAlert) { console.error('[createAlert]', error?.message); throw error; }
-    setAlerts(prev => [newAlert as Alert, ...prev]);
+    setAlerts(prev => [toAlert(newAlert), ...prev]);
   }
 
   async function handleAlertDelete(id: string) {
@@ -230,7 +243,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'trip_id' | 'updated_at'>>) {
     const { data: updated, error } = await updateParkIntel(tripId, patch);
     if (error || !updated) { console.error('[updateParkIntel]', error?.message); throw error; }
-    setParkIntel(updated as ParkIntel);
+    setParkIntel(toParkIntel(updated));
   }
 
   // ── Prep Feed mutations ───────────────────────────────────────
@@ -246,11 +259,12 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
       method: 'POST',
       body: form,
     });
-    const result = await response.json();
-    if (!response.ok || !result.item) {
-      throw new Error(result.error ?? 'The prep-feed item could not be saved.');
+    const result: unknown = await response.json();
+    if (!response.ok) {
+      throw new Error(readApiError(result) ?? 'The prep-feed item could not be saved.');
     }
-    setPrepFeed(prev => [result.item as PrepFeedItem, ...prev]);
+    const item = parsePrepFeedItem(readApiItem(result));
+    setPrepFeed(prev => [item, ...prev]);
   }
 
   async function handlePrepFeedDelete(id: string) {
@@ -288,7 +302,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
       return; 
     }
     
-    setOfflineStatus(updated as OfflineStatus);
+    setOfflineStatus(toOfflineStatus(updated));
   }
 
   async function handleCampsiteSave(selection: CampsiteSelection) {
@@ -297,7 +311,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
       console.error('[updateTripCampsite]', error);
       throw new Error(error?.message ?? 'The campsite location could not be saved.');
     }
-    setTrip(updated as typeof trip);
+    setTrip(toTripDashboard(updated));
   }
 
   return (

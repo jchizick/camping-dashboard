@@ -1,12 +1,15 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
+import type { PrepFeedCategory } from '@/types';
+import { requiredEnvironmentVariable } from './env';
 import {
   PREP_FEED_BUCKET,
   getPublicPrepFeedUrl,
   removeStoragePathsIdempotently,
 } from './prepFeedStorage';
 
-const PREP_FEED_CATEGORIES = new Set([
+const PREP_FEED_CATEGORIES: readonly PrepFeedCategory[] = [
   'Gear',
   'Food',
   'Shelter',
@@ -14,10 +17,10 @@ const PREP_FEED_CATEGORIES = new Set([
   'Route',
   'Campsite',
   'Misc',
-]);
+];
 
 export async function canUserEditTrip(
-  admin: SupabaseClient,
+  admin: SupabaseClient<Database>,
   tripId: string,
   userId: string
 ): Promise<boolean> {
@@ -42,8 +45,9 @@ export async function canUserEditTrip(
   );
 }
 
-export function validatePrepFeedCategory(value: unknown): string {
-  return typeof value === 'string' && PREP_FEED_CATEGORIES.has(value) ? value : 'Misc';
+export function validatePrepFeedCategory(value: unknown): PrepFeedCategory {
+  if (typeof value !== 'string') return 'Misc';
+  return PREP_FEED_CATEGORIES.find((category) => category === value) ?? 'Misc';
 }
 
 export function validateExternalImageUrl(value: unknown): string | null {
@@ -68,7 +72,7 @@ export function makePrepFeedStoragePath(tripId: string, userId: string, file: Fi
 }
 
 export async function uploadPrepFeedFile(
-  admin: SupabaseClient,
+  admin: SupabaseClient<Database>,
   tripId: string,
   userId: string,
   file: File
@@ -90,12 +94,18 @@ export async function uploadPrepFeedFile(
 
   return {
     storagePath,
-    imageUrl: getPublicPrepFeedUrl(process.env.NEXT_PUBLIC_SUPABASE_URL!, storagePath),
+    imageUrl: getPublicPrepFeedUrl(
+      requiredEnvironmentVariable(
+        'NEXT_PUBLIC_SUPABASE_URL',
+        process.env.NEXT_PUBLIC_SUPABASE_URL
+      ),
+      storagePath
+    ),
   };
 }
 
 export async function removePrepFeedStoragePaths(
-  admin: SupabaseClient,
+  admin: SupabaseClient<Database>,
   paths: string[]
 ) {
   for (let index = 0; index < paths.length; index += 1000) {

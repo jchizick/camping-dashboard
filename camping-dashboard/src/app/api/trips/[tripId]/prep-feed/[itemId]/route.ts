@@ -12,12 +12,28 @@ import {
   validateExternalImageUrl,
 } from '@/lib/serverPrepFeed';
 import { PREP_FEED_BUCKET } from '@/lib/prepFeedStorage';
+import type {
+  Json,
+  ReplacePrepFeedImageArgs,
+} from '@/types/database';
 
 export const runtime = 'nodejs';
 
 interface RouteParams {
   tripId: string;
   itemId: string;
+}
+
+type NullableReplacePrepFeedImageArgs =
+  Omit<ReplacePrepFeedImageArgs, 'p_image_url' | 'p_storage_path'> & {
+    p_image_url: string | null;
+    p_storage_path: string | null;
+  };
+
+function rpcStringProperty(value: Json | null, key: string): string | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+  const property = value[key];
+  return typeof property === 'string' ? property : null;
 }
 
 async function authenticatedUser() {
@@ -132,16 +148,18 @@ export async function PUT(
 
   const result = await replacePrepFeedImageWithStorage(tripId, {
     async replaceRowAndQueueCleanup() {
-      const { data, error } = await supabaseAdmin.rpc('replace_prep_feed_image', {
+      const rpcArgs = {
         p_item_id: itemId,
         p_actor_user_id: user.id,
         p_image_url: newImageUrl,
         p_storage_path: newStoragePath,
-      });
-      const value = data as {
-        old_storage_path?: string | null;
-        cleanup_id?: string | null;
-      } | null;
+      } satisfies NullableReplacePrepFeedImageArgs;
+      // PostgreSQL function arguments are nullable unless declared otherwise,
+      // but the Supabase generator currently emits text arguments as `string`.
+      const { data, error } = await supabaseAdmin.rpc(
+        'replace_prep_feed_image',
+        rpcArgs as ReplacePrepFeedImageArgs
+      );
       if (error && newStoragePath) {
         const { error: cleanupError } = await supabaseAdmin.storage
           .from(PREP_FEED_BUCKET)
@@ -156,8 +174,8 @@ export async function PUT(
         }
       }
       return {
-        oldStoragePath: value?.old_storage_path ?? null,
-        cleanupId: value?.cleanup_id ?? null,
+        oldStoragePath: rpcStringProperty(data, 'old_storage_path'),
+        cleanupId: rpcStringProperty(data, 'cleanup_id'),
         error,
       };
     },

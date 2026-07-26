@@ -68,10 +68,8 @@ sequences, triggers, enums, or Realtime publication entries. The app-owned
 Storage configuration is the public `prep-feed` bucket plus the two
 membership-scoped mutation policies.
 
-## Known repository discrepancy
+## Generated application types
 
-The repository has no generated Supabase TypeScript database types. It uses
-hand-written types in `src/types/index.ts`; several hosted nullable columns are
-represented there as non-null application values. This reconstruction does not
-change those existing application contracts. Generating and adopting database
-types should be reviewed as a separate change.
+Canonical Supabase TypeScript database types are now generated from this
+reproducible local schema. See `docs/supabase-type-generation.md` for the
+generation, stale-check, and application boundary workflow.

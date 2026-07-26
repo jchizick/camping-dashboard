@@ -1,4 +1,9 @@
 // ============================================================
+
+import type {
+    WeatherCurrentInsert,
+    WeatherForecastInsert,
+} from '@/types/database';
 // weatherMapper.ts — Open-Meteo response → Supabase schema
 // Maps raw forecast API data to weather_current + weather_forecast rows
 // Source: https://open-meteo.com/en/docs
@@ -70,32 +75,8 @@ function wmoIcon(code: number): string {
 
 // ─── Types returned by this mapper ───────────────────────────────────────────
 
-export interface MappedWeatherCurrent {
-    trip_id: string;
-    temperature_c: number;
-    wind_kph: number;
-    humidity: number;
-    rain_chance: number;
-    sunrise_time: string;  // "HH:MM"
-    sunset_time: string;   // "HH:MM"
-    visibility: number;
-    moonset_time: string;
-    condition_label: string;
-    icon: string;
-    updated_at: string;
-}
-
-export interface MappedWeatherForecast {
-    id: string;         // deterministic: "<tripId>-<forecast_date>"
-    trip_id: string;
-    forecast_date: string; // "YYYY-MM-DD"
-    high_c: number;
-    low_c: number;
-    condition_label: string;
-    rain_chance: number;
-    wind_kph: number;
-    icon: string;
-}
+export type MappedWeatherCurrent = WeatherCurrentInsert;
+export type MappedWeatherForecast = WeatherForecastInsert;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

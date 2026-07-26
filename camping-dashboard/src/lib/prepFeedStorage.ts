@@ -1,9 +1,9 @@
+import type { PrepFeedItemRow } from '@/types/database';
+
 export const PREP_FEED_BUCKET = 'prep-feed';
 
-export interface PrepFeedStorageReference {
-  storage_path?: string | null;
-  image_url?: string | null;
-}
+export type PrepFeedStorageReference =
+  Partial<Pick<PrepFeedItemRow, 'storage_path' | 'image_url'>>;
 
 export class InvalidPrepFeedStoragePathError extends Error {
   constructor(path: string, tripId: string) {
