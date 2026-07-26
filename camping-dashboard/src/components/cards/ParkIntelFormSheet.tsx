@@ -7,7 +7,7 @@ import CrudSheet from '@/components/ui/CrudSheet';
 interface ParkIntelFormSheetProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (patch: Partial<Omit<ParkIntel, 'id' | 'trip_id' | 'updated_at'>>) => Promise<void>;
+    onSubmit: (patch: Partial<Omit<ParkIntel, 'trip_id' | 'updated_at'>>) => Promise<void>;
     intel: ParkIntel;
 }
 

@@ -8,6 +8,7 @@ import { Activity, Tent, ShieldAlert, Utensils, CloudRain, Clock } from 'lucide-
 
 interface ReadinessScoreCardProps {
     readiness: ReadinessScore;
+    unavailable?: Partial<Record<'offline' | 'weather', boolean>>;
 }
 
 const subScores = [
@@ -36,7 +37,7 @@ function textColor(score: number): string {
     return 'text-accent-red';
 }
 
-export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProps) {
+export default function ReadinessScoreCard({ readiness, unavailable = {} }: ReadinessScoreCardProps) {
     const { labels } = useTheme();
     const [isVisible, setIsVisible] = useState(false);
     const ringRef = useRef<HTMLDivElement>(null);
@@ -56,7 +57,6 @@ export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProp
         return () => observer.disconnect();
     }, []);
 
-    const size = 96;
     const strokeWidth = 8;
     const radius = 42;
     const circumference = Math.round(radius * 2 * Math.PI);
@@ -94,18 +94,27 @@ export default function ReadinessScoreCard({ readiness }: ReadinessScoreCardProp
             </div>
 
             <div className="space-y-4">
-                {subScores.map(({ key, label, icon: Icon }) => (
+                {subScores.map(({ key, label, icon: Icon }) => {
+                    const isUnavailable = (key === 'offline' || key === 'weather') && unavailable[key];
+                    return (
                     <div key={key}>
                         <div className="flex justify-between text-xs font-mono text-text-muted mb-2">
                             <span className="flex items-center gap-2">
                                 <Icon size={14} />
                                 {label}
                             </span>
-                            <span className={textColor(readiness[key])}>{readiness[key]}%</span>
+                            <span className={isUnavailable ? 'text-text-muted' : textColor(readiness[key])}>
+                                {isUnavailable ? 'Unavailable' : `${readiness[key]}%`}
+                            </span>
                         </div>
-                        <ProgressBar value={readiness[key]} colorClass={scoreColor(readiness[key])} />
+                        {isUnavailable ? (
+                            <div className="h-2 rounded-full bg-border-subtle" aria-hidden="true" />
+                        ) : (
+                            <ProgressBar value={readiness[key]} colorClass={scoreColor(readiness[key])} />
+                        )}
                     </div>
-                ))}
+                    );
+                })}
             </div>
         </Card>
     );

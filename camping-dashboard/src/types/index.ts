@@ -15,6 +15,7 @@ export type AlertSeverity = 'info' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
 export type PrepFeedCategory = 'Gear' | 'Food' | 'Shelter' | 'Cook Kit' | 'Route' | 'Campsite' | 'Misc';
 export type TripMemberRole = 'owner' | 'editor' | 'viewer';
+export type TripMapStyle = 'openstreetmap' | 'expedition';
 
 // ─── Core Entities ────────────────────────────────────────
 export interface Trip {
@@ -30,7 +31,13 @@ export interface Trip {
   launch_lng: number;
   site_lat: number;
   site_lng: number;
-  distance_km: number;
+  campsite_latitude: number | null;
+  campsite_longitude: number | null;
+  campsite_label: string | null;
+  campsite_source: string | null;
+  campsite_osm_id: string | null;
+  map_style: TripMapStyle | null;
+  distance_km: number | null;
   notes: string;
   theme_mode: ThemeOverride;
   created_at: string;
@@ -38,7 +45,6 @@ export interface Trip {
 }
 
 export interface WeatherCurrent {
-  id: string;
   trip_id: string;
   temperature_c: number;
   wind_kph: number;
@@ -115,7 +121,6 @@ export interface CrewMember {
 }
 
 export interface ParkIntel {
-  id: string;
   trip_id: string;
   fire_restriction: string;
   wildlife_notes: string;
@@ -127,7 +132,6 @@ export interface ParkIntel {
 }
 
 export interface OfflineStatus {
-  id: string;
   trip_id: string;
   maps_cached: boolean;
   permit_saved: boolean;
@@ -140,7 +144,6 @@ export interface OfflineStatus {
 }
 
 export interface AstroData {
-  id: string;
   trip_id: string;
   golden_hour_start: string;
   golden_hour_end: string;
@@ -182,7 +185,6 @@ export interface TripMember {
 }
 
 export interface Settings {
-  id: string;
   trip_id: string;
   manual_theme_override: ThemeOverride;
   preferred_units: Units;
@@ -216,15 +218,15 @@ export interface ReadinessScore {
 // ─── Dashboard Payload (root state) ───────────────────────
 export interface DashboardData {
   trip: Trip;
-  currentWeather: WeatherCurrent;
+  currentWeather: WeatherCurrent | null;
   forecast: WeatherForecast[];
   gear: GearItem[];
   timeline: TimelineEvent[];
   meals: Meal[];
   crew: CrewMember[];
-  parkIntel: ParkIntel;
-  offlineStatus: OfflineStatus;
-  astro: AstroData;
+  parkIntel: ParkIntel | null;
+  offlineStatus: OfflineStatus | null;
+  astro: AstroData | null;
   alerts: Alert[];
   prepFeed: PrepFeedItem[];
   settings: Settings;

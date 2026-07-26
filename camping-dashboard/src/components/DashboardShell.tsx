@@ -28,7 +28,9 @@ import {
   updateParkIntel,
   // Prep Feed
   uploadPrepFeedImage, createPrepFeedItem, deletePrepFeedItem,
+  updateTripCampsite,
 } from '@/lib/mutations';
+import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import {
   getTripCountdown,
   calculateGearReadiness,
@@ -41,7 +43,6 @@ import {
 } from '@/lib/helpers';
 
 import HeroHeader from '@/components/cards/HeroHeader';
-import CountdownCard from '@/components/cards/CountdownCard';
 import WeatherCard from '@/components/cards/WeatherCard';
 import ForecastCard from '@/components/cards/ForecastCard';
 import MapRouteCard from '@/components/cards/MapRouteCard';
@@ -58,6 +59,18 @@ import FieldPrepFeedCard from '@/components/cards/FieldPrepFeedCard';
 import MissionBriefModal from '@/components/ui/MissionBriefModal';
 import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
 
+const emptyOfflineStatus = (tripId: string): OfflineStatus => ({
+  trip_id: tripId,
+  maps_cached: false,
+  permit_saved: false,
+  daily_vehicle_permit_saved: false,
+  route_downloaded: false,
+  satellite_device_connected: false,
+  satellite_device_name: '',
+  emergency_contact_ready: false,
+  updated_at: '',
+});
+
 export default function DashboardShell({ data }: { data: DashboardData }) {
   // ── Auth + Trip Role ─────────────────────────────────────────────
   const { user } = useAuth();
@@ -65,29 +78,30 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   const { themeMode } = useTheme();
 
   // ── User-authored state slices ───────────────────────────────────
+  const [trip, setTrip] = useState(data.trip);
   const [gear, setGear] = useState<GearItem[]>(data.gear);
   const [meals, setMeals] = useState<Meal[]>(data.meals);
   const [timeline, setTimeline] = useState<TimelineEvent[]>(data.timeline);
   const [crew, setCrew] = useState<CrewMember[]>(data.crew);
   const [alerts, setAlerts] = useState<Alert[]>(data.alerts);
-  const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>(data.offlineStatus);
-  const [parkIntel, setParkIntel] = useState<ParkIntel>(data.parkIntel);
+  const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(data.offlineStatus);
+  const [parkIntel, setParkIntel] = useState<ParkIntel | null>(data.parkIntel);
   const [prepFeed, setPrepFeed] = useState<PrepFeedItem[]>(data.prepFeed);
 
   // ── Theme is now handled globally by ThemeProvider ──────────────────
 
-  const [countdown, setCountdown] = useState(() => getTripCountdown(data.trip.start_date));
+  const [countdown, setCountdown] = useState(() => getTripCountdown(trip.start_date));
 
   useEffect(() => {
     const id = setInterval(() => {
-      setCountdown(getTripCountdown(data.trip.start_date));
+      setCountdown(getTripCountdown(trip.start_date));
     }, 1000);
     return () => clearInterval(id);
-  }, [data.trip.start_date]);
+  }, [trip.start_date]);
 
   const tripDays = useMemo(
-    () => getTripDays(data.trip.start_date, data.trip.end_date),
-    [data.trip.start_date, data.trip.end_date]
+    () => getTripDays(trip.start_date, trip.end_date),
+    [trip.start_date, trip.end_date]
   );
   const gearReadiness = useMemo(() => calculateGearReadiness(gear), [gear]);
   const mealReadiness = useMemo(() => calculateMealCompleteness(meals, tripDays), [meals, tripDays]);
@@ -214,8 +228,8 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
   }
 
   // ── Park Intel mutations ─────────────────────────────────────────
-  async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'id' | 'trip_id' | 'updated_at'>>) {
-    const { data: updated, error } = await updateParkIntel(parkIntel.id, patch);
+  async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'trip_id' | 'updated_at'>>) {
+    const { data: updated, error } = await updateParkIntel(tripId, patch);
     if (error || !updated) { console.error('[updateParkIntel]', error?.message); throw error; }
     setParkIntel(updated as ParkIntel);
   }
@@ -247,23 +261,33 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
 
   // ── Offline Status mutations ──────────────────────────────────────
   async function handleOfflineToggle(key: keyof OfflineStatus) {
-    if (key === 'id' || key === 'trip_id' || key === 'updated_at') return;
-    const newValue = !offlineStatus[key];
+    if (key === 'trip_id' || key === 'updated_at') return;
+    const currentStatus = offlineStatus ?? emptyOfflineStatus(tripId);
+    const newValue = !currentStatus[key];
     
     // Optimistic update
-    setOfflineStatus(prev => ({ ...prev, [key]: newValue }));
+    setOfflineStatus({ ...currentStatus, [key]: newValue });
 
     const patch = { [key]: newValue };
-    const { data: updated, error } = await updateOfflineStatus(offlineStatus.id, patch);
+    const { data: updated, error } = await updateOfflineStatus(tripId, patch);
     
     if (error || !updated) { 
       console.error('[updateOfflineStatus]', error?.message); 
       // Revert on error
-      setOfflineStatus(prev => ({ ...prev, [key]: !newValue }));
+      setOfflineStatus(currentStatus);
       return; 
     }
     
     setOfflineStatus(updated as OfflineStatus);
+  }
+
+  async function handleCampsiteSave(selection: CampsiteSelection) {
+    const { data: updated, error } = await updateTripCampsite(tripId, selection);
+    if (error || !updated) {
+      console.error('[updateTripCampsite]', error);
+      throw new Error(error?.message ?? 'The campsite location could not be saved.');
+    }
+    setTrip(updated as typeof trip);
   }
 
   return (
@@ -275,7 +299,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
       <div className="bg-topography" />
       <div className="min-h-screen p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 relative z-10">
         <HeroHeader
-          trip={data.trip}
+          trip={trip}
           weather={data.currentWeather}
           readiness={readiness}
           countdown={countdown}
@@ -296,17 +320,26 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           <div className="lg:col-span-8">
-            <MapRouteCard trip={data.trip} />
+            <MapRouteCard
+              trip={trip}
+              onSaveLocation={canEdit ? handleCampsiteSave : undefined}
+            />
           </div>
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <WeatherCard weather={data.currentWeather} astro={data.astro} />
+            <WeatherCard tripId={trip.id} weather={data.currentWeather} astro={data.astro} />
           </div>
 
           <div className="lg:col-span-8">
             <ForecastCard forecast={data.forecast} />
           </div>
           <div className="lg:col-span-4">
-            <ReadinessScoreCard readiness={readiness} />
+            <ReadinessScoreCard
+              readiness={readiness}
+              unavailable={{
+                offline: offlineStatus === null,
+                weather: data.currentWeather === null,
+              }}
+            />
           </div>
 
           <div className="lg:col-span-6">
@@ -392,7 +425,7 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
         </div>
 
         <footer className="text-center py-8 text-xs font-mono text-text-muted uppercase tracking-widest">
-          {data.trip.park_name} · {data.trip.name} · Supabase live · {new Date().toLocaleDateString('en-CA')}
+          {trip.park_name} · {trip.name} · Supabase live · {new Date().toLocaleDateString('en-CA')}
         </footer>
       </div>
     </ThemeProvider>

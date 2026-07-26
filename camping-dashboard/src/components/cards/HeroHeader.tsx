@@ -10,7 +10,7 @@ import { Activity, User as UserIcon, Star, Wind, Sunset, Radio } from 'lucide-re
 
 interface HeroHeaderProps {
     trip: Trip;
-    weather: WeatherCurrent;
+    weather: WeatherCurrent | null;
     readiness: ReadinessScore;
     countdown: CountdownResult;
     themeMode: ThemeMode;
@@ -81,16 +81,16 @@ export default function HeroHeader({
                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm font-mono text-text-muted bg-card-bg px-4 py-2 rounded-lg border border-border-subtle w-fit">
                     <div className="flex items-center gap-2 text-text-main">
                         <Star size={16} className="text-accent-yellow fill-accent-yellow shrink-0" />
-                        <span className="text-lg font-bold">{Math.round(weather.temperature_c)}°C</span>
-                        <span className="text-text-muted whitespace-nowrap">{weather.condition_label}</span>
+                        <span className="text-lg font-bold">{weather ? `${Math.round(weather.temperature_c)}°C` : '—'}</span>
+                        <span className="text-text-muted whitespace-nowrap">{weather?.condition_label ?? 'Weather unavailable'}</span>
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-border-subtle" />
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Wind size={14} className="shrink-0" /> {weather.wind_kph} km/h
+                        <Wind size={14} className="shrink-0" /> {weather ? `${weather.wind_kph} km/h` : '—'}
                     </div>
                     <div className="hidden sm:block w-px h-4 bg-border-subtle" />
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Sunset size={14} className="text-accent-blue shrink-0" /> Sunset {weather.sunset_time}
+                        <Sunset size={14} className="text-accent-blue shrink-0" /> Sunset {weather?.sunset_time ?? '—'}
                     </div>
                 </div>
             </div>

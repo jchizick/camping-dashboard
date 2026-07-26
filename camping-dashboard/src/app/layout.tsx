@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import '@maptiler/sdk/dist/maptiler-sdk.css';
 import { TopoBackground } from '@/components/ui/TopoBackground';
 
 export const metadata: Metadata = {

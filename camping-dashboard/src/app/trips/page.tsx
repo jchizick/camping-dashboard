@@ -15,7 +15,6 @@ import { MapPin, Calendar, Plus, LogIn, Loader2 } from 'lucide-react';
 
 // Default settings for app-shell pages (no trip context yet)
 const APP_SHELL_SETTINGS = {
-  id: '',
   trip_id: '',
   manual_theme_override: 'day' as const,
   preferred_units: 'metric' as const,
@@ -38,24 +37,31 @@ export default function TripsPage() {
 
 function TripsContent() {
   const { user, isLoading: authLoading, signIn } = useAuth();
-  const [trips, setTrips] = useState<UserTrip[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [tripsState, setTripsState] = useState<{
+    userId: string | null;
+    trips: UserTrip[];
+  }>({ userId: null, trips: [] });
   const router = useRouter();
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
+    if (authLoading || !user) return;
+    let cancelled = false;
 
     fetchUserTrips()
       .then((data) => {
-        setTrips(data);
-        setIsLoading(false);
+        if (!cancelled) setTripsState({ userId: user.id, trips: data });
       })
-      .catch(() => setIsLoading(false));
+      .catch(() => {
+        if (!cancelled) setTripsState({ userId: user.id, trips: [] });
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, authLoading]);
+
+  const trips = tripsState.userId === user?.id ? tripsState.trips : [];
+  const isLoading = authLoading || Boolean(user && tripsState.userId !== user.id);
 
   // ── Not signed in ────────────────────────────────────────────────
   if (!authLoading && !user) {

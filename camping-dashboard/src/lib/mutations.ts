@@ -5,7 +5,8 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, PrepFeedItem } from '@/types';
+import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus, PrepFeedItem, Trip } from '@/types';
+import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 
 /** Generate a UUID for new rows — belt-and-suspenders alongside the DB default */
 function generateId(): string {
@@ -176,13 +177,21 @@ export async function deleteAlert(id: string) {
 // ─── Park Intel ───────────────────────────────────────────────
 
 export async function updateParkIntel(
-    id: string,
-    patch: Partial<import('@/types').ParkIntel>
+    tripId: string,
+    patch: Partial<Omit<import('@/types').ParkIntel, 'trip_id' | 'updated_at'>>
 ) {
     return supabase
         .from('park_intel')
-        .update(patch)
-        .eq('id', id)
+        .upsert({
+            trip_id: tripId,
+            fire_restriction: 'Unknown',
+            wildlife_notes: '',
+            ranger_station: '',
+            firewood_percent: 0,
+            water_notes: '',
+            custom_notes: '',
+            ...patch,
+        }, { onConflict: 'trip_id' })
         .select()
         .single();
 }
@@ -190,13 +199,44 @@ export async function updateParkIntel(
 // ─── Offline Status ──────────────────────────────────────────
 
 export async function updateOfflineStatus(
-    id: string,
-    patch: Partial<Omit<OfflineStatus, 'id' | 'trip_id'>>
+    tripId: string,
+    patch: Partial<Omit<OfflineStatus, 'trip_id'>>
 ) {
     return supabase
         .from('offline_status')
-        .update(patch)
-        .eq('id', id)
+        .upsert({
+            trip_id: tripId,
+            maps_cached: false,
+            permit_saved: false,
+            daily_vehicle_permit_saved: false,
+            route_downloaded: false,
+            satellite_device_connected: false,
+            satellite_device_name: '',
+            emergency_contact_ready: false,
+            ...patch,
+        }, { onConflict: 'trip_id' })
+        .select()
+        .single();
+}
+
+// â”€â”€â”€ Trip Campsite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export async function updateTripCampsite(
+    tripId: string,
+    selection: CampsiteSelection
+) {
+    return supabase
+        .from('trips')
+        .update({
+            campsite_latitude: selection.latitude,
+            campsite_longitude: selection.longitude,
+            campsite_label: selection.label,
+            campsite_source: selection.source,
+            campsite_osm_id: selection.osmId,
+            site_lat: selection.latitude,
+            site_lng: selection.longitude,
+        } satisfies Partial<Trip>)
+        .eq('id', tripId)
         .select()
         .single();
 }

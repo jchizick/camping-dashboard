@@ -9,7 +9,6 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { mapOpenMeteoToSupabase } from '@/lib/weatherMapper';
 import type { OpenMeteoResponse } from '@/lib/weatherMapper';
 
-const DEFAULT_TRIP_ID = 'trip-maple-lake-001'; // Fallback for cron backward compat
 const FORECAST_DAYS = 5;
 
 // ─── Auth guard ──────────────────────────────────────────────────────────────
@@ -37,25 +36,41 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Resolve trip_id from query param or use default
-    const TRIP_ID = req.nextUrl.searchParams.get('trip_id') || DEFAULT_TRIP_ID;
+    const tripId = req.nextUrl.searchParams.get('trip_id')?.trim();
+    if (!tripId) {
+        return NextResponse.json(
+            { error: 'trip_id is required' },
+            { status: 400 }
+        );
+    }
 
     // ── 1. Fetch trip coordinates from Supabase ───────────────────────────────
     const { data: trip, error: tripErr } = await supabaseAdmin
         .from('trips')
-        .select('site_lat, site_lng')
-        .eq('id', TRIP_ID)
+        .select('campsite_latitude, campsite_longitude')
+        .eq('id', tripId)
         .single();
 
     if (tripErr || !trip) {
         console.error('[refresh-weather] Could not load trip:', tripErr?.message);
         return NextResponse.json(
             { error: 'Trip not found', detail: tripErr?.message },
-            { status: 500 }
+            { status: 404 }
         );
     }
 
-    const { site_lat, site_lng } = trip;
+    const { campsite_latitude: latitude, campsite_longitude: longitude } = trip;
+    if (
+        typeof latitude !== 'number'
+        || !Number.isFinite(latitude)
+        || typeof longitude !== 'number'
+        || !Number.isFinite(longitude)
+    ) {
+        return NextResponse.json(
+            { error: 'Trip campsite coordinates are required before refreshing weather' },
+            { status: 422 }
+        );
+    }
 
     // ── 2. Fetch from Open-Meteo ──────────────────────────────────────────────
     // Docs: https://open-meteo.com/en/docs
@@ -80,8 +95,8 @@ export async function GET(req: NextRequest) {
 
     // Open-Meteo requires repeated query keys for array params (not comma-joined strings)
     const baseParams = new URLSearchParams({
-        latitude: String(site_lat),
-        longitude: String(site_lng),
+        latitude: String(latitude),
+        longitude: String(longitude),
         timezone: 'America/Toronto',
         forecast_days: String(FORECAST_DAYS),
     });
@@ -111,15 +126,12 @@ export async function GET(req: NextRequest) {
     }
 
     // ── 3. Map to our schema ──────────────────────────────────────────────────
-    const { current, forecasts } = mapOpenMeteoToSupabase(meteoData, TRIP_ID, FORECAST_DAYS);
+    const { current, forecasts } = mapOpenMeteoToSupabase(meteoData, tripId, FORECAST_DAYS);
 
     // ── 4. Upsert weather_current ─────────────────────────────────────────────
     const { error: currentErr } = await supabaseAdmin
         .from('weather_current')
-        .upsert(
-            { ...current, id: 'weather-maple-lake-current' },
-            { onConflict: 'id' }
-        );
+        .upsert(current, { onConflict: 'trip_id' });
 
     if (currentErr) {
         console.error('[refresh-weather] Upsert weather_current failed:', currentErr.message);
@@ -130,33 +142,47 @@ export async function GET(req: NextRequest) {
     }
 
     // ── 5. Delete old forecast rows, then insert fresh ones ───────────────────
-    const { error: deleteErr } = await supabaseAdmin
+    const { error: forecastErr } = await supabaseAdmin
         .from('weather_forecast')
-        .delete()
-        .eq('trip_id', TRIP_ID);
+        .upsert(forecasts, { onConflict: 'trip_id,forecast_date' });
 
-    if (deleteErr) {
-        console.error('[refresh-weather] Delete old forecast failed:', deleteErr.message);
+    if (forecastErr) {
+        console.error('[refresh-weather] Upsert forecasts failed:', forecastErr.message);
         return NextResponse.json(
-            { error: 'Failed to clear old forecasts', detail: deleteErr.message },
+            { error: 'Failed to write weather_forecast', detail: forecastErr.message },
             { status: 500 }
         );
     }
 
-    const { error: insertErr } = await supabaseAdmin
-        .from('weather_forecast')
-        .insert(forecasts);
+    // Delete stale dates only after the replacement set has been safely written.
+    if (forecasts.length > 0) {
+        const firstDate = forecasts[0].forecast_date;
+        const lastDate = forecasts[forecasts.length - 1].forecast_date;
+        const [{ error: olderErr }, { error: newerErr }] = await Promise.all([
+            supabaseAdmin
+                .from('weather_forecast')
+                .delete()
+                .eq('trip_id', tripId)
+                .lt('forecast_date', firstDate),
+            supabaseAdmin
+                .from('weather_forecast')
+                .delete()
+                .eq('trip_id', tripId)
+                .gt('forecast_date', lastDate),
+        ]);
 
-    if (insertErr) {
-        console.error('[refresh-weather] Insert forecasts failed:', insertErr.message);
-        return NextResponse.json(
-            { error: 'Failed to write weather_forecast', detail: insertErr.message },
-            { status: 500 }
-        );
+        if (olderErr || newerErr) {
+            const detail = olderErr?.message ?? newerErr?.message;
+            console.error('[refresh-weather] Forecast cleanup failed:', detail);
+            return NextResponse.json(
+                { error: 'Weather updated, but stale forecast cleanup failed', detail },
+                { status: 500 }
+            );
+        }
     }
 
     // ── 6. Done ───────────────────────────────────────────────────────────────
-    console.log(`[refresh-weather] ✅ Weather updated for ${TRIP_ID} at ${current.updated_at}`);
+    console.log(`[refresh-weather] ✅ Weather updated for ${tripId} at ${current.updated_at}`);
     return NextResponse.json({
         ok: true,
         updated_at: current.updated_at,

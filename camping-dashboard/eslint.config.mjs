@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "generate_magic_link.js",
+    "get_trip_id.js",
+    "take_screenshots.js",
+    "toggle_theme.js",
   ]),
 ]);
 

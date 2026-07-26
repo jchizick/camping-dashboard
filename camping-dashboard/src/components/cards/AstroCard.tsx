@@ -8,8 +8,8 @@ import { useTheme } from '@/lib/themeContext';
 import { Star, Moon, Sunrise, Sunset, Eye, AlertCircle, Flashlight, Navigation } from 'lucide-react';
 
 interface AstroCardProps {
-    astro: AstroData;
-    weather: WeatherCurrent;
+    astro: AstroData | null;
+    weather: WeatherCurrent | null;
 }
 
 const moonPhaseIcon: Record<string, string> = {
@@ -24,12 +24,21 @@ const moonPhaseIcon: Record<string, string> = {
 };
 
 export default function AstroCard({ astro, weather }: AstroCardProps) {
+    const { labels } = useTheme();
+    if (!astro) {
+        return (
+            <Card title={labels.astro} icon={Star} className="h-full">
+                <div className="min-h-32 flex items-center justify-center text-center text-sm text-text-muted">
+                    Astronomy data is not available for this trip yet.
+                </div>
+            </Card>
+        );
+    }
+
     const skyQuality = getSkyQuality(weather, astro);
     const headlampTime = getHeadlampTime(astro);
     const goldenHour = getGoldenHourLabel(astro);
     const moonIcon = moonPhaseIcon[astro.moon_phase] || '🌙';
-
-    const { labels } = useTheme();
 
     return (
         <Card title={labels.astro} icon={Star} className="h-full">

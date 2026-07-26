@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import type { PrepFeedItem, PrepFeedCategory } from '@/types';
 import { Card, Badge } from '@/components/ui/Primitives';
+import type { BadgeVariant } from '@/components/ui/Primitives';
 import PrepFeedFormSheet from './PrepFeedFormSheet';
 import PrepFeedLightbox from '@/components/ui/PrepFeedLightbox';
 import { useTheme } from '@/lib/themeContext';
 import { Camera, Plus, Trash2, Clock, User } from 'lucide-react';
 
 // ── Category → badge variant mapping ────────────────────────
-const CATEGORY_VARIANT: Record<PrepFeedCategory, string> = {
+const CATEGORY_VARIANT: Record<PrepFeedCategory, BadgeVariant> = {
     'Gear': 'warning',
     'Food': 'success',
     'Shelter': 'info',

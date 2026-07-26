@@ -8,7 +8,7 @@ import { useTheme } from '@/lib/themeContext';
 import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode, Car } from 'lucide-react';
 
 interface OfflineVaultCardProps {
-    status: OfflineStatus;
+    status: OfflineStatus | null;
     onToggle?: (key: keyof OfflineStatus) => void;
     onOpenIntel?: () => void;
 }
@@ -23,21 +23,40 @@ const checks = [
 ];
 
 export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: OfflineVaultCardProps) {
-    const readiness = calculateOfflineReadiness(status);
+    const displayStatus: OfflineStatus = status ?? {
+        trip_id: '',
+        maps_cached: false,
+        permit_saved: false,
+        daily_vehicle_permit_saved: false,
+        route_downloaded: false,
+        satellite_device_connected: false,
+        satellite_device_name: '',
+        emergency_contact_ready: false,
+        updated_at: '',
+    };
+    const readiness = calculateOfflineReadiness(displayStatus);
     const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 60 ? 'bg-accent-yellow' : 'bg-accent-red';
     const { labels } = useTheme();
 
     return (
         <Card title={labels.offline} icon={ShieldAlert} className="h-full flex flex-col">
-            <div className="flex justify-between items-end mb-2">
-                <span className="text-xs text-text-muted">Safety Readiness</span>
-                <span className="text-sm font-mono text-text-main">{readiness}%</span>
-            </div>
-            <ProgressBar value={readiness} colorClass={readinessColor} className="mb-6 shrink-0" />
+            {status ? (
+                <>
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-xs text-text-muted">Safety Readiness</span>
+                        <span className="text-sm font-mono text-text-main">{readiness}%</span>
+                    </div>
+                    <ProgressBar value={readiness} colorClass={readinessColor} className="mb-6 shrink-0" />
+                </>
+            ) : (
+                <p className="mb-4 text-sm text-text-muted">
+                    Offline readiness has not been configured yet. Select an item to begin.
+                </p>
+            )}
 
             <div className="space-y-2 flex-1">
                 {checks.map(({ key, label, icon: Icon }) => {
-                    const done = status[key];
+                    const done = displayStatus[key];
                     return (
                         <div 
                             key={key} 
@@ -68,10 +87,10 @@ export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: Offl
                 })}
             </div>
 
-            {status.satellite_device_connected && status.satellite_device_name && (
+            {displayStatus.satellite_device_connected && displayStatus.satellite_device_name && (
                 <div className="mt-4 flex justify-between items-center px-4 py-2 border border-border-subtle rounded-xl bg-card-hover/50 text-xs font-mono shrink-0">
                     <span className="text-text-muted flex items-center gap-2"><Radio size={14} className="text-accent-blue" /> Satellite Active</span>
-                    <span className="text-text-main">{status.satellite_device_name}</span>
+                    <span className="text-text-main">{displayStatus.satellite_device_name}</span>
                 </div>
             )}
 

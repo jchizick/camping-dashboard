@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import type { WeatherCurrent, AstroData } from '@/types';
 import { getSkyQuality } from '@/lib/helpers';
 import { Card } from '@/components/ui/Primitives';
@@ -8,27 +8,56 @@ import { useTheme } from '@/lib/themeContext';
 import { CloudRain, Star, Wind, Droplets, Sunrise, Sunset, Eye, AlertCircle } from 'lucide-react';
 
 interface WeatherCardProps {
-    weather: WeatherCurrent;
-    astro: AstroData;
+    tripId: string;
+    weather: WeatherCurrent | null;
+    astro: AstroData | null;
 }
 
 type RefreshState = 'idle' | 'loading' | 'success' | 'error';
 
-export default function WeatherCard({ weather, astro }: WeatherCardProps) {
-    const skyQualityStr = getSkyQuality(weather, astro);
-    const [skyQuality, skyQualityDesc] = skyQualityStr.split(' — ').length > 1 ? skyQualityStr.split(' — ') : [skyQualityStr, ''];
+const subscribeToLocation = () => () => {};
+const getLocationSnapshot = () => new URLSearchParams(window.location.search).get('dev') === 'true';
+const getServerLocationSnapshot = () => false;
 
+export default function WeatherCard({ tripId, weather, astro }: WeatherCardProps) {
+    const { labels } = useTheme();
     // ── Dev-mode refresh button ──
-    const [isDevMode, setIsDevMode] = useState(false);
+    const isDevMode = useSyncExternalStore(
+        subscribeToLocation,
+        getLocationSnapshot,
+        getServerLocationSnapshot
+    );
     const [refreshState, setRefreshState] = useState<RefreshState>('idle');
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            setIsDevMode(params.get('dev') === 'true');
-        }
-    }, []);
+    if (!weather) {
+        return (
+            <Card title={labels.weather} icon={CloudRain} className="h-full">
+                <div className="min-h-48 flex items-center justify-center text-center text-sm text-text-muted">
+                    Weather has not been refreshed for this campsite yet.
+                </div>
+                {isDevMode && (
+                    <div className="mt-4 pt-4 border-t border-border-subtle">
+                        <button
+                            onClick={handleRefresh}
+                            disabled={refreshState === 'loading'}
+                            className="w-full text-xs font-mono px-3 py-2 rounded border border-border-subtle text-text-muted hover:text-text-main hover:bg-card-hover transition-colors flex justify-center items-center gap-2"
+                        >
+                            {refreshState === 'error' && <AlertCircle size={14} className="text-accent-red" />}
+                            {refreshState === 'loading'
+                                ? 'Fetching…'
+                                : refreshState === 'error'
+                                    ? 'Refresh failed — try again'
+                                    : 'Refresh Weather'}
+                        </button>
+                    </div>
+                )}
+            </Card>
+        );
+    }
+
+    const skyQualityStr = astro ? getSkyQuality(weather, astro) : 'Unavailable';
+    const [skyQuality, skyQualityDesc] = skyQualityStr.split(' — ').length > 1 ? skyQualityStr.split(' — ') : [skyQualityStr, ''];
 
     async function handleRefresh() {
         if (refreshState === 'loading') return;
@@ -36,7 +65,8 @@ export default function WeatherCard({ weather, astro }: WeatherCardProps) {
         setRefreshState('loading');
         try {
             const secret = process.env.NEXT_PUBLIC_WEATHER_REFRESH_SECRET ?? '';
-            const res = await fetch(`/api/refresh-weather?secret=${encodeURIComponent(secret)}`);
+            const params = new URLSearchParams({ secret, trip_id: tripId });
+            const res = await fetch(`/api/refresh-weather?${params.toString()}`);
             const json = await res.json();
 
             if (!res.ok || !json.ok) {
@@ -68,8 +98,6 @@ export default function WeatherCard({ weather, astro }: WeatherCardProps) {
         success: lastUpdated ? `✓ Updated ${lastUpdated}` : '✓ Updated',
         error: '✗ Refresh Failed',
     };
-
-    const { labels } = useTheme();
 
     return (
         <Card title={labels.weather} icon={CloudRain} className="h-full">

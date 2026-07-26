@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Camping Dashboard
 
-## Getting Started
+## Development
 
-First, run the development server:
+Install dependencies and run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The default unit tests are offline and do not require Supabase:
 
-## Learn More
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Database integration tests are deliberately separate:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx supabase start
+npx supabase db reset
+npm run test:db
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+These tests require Docker and the local Supabase stack. They reset only the
+local database and must not be pointed at a hosted project.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The repository currently contains migrations beginning with the campsite
+expand phase. Before `supabase db reset` can succeed on a clean machine, restore
+the project’s earlier baseline migrations (through
+`20260710135251_006_fix_trip_members_rls_recursion`) from the canonical schema
+history. Do not synthesize that baseline from production data. The expand
+migration intentionally aborts if its required base tables are absent or if
+existing trip relationships are ambiguous.

@@ -6,6 +6,7 @@
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import type { DashboardData } from '@/types';
 import { fetchDashboardData } from '@/lib/fetchDashboard';
@@ -38,9 +39,9 @@ export default function TripDashboardPage() {
         <div>
           <h2 style={{ color: '#ffb74d', fontSize: '1.5rem', marginBottom: '1rem' }}>Access Denied</h2>
           <p style={{ color: 'rgba(255,255,255,0.7)' }}>{roleError}</p>
-          <a href="/trips" style={{ color: '#eab308', marginTop: '1rem', display: 'inline-block', textDecoration: 'underline' }}>
+          <Link href="/trips" style={{ color: '#eab308', marginTop: '1rem', display: 'inline-block', textDecoration: 'underline' }}>
             ← Back to Trips
-          </a>
+          </Link>
         </div>
       </main>
     );

@@ -1,23 +1,66 @@
 // ============================================================
-// POST /api/trips/create — Server-side trip creation
-// Uses service_role to atomically create trip + membership +
-// default rows. Prevents orphaned trips under RLS.
+// POST /api/trips/create — authenticated transactional creation
+// Postgres derives the owner from auth.uid() inside create_trip.
 // ============================================================
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
+interface CreateTripBody {
+    name?: string;
+    park_name?: string;
+    lake_name?: string;
+    site_name?: string;
+    start_date?: string;
+    end_date?: string;
+    campsite_latitude?: number;
+    campsite_longitude?: number;
+    campsite_label?: string | null;
+    campsite_source?: string | null;
+    campsite_osm_id?: string | null;
+}
+
+function rpcErrorResponse(error: {
+    code?: string;
+    message?: string;
+} | null) {
+    if (error?.code === '42501') {
+        return NextResponse.json(
+            {
+                code: 'not_authorized',
+                error: 'Your session cannot create this trip. Please sign in again.',
+            },
+            { status: 403 }
+        );
+    }
+
+    if (error?.code === '22023') {
+        return NextResponse.json(
+            { code: 'invalid_trip', error: error.message ?? 'Trip details are invalid.' },
+            { status: 400 }
+        );
+    }
+
+    return NextResponse.json(
+        {
+            code: 'trip_creation_failed',
+            error: error?.message ?? 'The trip could not be created.',
+        },
+        { status: 500 }
+    );
+}
 
 export async function POST(request: NextRequest) {
-    // 1. Validate the caller is authenticated
     const cookieStore = await cookies();
-    const supabaseAuth = createServerClient(
+    const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                getAll() { return cookieStore.getAll(); },
+                getAll() {
+                    return cookieStore.getAll();
+                },
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value, options }) => {
                         cookieStore.set(name, value, options);
@@ -27,150 +70,87 @@ export async function POST(request: NextRequest) {
         }
     );
 
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // 2. Parse request body
-    let body: {
-        name: string;
-        park_name?: string;
-        lake_name?: string;
-        site_name?: string;
-        start_date: string;
-        end_date: string;
-        launch_point_name?: string;
-        launch_lat?: number;
-        launch_lng?: number;
-        site_lat?: number;
-        site_lng?: number;
-        distance_km?: number;
-        notes?: string;
-    };
-
-    try {
-        body = await request.json();
-    } catch {
-        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    }
-
-    if (!body.name || !body.start_date || !body.end_date) {
-        return NextResponse.json({ error: 'name, start_date, and end_date are required' }, { status: 400 });
-    }
-
-    // 3. Generate trip ID
-    const tripId = `trip-${crypto.randomUUID().slice(0, 12)}`;
-
-    try {
-        // 4. Create trip row
-        const { error: tripError } = await supabaseAdmin
-            .from('trips')
-            .insert({
-                id: tripId,
-                name: body.name,
-                park_name: body.park_name ?? '',
-                lake_name: body.lake_name ?? '',
-                site_name: body.site_name ?? '',
-                start_date: body.start_date,
-                end_date: body.end_date,
-                launch_point_name: body.launch_point_name ?? '',
-                launch_lat: body.launch_lat ?? 0,
-                launch_lng: body.launch_lng ?? 0,
-                site_lat: body.site_lat ?? 0,
-                site_lng: body.site_lng ?? 0,
-                distance_km: body.distance_km ?? 0,
-                notes: body.notes ?? '',
-                theme_mode: 'auto',
-            });
-
-        if (tripError) throw new Error(`Trip insert failed: ${tripError.message}`);
-
-        // 5. Create trip_members owner row
-        const { error: memberError } = await supabaseAdmin
-            .from('trip_members')
-            .insert({
-                trip_id: tripId,
-                user_id: user.id,
-                role: 'owner',
-            });
-
-        if (memberError) throw new Error(`Membership insert failed: ${memberError.message}`);
-
-        // 6. Create default settings
-        const { error: settingsError } = await supabaseAdmin
-            .from('settings')
-            .insert({
-                trip_id: tripId,
-                manual_theme_override: 'auto',
-                preferred_units: 'metric',
-                show_astro: true,
-                show_meals: true,
-                show_offline: true,
-                show_crew: true,
-                theme_variant: 'expedition',
-            });
-
-        if (settingsError) throw new Error(`Settings insert failed: ${settingsError.message}`);
-
-        // 7. Create default park_intel
-        const { error: intelError } = await supabaseAdmin
-            .from('park_intel')
-            .insert({
-                trip_id: tripId,
-                fire_restriction: 'Unknown',
-                wildlife_notes: '',
-                ranger_station: '',
-                firewood_percent: 0,
-                water_notes: '',
-                custom_notes: '',
-            });
-
-        if (intelError) throw new Error(`Park intel insert failed: ${intelError.message}`);
-
-        // 8. Create default offline_status
-        const { error: offlineError } = await supabaseAdmin
-            .from('offline_status')
-            .insert({
-                trip_id: tripId,
-                maps_cached: false,
-                permit_saved: false,
-                daily_vehicle_permit_saved: false,
-                route_downloaded: false,
-                satellite_device_connected: false,
-                satellite_device_name: '',
-                emergency_contact_ready: false,
-            });
-
-        if (offlineError) throw new Error(`Offline status insert failed: ${offlineError.message}`);
-
-        // 9. Create default astro_data
-        const { error: astroError } = await supabaseAdmin
-            .from('astro_data')
-            .insert({
-                trip_id: tripId,
-                golden_hour_start: '',
-                golden_hour_end: '',
-                blue_hour_end: '',
-                moon_phase: 'Unknown',
-                moon_illumination: 0,
-                milky_way_visibility: 'Unknown',
-                stargazing_notes: '',
-            });
-
-        if (astroError) throw new Error(`Astro data insert failed: ${astroError.message}`);
-
-        return NextResponse.json({ tripId }, { status: 201 });
-
-    } catch (err) {
-        console.error('[POST /api/trips/create]', err);
-
-        // Attempt cleanup on failure — delete the trip (cascades to trip_members)
-        await supabaseAdmin.from('trips').delete().eq('id', tripId);
-
+        console.error('[POST /api/trips/create] Authentication failed', authError);
         return NextResponse.json(
-            { error: err instanceof Error ? err.message : 'Failed to create trip' },
-            { status: 500 }
+            { code: 'not_authenticated', error: 'Please sign in before creating a trip.' },
+            { status: 401 }
         );
     }
+
+    let body: CreateTripBody;
+    try {
+        body = await request.json();
+    } catch (error) {
+        console.error('[POST /api/trips/create] Invalid JSON', error);
+        return NextResponse.json(
+            { code: 'invalid_request', error: 'The trip request could not be read.' },
+            { status: 400 }
+        );
+    }
+
+    const name = body.name?.trim() ?? '';
+    if (!name || !body.start_date || !body.end_date) {
+        return NextResponse.json(
+            {
+                code: 'missing_fields',
+                error: 'Trip name, start date, and end date are required.',
+            },
+            { status: 400 }
+        );
+    }
+
+    if (body.end_date < body.start_date) {
+        return NextResponse.json(
+            { code: 'invalid_dates', error: 'End date cannot be before start date.' },
+            { status: 400 }
+        );
+    }
+
+    const latitude = body.campsite_latitude;
+    const longitude = body.campsite_longitude;
+    if (
+        typeof latitude !== 'number'
+        || !Number.isFinite(latitude)
+        || latitude < -90
+        || latitude > 90
+        || typeof longitude !== 'number'
+        || !Number.isFinite(longitude)
+        || longitude < -180
+        || longitude > 180
+    ) {
+        return NextResponse.json(
+            {
+                code: 'missing_campsite',
+                error: 'Select a valid campsite location before creating the trip.',
+            },
+            { status: 400 }
+        );
+    }
+
+    const { data: tripId, error: createError } = await supabase.rpc('create_trip', {
+        p_name: name,
+        p_start_date: body.start_date,
+        p_end_date: body.end_date,
+        p_campsite_latitude: latitude,
+        p_campsite_longitude: longitude,
+        p_park_name: body.park_name?.trim() ?? '',
+        p_lake_name: body.lake_name?.trim() ?? '',
+        p_site_name: body.site_name?.trim() ?? '',
+        p_campsite_label: body.campsite_label?.trim() || null,
+        p_campsite_source: body.campsite_source?.trim() || 'manual_map_selection',
+        p_campsite_osm_id: body.campsite_osm_id?.trim() || null,
+    });
+
+    if (createError || typeof tripId !== 'string') {
+        console.error('[POST /api/trips/create] RPC failed', {
+            userId: user.id,
+            error: createError,
+            returnedTripId: tripId,
+        });
+        return rpcErrorResponse(createError);
+    }
+
+    return NextResponse.json({ tripId }, { status: 201 });
 }

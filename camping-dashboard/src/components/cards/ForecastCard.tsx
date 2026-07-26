@@ -4,7 +4,7 @@ import React from 'react';
 import type { WeatherForecast } from '@/types';
 import { Card } from '@/components/ui/Primitives';
 import { useTheme } from '@/lib/themeContext';
-import { Calendar, Droplets, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, HelpCircle } from 'lucide-react';
+import { Calendar, Droplets, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from 'lucide-react';
 
 interface ForecastCardProps {
     forecast: WeatherForecast[];
@@ -24,9 +24,8 @@ function getWeatherIcon(condition: string) {
 }
 
 export default function ForecastCard({ forecast }: ForecastCardProps) {
-    if (!forecast || forecast.length === 0) return null;
-
     const { labels } = useTheme();
+    if (!forecast || forecast.length === 0) return null;
 
     return (
         <Card title={labels.forecast} icon={Calendar} className="h-full">
@@ -36,7 +35,7 @@ export default function ForecastCard({ forecast }: ForecastCardProps) {
                     let dayName = day.forecast_date;
                     try {
                         dayName = new Date(day.forecast_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-                    } catch (e) { }
+                    } catch { }
 
                     const isTomorrow = i === 1;
                     const IconComponent = getWeatherIcon(day.condition_label);

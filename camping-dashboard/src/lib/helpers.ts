@@ -73,7 +73,8 @@ export function calculateMealCompleteness(meals: Meal[], totalDays: number): num
     return Math.min(Math.round((plannedMeals / expectedMeals) * 100), 100);
 }
 
-export function calculateOfflineReadiness(status: OfflineStatus): number {
+export function calculateOfflineReadiness(status: OfflineStatus | null): number {
+    if (!status) return 0;
     const checks = [
         status.maps_cached,
         status.permit_saved,
@@ -97,9 +98,10 @@ export function calculateTimelineCompleteness(
 }
 
 export function calculateWeatherPreparedness(
-    weather: WeatherCurrent,
+    weather: WeatherCurrent | null,
     forecast: WeatherForecast[]
 ): number {
+    if (!weather) return 0;
     let score = 100;
     // Penalise for high rain chance in forecast
     const maxRain = Math.max(weather.rain_chance, ...forecast.map((f) => f.rain_chance));
@@ -150,7 +152,8 @@ export function calculateOverallReadiness(scores: {
 }
 
 // ─── Astro Helpers ────────────────────────────────────────
-export function getSkyQuality(weather: WeatherCurrent, astro: AstroData): string {
+export function getSkyQuality(weather: WeatherCurrent | null, astro: AstroData): string {
+    if (!weather) return 'Unavailable';
     if (weather.rain_chance > 60) return 'Poor — Overcast';
     if (weather.rain_chance > 30) return 'Fair — Partly Cloudy';
     if (astro.moon_illumination > 80) return 'Good — Bright Moon';

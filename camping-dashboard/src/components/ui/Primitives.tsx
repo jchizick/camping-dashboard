@@ -1,6 +1,15 @@
 import React from 'react';
+import type { LucideIcon } from 'lucide-react';
 
-export const Card = ({ children, className = '', title, icon: Icon, action }: any) => (
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  title?: React.ReactNode;
+  icon?: LucideIcon;
+  action?: React.ReactNode;
+}
+
+export const Card = ({ children, className = '', title, icon: Icon, action }: CardProps) => (
   <div className={`bg-card-bg border border-border-subtle rounded-2xl overflow-hidden flex flex-col ${className}`}>
     {(title || Icon) && (
       <div className="px-5 py-4 border-b border-border-subtle flex items-center justify-between bg-card-bg/50 shrink-0">
@@ -15,14 +24,29 @@ export const Card = ({ children, className = '', title, icon: Icon, action }: an
   </div>
 );
 
-export const ProgressBar = ({ value, colorClass = 'bg-accent-yellow', bgClass = 'bg-border-subtle', height = 'h-1.5', className = '' }: any) => (
+interface ProgressBarProps {
+  value: number;
+  colorClass?: string;
+  bgClass?: string;
+  height?: string;
+  className?: string;
+}
+
+export const ProgressBar = ({ value, colorClass = 'bg-accent-yellow', bgClass = 'bg-border-subtle', height = 'h-1.5', className = '' }: ProgressBarProps) => (
   <div className={`w-full ${bgClass} rounded-full overflow-hidden ${height} ${className}`}>
     <div className={`${colorClass} h-full rounded-full transition-all duration-500`} style={{ width: `${value}%` }} />
   </div>
 );
 
-export const Badge = ({ children, variant = 'default' }: any) => {
-  const variants: any = {
+export type BadgeVariant = 'default' | 'warning' | 'critical' | 'info' | 'success';
+
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: BadgeVariant;
+}
+
+export const Badge = ({ children, variant = 'default' }: BadgeProps) => {
+  const variants: Record<BadgeVariant, string> = {
     default: 'bg-border-subtle text-text-muted',
     warning: 'bg-accent-yellow/10 text-accent-yellow border border-accent-yellow/20',
     critical: 'bg-accent-red/15 text-accent-red border border-accent-red/40',
