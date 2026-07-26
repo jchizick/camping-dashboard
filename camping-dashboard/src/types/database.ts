@@ -17,8 +17,6 @@ export type ParkIntelRow = TableRow<'park_intel'>;
 export type PrepFeedItemRow = TableRow<'prep_feed_items'>;
 export type PrepFeedItemInsert = TableInsert<'prep_feed_items'>;
 export type PrepFeedItemUpdate = TableUpdate<'prep_feed_items'>;
-export type PrepFeedStorageCleanupJobRow =
-  TableRow<'prep_feed_storage_cleanup_jobs'>;
 export type SettingsRow = TableRow<'settings'>;
 export type TimelineEventRow = TableRow<'timeline_events'>;
 export type TripMemberRow = TableRow<'trip_members'>;

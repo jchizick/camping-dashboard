@@ -691,7 +691,6 @@ export type Database = {
     }
     Functions: {
       begin_trip_deletion: { Args: { p_trip_id: string }; Returns: string }
-      can_edit_trip: { Args: { p_trip_id: string }; Returns: boolean }
       complete_trip_deletion: {
         Args: { p_deletion_token: string; p_trip_id: string }
         Returns: boolean
@@ -712,8 +711,6 @@ export type Database = {
         }
         Returns: string
       }
-      is_trip_member: { Args: { p_trip_id: string }; Returns: boolean }
-      is_trip_owner: { Args: { p_trip_id: string }; Returns: boolean }
       replace_prep_feed_image: {
         Args: {
           p_actor_user_id: string
@@ -723,7 +720,6 @@ export type Database = {
         }
         Returns: Json
       }
-      user_trip_role: { Args: { p_trip_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

@@ -192,7 +192,7 @@ values
   );
 
 select ok(
-  public.is_trip_owner(current_setting('test.baseline_trip_id')),
+  app_private.is_trip_owner(current_setting('test.baseline_trip_id')),
   'the trip creator is the owner'
 );
 
@@ -203,7 +203,7 @@ select set_config(
 );
 
 select ok(
-  public.can_edit_trip(current_setting('test.baseline_trip_id')),
+  app_private.can_edit_trip(current_setting('test.baseline_trip_id')),
   'an editor can edit the trip'
 );
 
@@ -214,12 +214,12 @@ select set_config(
 );
 
 select ok(
-  public.is_trip_member(current_setting('test.baseline_trip_id')),
+  app_private.is_trip_member(current_setting('test.baseline_trip_id')),
   'a viewer can see their trip'
 );
 
 select isnt(
-  public.can_edit_trip(current_setting('test.baseline_trip_id')),
+  app_private.can_edit_trip(current_setting('test.baseline_trip_id')),
   true,
   'a viewer cannot edit their trip'
 );
@@ -319,7 +319,7 @@ select is(
 );
 
 select isnt(
-  public.can_edit_trip(current_setting('test.baseline_trip_id')),
+  app_private.can_edit_trip(current_setting('test.baseline_trip_id')),
   true,
   'a pending trip is read-only'
 );
