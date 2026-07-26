@@ -114,7 +114,8 @@ describe('deleteTripWithPrepFeed', () => {
   it('completes on retry after final database deletion previously failed', async () => {
     let completionAttempts = 0;
     let objectExists = true;
-    const removeStorage = vi.fn(async () => {
+    const removeStorage = vi.fn(async (paths: string[]) => {
+      void paths;
       objectExists = false;
       return { error: null };
     });

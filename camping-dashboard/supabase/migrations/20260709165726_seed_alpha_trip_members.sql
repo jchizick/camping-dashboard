@@ -1,0 +1,3 @@
+-- Historical hosted migration marker.
+-- Production trip/user membership data is intentionally excluded from local
+-- resets and from this schema-only baseline.

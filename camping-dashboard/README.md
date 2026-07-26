@@ -1,8 +1,9 @@
 # Camping Dashboard
 
-## Development
+## Application development
 
-Install dependencies and run the development server:
+Install dependencies and run the development server against the environment in
+`.env.local`:
 
 ```bash
 npm install
@@ -10,6 +11,46 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Local Supabase
+
+Local database work requires Docker Desktop and the repository-pinned Supabase
+CLI (`supabase@2.109.1`, installed by `npm install`). Use `npx supabase` so the
+pinned version is selected.
+
+Start the local stack and replay the complete migration history:
+
+```bash
+npx supabase start
+npx supabase db reset
+```
+
+The reset applies all files in `supabase/migrations`, then the intentionally
+empty `supabase/seed.sql`. Tests create synthetic users and trips inside
+transactions and roll them back; no hosted users, trips, memberships, URLs, or
+Storage objects are copied locally.
+
+Get the local URL and keys with:
+
+```bash
+npx supabase status
+```
+
+Create an ignored `.env.local` with the returned local-only values:
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<local ANON_KEY>
+SUPABASE_SERVICE_ROLE_KEY=<local SERVICE_ROLE_KEY>
+```
+
+Never use hosted or production credentials for local validation. With the local
+values configured, run `npm run dev`. The application UI currently signs in
+only through Google OAuth, so interactive local sign-in also requires a
+developer-supplied local Google provider configuration; provider credentials
+are intentionally not checked in. Database tests avoid that external dependency
+by creating synthetic auth users transactionally. Local mail is captured at
+`http://127.0.0.1:54324`.
 
 ## Validation
 
@@ -24,7 +65,6 @@ npm run build
 Database integration tests are deliberately separate:
 
 ```bash
-npx supabase start
 npx supabase db reset
 npm run test:db
 ```
@@ -32,10 +72,23 @@ npm run test:db
 These tests require Docker and the local Supabase stack. They reset only the
 local database and must not be pointed at a hosted project.
 
-The repository currently contains migrations beginning with the campsite
-expand phase. Before `supabase db reset` can succeed on a clean machine, restore
-the project’s earlier baseline migrations (through
-`20260710135251_006_fix_trip_members_rls_recursion`) from the canonical schema
-history. Do not synthesize that baseline from production data. The expand
-migration intentionally aborts if its required base tables are absent or if
-existing trip relationships are ambiguous.
+Stop the stack while preserving local data:
+
+```bash
+npx supabase stop
+```
+
+For a fully clean disposable restart, discard local volumes and replay:
+
+```bash
+npx supabase stop --no-backup
+npx supabase start
+npx supabase db reset
+```
+
+The schema-only baseline is
+`20260710135251_006_fix_trip_members_rls_recursion.sql`. Earlier hosted versions
+are retained as history markers because their final schema is incorporated into
+that baseline. In particular, the former production membership seed is
+intentionally a no-op locally. Later campsite, singleton-contract, prep-feed,
+and retry-safe deletion migrations remain independently replayable.

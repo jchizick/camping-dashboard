@@ -1,0 +1,5 @@
+-- Intentionally empty.
+--
+-- Local resets reconstruct schema and security behavior without copying
+-- hosted users, memberships, trips, feed rows, or Storage objects. Tests create
+-- their own disposable fixtures transactionally.

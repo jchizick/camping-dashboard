@@ -1,0 +1,2 @@
+-- Historical migration incorporated into the schema-only baseline at
+-- 20260710135251. The obsolete email allowlist is intentionally not retained.

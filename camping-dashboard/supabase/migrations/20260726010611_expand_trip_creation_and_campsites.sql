@@ -142,27 +142,22 @@ set campsite_latitude = site_lat,
 where id = 'trip-maple-lake-001';
 
 alter table public.settings
-  alter column id set default gen_random_uuid()::text,
   alter column trip_id set not null,
   add constraint settings_trip_id_key unique (trip_id);
 
 alter table public.park_intel
-  alter column id set default gen_random_uuid()::text,
   alter column trip_id set not null,
   add constraint park_intel_trip_id_key unique (trip_id);
 
 alter table public.offline_status
-  alter column id set default gen_random_uuid()::text,
   alter column trip_id set not null,
   add constraint offline_status_trip_id_key unique (trip_id);
 
 alter table public.astro_data
-  alter column id set default gen_random_uuid()::text,
   alter column trip_id set not null,
   add constraint astro_data_trip_id_key unique (trip_id);
 
 alter table public.weather_current
-  alter column id set default gen_random_uuid()::text,
   alter column trip_id set not null,
   add constraint weather_current_trip_id_key unique (trip_id);
 
@@ -306,7 +301,7 @@ revoke all on function public.create_trip(
   text,
   text,
   text
-) from public, anon, service_role;
+) from public, anon;
 
 grant execute on function public.create_trip(
   text,

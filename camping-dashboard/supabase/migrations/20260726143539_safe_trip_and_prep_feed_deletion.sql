@@ -316,6 +316,10 @@ revoke all on function public.begin_trip_deletion(text) from public, anon;
 revoke all on function public.complete_trip_deletion(text, uuid) from public, anon;
 grant execute on function public.begin_trip_deletion(text) to authenticated;
 grant execute on function public.complete_trip_deletion(text, uuid) to authenticated;
+-- Hosted Supabase also grants these RPCs to service_role. Make that canonical
+-- ACL explicit instead of relying on environment-specific default privileges.
+grant execute on function public.begin_trip_deletion(text) to service_role;
+grant execute on function public.complete_trip_deletion(text, uuid) to service_role;
 
 create or replace function public.replace_prep_feed_image(
   p_item_id uuid,
