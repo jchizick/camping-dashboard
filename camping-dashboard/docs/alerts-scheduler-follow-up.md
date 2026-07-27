@@ -1,55 +1,69 @@
-# Follow-up: multi-trip park and emergency alerts
+# Alert scheduler architecture
 
-This is a proposal only. It is separate from weather refresh and makes no
-changes to `/api/refresh-alerts`, its 11:15 UTC Vercel Cron entry, existing
-Algonquin behavior, or hosted alert data.
+Status: locally implemented; hosted migration, Edge deployment, scheduler
+configuration, Vercel cutover, and production QA are intentionally pending
+review.
 
-## Current limitation
+The legacy `/api/refresh-alerts` schedule is the final Vercel Cron. It runs
+daily at `15 11 * * *`, assumes `trip-maple-lake-001`, Algonquin Park,
+Ontario, and Canada, and directly scrapes Ontario Parks HTML and the
+Environment Canada `onrm31` Atom feed. It deletes rows by source before
+inserting replacements and fabricates informational rows after provider
+failure. The dashboard previously kept dismissal only in component memory and
+could not distinguish a confirmed empty result from unsupported, failed, or
+never-run providers.
 
-The existing route writes Ontario Parks and Environment Canada results to the
-hardcoded `trip-maple-lake-001`. Ontario/Algonquin applicability is therefore
-implicit, and generic trips cannot safely participate in one multi-trip run.
+The replacement uses one Supabase coordinator and explicit nullable trip
+coverage:
 
-Weather forecasts and park/emergency alerts must remain separate normalized
-domains. A weather provider's geographic forecast does not establish that an
-Ontario Parks advisory applies to the same trip.
+- `country_code` and `region_code`
+- `park_alert_provider` plus `park_alert_external_id`
+- `weather_alert_provider` plus `weather_alert_region_code`
 
-## Required metadata and adapters
+Display labels and coordinates do not imply coverage. The legacy trip is
+guardedly mapped to `CA`, `ON`, `ontario-parks`,
+`algonquin/backcountry`, `environment-canada`, and `onrm31`. All other trips
+remain valid without an automated source.
 
-A replacement first needs canonical jurisdiction metadata on each trip or its
-park/location model, such as country, province/state, park system, park
-identifier, and applicable alert regions. It should then use explicit provider
-adapters:
+Initial adapters are deliberately limited to Ontario Parks HTML and
+Environment Canada Atom. They emit normalized provider identity, stable
+external identity, severity, lifecycle, attribution, timestamps, and
+deterministic fingerprints. They never emit fake all-clear alerts. Unrecognized
+provider markup is an operational parser failure, not an authoritative empty
+result.
 
-- Ontario Parks for supported Ontario park operational notices;
-- Environment and Climate Change Canada for supported Canadian alert regions;
-- a neutral unsupported result for trips with no applicable provider.
+Scheduled eligibility requires valid dates, no pending deletion, at least one
+configured provider, a due provider state, and a local calendar date from
+seven days before the trip through one day after it ends. Distant and old
+trips are not continuously polled. A provider is refreshed every six hours
+after success; the coordinator is intended to run every three hours so due
+work is picked up promptly without scraping hourly.
 
-The initial adapters must preserve Algonquin output and deduplication before
-the hardcoded trip behavior is removed.
+Identity is `(trip_id, provider, external_id)`. Provider updates reuse a row,
+provider and trip boundaries cannot overwrite each other, and dismissal
+metadata survives upserts. Complete authoritative results resolve missing
+active alerts but retain history. Request, parser, normalization, or database
+failure leaves prior alerts intact. Empty complete results resolve prior
+provider rows without creating an all-clear row.
 
-## Coordinator design
+`alert_refresh_state` holds one lock and retry lifecycle per trip/provider.
+Claims use deterministic oldest-due ordering with `FOR UPDATE SKIP LOCKED`.
+Locks expire after 15 minutes. Provider work is processed in batches of 10
+with concurrency 2. Retry delays are approximately 30 minutes, two hours, and
+eight hours with bounded jitter; the third failure pauses in `failed`.
+Unsupported configuration is not repeatedly claimed.
 
-Use one bounded multi-trip coordinator, not one job per trip. Select due trips
-by supported jurisdiction, canonical location metadata, alert freshness, and
-trip date relevance. Process a small batch with shared locking and independent
-per-trip failure handling.
+The `refresh-trip-alerts` Edge Function accepts POST only. Scheduled mode uses
+the dedicated `ALERT_REFRESH_CRON_SECRET`; manual mode verifies the caller JWT
+and invokes an owner/editor-only claim RPC. Public responses and structured
+logs contain only run IDs, counts, durations, and sanitized error codes. Raw
+HTML/XML, alert descriptions, full provider URLs, trip/park names,
+coordinates, user identities, tokens, and secrets are excluded.
 
-Normalize source identifier, jurisdiction, severity, effective/expiry times,
-deduplication key, and provider attribution. Expire withdrawn or elapsed alerts
-deliberately; do not erase still-valid alerts because one provider fails.
-Unsupported trips should be skipped without repeated errors.
+`/api/refresh-alerts` is retained as a private, no-store authenticated manual
+proxy. It accepts only a trip ID, derives coverage in the database, shares
+locks and a ten-minute cooldown with scheduled work, and maps Edge failures to
+sanitized application errors.
 
-## Rollout
-
-1. Add and backfill reviewed jurisdiction metadata.
-2. Build adapter fixtures and prove existing Algonquin behavior.
-3. Add bounded due selection, deduplication, expiry, locks, and sanitized logs.
-4. Deploy through a staged Supabase scheduler while the Vercel alert job
-   remains active or is safely shadowed.
-5. QA Ontario/Algonquin, supported Canadian, unsupported, and cross-trip
-   isolation cases.
-6. Retire `/api/refresh-alerts` from Vercel only after successful hosted
-   scheduled cycles and production dashboard verification.
-
-No part of the weather migration authorizes this cutover.
+The Vercel schedule remains in place until hosted staged QA is approved. The
+weather and prep-feed schedulers are unchanged.

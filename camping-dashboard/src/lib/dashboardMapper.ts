@@ -1,5 +1,6 @@
 import type {
   AlertRow,
+  AlertRefreshStateRow,
   AstroDataRow,
   CrewMemberRow,
   GearItemRow,
@@ -16,6 +17,7 @@ import type {
 } from '@/types/database';
 import type {
   Alert,
+  AlertRefreshState,
   AstroData,
   CrewMember,
   GearItem,
@@ -191,11 +193,28 @@ export function toAstroData(row: AstroDataRow): AstroData {
 
 export function toAlert(row: AlertRow): Alert {
   requireColumns(row, 'alerts', [
-    'body', 'created_at', 'is_active', 'severity', 'source', 'title', 'trip_id',
+    'body', 'category', 'created_at', 'external_id', 'is_active', 'provider',
+    'severity', 'source', 'status', 'title', 'trip_id', 'updated_at',
   ]);
   return {
     ...row,
-    severity: checkedValue(row.severity, ['info', 'warning', 'critical'], 'alerts.severity'),
+    severity: checkedValue(
+      row.severity,
+      ['info', 'advisory', 'watch', 'warning', 'critical'],
+      'alerts.severity'
+    ),
+  };
+}
+
+export function toAlertRefreshState(row: AlertRefreshStateRow): AlertRefreshState {
+  requireColumns(row, 'alert_refresh_state', ['status']);
+  return {
+    ...row,
+    status: checkedValue(
+      row.status,
+      ['idle', 'processing', 'retry', 'failed', 'unsupported'],
+      'alert_refresh_state.status'
+    ),
   };
 }
 

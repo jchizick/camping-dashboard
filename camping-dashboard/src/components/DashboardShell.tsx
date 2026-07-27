@@ -34,7 +34,7 @@ import {
   // Crew
   createCrewMember, updateCrewMember, deleteCrewMember,
   // Alerts
-  createAlert, deleteAlert,
+  createAlert, deleteAlert, dismissAlert,
   // Offline
   updateOfflineStatus,
   // Park Intel
@@ -239,6 +239,26 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
     setAlerts(prev => prev.filter(a => a.id !== id));
   }
 
+  async function handleAlertDismiss(id: string) {
+    const { error } = await dismissAlert(id);
+    if (error) { console.error('[dismissAlert]', error.message); throw error; }
+    setAlerts(prev => prev.map(alert => alert.id === id
+      ? { ...alert, dismissed_at: new Date().toISOString() }
+      : alert));
+  }
+
+  async function handleAlertRefresh() {
+    const response = await fetch('/api/refresh-alerts', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tripId }),
+    });
+    const result = await response.json() as { error?: string };
+    if (!response.ok) throw new Error(result.error ?? 'Alerts could not be refreshed.');
+    window.location.reload();
+  }
+
   // ── Park Intel mutations ─────────────────────────────────────────
   async function handleParkIntelUpdate(patch: Partial<Omit<ParkIntel, 'trip_id' | 'updated_at'>>) {
     const { data: updated, error } = await updateParkIntel(tripId, patch);
@@ -405,8 +425,11 @@ export default function DashboardShell({ data }: { data: DashboardData }) {
           <div className="lg:col-span-4">
             <AlertsCard
               alerts={alerts}
+              refreshStates={data.alertRefresh}
               onAddManual={canEdit ? handleAlertAdd : undefined}
               onDeleteManual={canEdit ? handleAlertDelete : undefined}
+              onDismissSystem={canEdit ? handleAlertDismiss : undefined}
+              onRefresh={canEdit ? handleAlertRefresh : undefined}
             />
           </div>
 

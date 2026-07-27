@@ -155,11 +155,26 @@ export async function deleteCrewMember(id: string) {
 
 export async function createAlert(
     tripId: string,
-    alert: Omit<Alert, 'id' | 'trip_id' | 'created_at'>
+    alert: {
+        title: string;
+        body: string;
+        severity: Alert['severity'];
+        source: string;
+        is_active: boolean;
+    }
 ) {
+    const id = generateId();
     return supabase
         .from('alerts')
-        .insert({ id: generateId(), ...alert, trip_id: tripId })
+        .insert({
+            id,
+            ...alert,
+            trip_id: tripId,
+            provider: 'manual',
+            external_id: id,
+            category: 'manual',
+            status: 'active',
+        })
         .select()
         .single();
 }
@@ -173,6 +188,13 @@ export async function deactivateAlert(id: string) {
 
 export async function deleteAlert(id: string) {
     return supabase.from('alerts').delete().eq('id', id);
+}
+
+export async function dismissAlert(id: string) {
+    return supabase
+        .from('alerts')
+        .update({ dismissed_at: new Date().toISOString() })
+        .eq('id', id);
 }
 
 // ─── Park Intel ───────────────────────────────────────────────

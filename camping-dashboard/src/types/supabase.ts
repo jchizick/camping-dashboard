@@ -12,36 +12,146 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      alerts: {
+      alert_refresh_state: {
         Row: {
-          body: string | null
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          severity: string | null
-          source: string | null
-          title: string | null
-          trip_id: string | null
+          attempt_count: number
+          created_at: string
+          last_attempt_at: string | null
+          last_error_code: string | null
+          last_error_summary: string | null
+          last_fingerprint: string | null
+          last_success_at: string | null
+          locked_at: string | null
+          locked_by: string | null
+          next_refresh_at: string
+          provider: string
+          provider_external_id: string
+          status: string
+          trip_id: string
+          unsupported_reason: string | null
+          updated_at: string
         }
         Insert: {
-          body?: string | null
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          severity?: string | null
-          source?: string | null
-          title?: string | null
-          trip_id?: string | null
+          attempt_count?: number
+          created_at?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          last_fingerprint?: string | null
+          last_success_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_refresh_at?: string
+          provider: string
+          provider_external_id: string
+          status?: string
+          trip_id: string
+          unsupported_reason?: string | null
+          updated_at?: string
         }
         Update: {
-          body?: string | null
-          created_at?: string | null
+          attempt_count?: number
+          created_at?: string
+          last_attempt_at?: string | null
+          last_error_code?: string | null
+          last_error_summary?: string | null
+          last_fingerprint?: string | null
+          last_success_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_refresh_at?: string
+          provider?: string
+          provider_external_id?: string
+          status?: string
+          trip_id?: string
+          unsupported_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_refresh_state_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alerts: {
+        Row: {
+          acknowledged_at: string | null
+          body: string
+          category: string
+          created_at: string
+          dismissed_at: string | null
+          effective_at: string | null
+          expires_at: string | null
+          external_id: string
+          fingerprint: string | null
+          id: string
+          is_active: boolean
+          issued_at: string | null
+          last_seen_at: string | null
+          provider: string
+          provider_updated_at: string | null
+          resolved_at: string | null
+          severity: string
+          source: string
+          source_url: string | null
+          status: string
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          body: string
+          category: string
+          created_at?: string
+          dismissed_at?: string | null
+          effective_at?: string | null
+          expires_at?: string | null
+          external_id: string
+          fingerprint?: string | null
           id?: string
-          is_active?: boolean | null
-          severity?: string | null
-          source?: string | null
-          title?: string | null
-          trip_id?: string | null
+          is_active?: boolean
+          issued_at?: string | null
+          last_seen_at?: string | null
+          provider: string
+          provider_updated_at?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source: string
+          source_url?: string | null
+          status: string
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          body?: string
+          category?: string
+          created_at?: string
+          dismissed_at?: string | null
+          effective_at?: string | null
+          expires_at?: string | null
+          external_id?: string
+          fingerprint?: string | null
+          id?: string
+          is_active?: boolean
+          issued_at?: string | null
+          last_seen_at?: string | null
+          provider?: string
+          provider_updated_at?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          source_url?: string | null
+          status?: string
+          title?: string
+          trip_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -538,6 +648,7 @@ export type Database = {
           campsite_longitude: number | null
           campsite_osm_id: string | null
           campsite_source: string | null
+          country_code: string | null
           created_at: string | null
           deletion_pending_at: string | null
           deletion_token: string | null
@@ -551,13 +662,18 @@ export type Database = {
           map_style: string | null
           name: string
           notes: string | null
+          park_alert_external_id: string | null
+          park_alert_provider: string | null
           park_name: string | null
+          region_code: string | null
           site_lat: number | null
           site_lng: number | null
           site_name: string | null
           start_date: string | null
           theme_mode: string | null
           updated_at: string | null
+          weather_alert_provider: string | null
+          weather_alert_region_code: string | null
         }
         Insert: {
           campsite_label?: string | null
@@ -565,6 +681,7 @@ export type Database = {
           campsite_longitude?: number | null
           campsite_osm_id?: string | null
           campsite_source?: string | null
+          country_code?: string | null
           created_at?: string | null
           deletion_pending_at?: string | null
           deletion_token?: string | null
@@ -578,13 +695,18 @@ export type Database = {
           map_style?: string | null
           name: string
           notes?: string | null
+          park_alert_external_id?: string | null
+          park_alert_provider?: string | null
           park_name?: string | null
+          region_code?: string | null
           site_lat?: number | null
           site_lng?: number | null
           site_name?: string | null
           start_date?: string | null
           theme_mode?: string | null
           updated_at?: string | null
+          weather_alert_provider?: string | null
+          weather_alert_region_code?: string | null
         }
         Update: {
           campsite_label?: string | null
@@ -592,6 +714,7 @@ export type Database = {
           campsite_longitude?: number | null
           campsite_osm_id?: string | null
           campsite_source?: string | null
+          country_code?: string | null
           created_at?: string | null
           deletion_pending_at?: string | null
           deletion_token?: string | null
@@ -605,13 +728,18 @@ export type Database = {
           map_style?: string | null
           name?: string
           notes?: string | null
+          park_alert_external_id?: string | null
+          park_alert_provider?: string | null
           park_name?: string | null
+          region_code?: string | null
           site_lat?: number | null
           site_lng?: number | null
           site_name?: string | null
           start_date?: string | null
           theme_mode?: string | null
           updated_at?: string | null
+          weather_alert_provider?: string | null
+          weather_alert_region_code?: string | null
         }
         Relationships: []
       }
@@ -792,6 +920,21 @@ export type Database = {
     }
     Functions: {
       begin_trip_deletion: { Args: { p_trip_id: string }; Returns: string }
+      claim_due_trip_alerts: {
+        Args: {
+          p_batch_size?: number
+          p_stale_after_seconds?: number
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          country_code: string
+          provider: string
+          provider_external_id: string
+          region_code: string
+          trip_id: string
+        }[]
+      }
       claim_due_trip_weather: {
         Args: {
           p_batch_size?: number
@@ -816,6 +959,22 @@ export type Database = {
           attempt_count: number
           id: string
           storage_path: string
+          trip_id: string
+        }[]
+      }
+      claim_trip_alerts_manual: {
+        Args: {
+          p_cooldown_seconds?: number
+          p_stale_after_seconds?: number
+          p_trip_id: string
+          p_worker_id: string
+        }
+        Returns: {
+          attempt_count: number
+          country_code: string
+          provider: string
+          provider_external_id: string
+          region_code: string
           trip_id: string
         }[]
       }
@@ -867,6 +1026,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      fail_trip_alerts: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_provider: string
+          p_trip_id: string
+          p_worker_id: string
+        }
+        Returns: boolean
+      }
       fail_trip_weather: {
         Args: {
           p_error_code: string
@@ -877,6 +1046,15 @@ export type Database = {
         Returns: boolean
       }
       get_prep_feed_storage_cleanup_summary: { Args: never; Returns: Json }
+      persist_trip_alerts: {
+        Args: {
+          p_payload: Json
+          p_provider: string
+          p_trip_id: string
+          p_worker_id: string
+        }
+        Returns: string
+      }
       persist_trip_weather: {
         Args: { p_payload: Json; p_trip_id: string; p_worker_id: string }
         Returns: string
@@ -900,6 +1078,16 @@ export type Database = {
           p_error_summary: string
           p_job_id: string
           p_next_attempt_at: string
+          p_worker_id: string
+        }
+        Returns: boolean
+      }
+      retry_trip_alerts: {
+        Args: {
+          p_error_code: string
+          p_error_summary: string
+          p_provider: string
+          p_trip_id: string
           p_worker_id: string
         }
         Returns: boolean

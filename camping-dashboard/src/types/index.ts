@@ -1,5 +1,6 @@
 import type {
   AlertRow,
+  AlertRefreshStateRow,
   AstroDataRow,
   CrewMemberRow,
   GearItemRow,
@@ -21,7 +22,7 @@ export type ThemeVariant = 'expedition' | 'clean';
 export type Priority = 'critical' | 'high' | 'low';
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type PrepType = 'dehydrated' | 'fresh' | 'fire' | 'restaurant';
-export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type AlertSeverity = 'info' | 'advisory' | 'watch' | 'warning' | 'critical';
 export type Units = 'metric' | 'imperial';
 export type PrepFeedCategory =
   | 'Gear'
@@ -108,8 +109,16 @@ export type OfflineStatus = PresentColumns<
   Exclude<keyof OfflineStatusRow, 'trip_id'>
 >;
 export type AstroData = PresentColumns<AstroDataRow, Exclude<keyof AstroDataRow, 'trip_id'>>;
-export type Alert = PresentColumns<AlertRow, Exclude<keyof AlertRow, 'id'>> & {
+export type Alert = PresentColumns<
+  AlertRow,
+  'body' | 'category' | 'created_at' | 'external_id' | 'is_active' | 'provider' |
+  'severity' | 'source' | 'status' | 'title' | 'trip_id' | 'updated_at'
+> & {
   severity: AlertSeverity;
+};
+export type AlertRefreshStatus = 'idle' | 'processing' | 'retry' | 'failed' | 'unsupported';
+export type AlertRefreshState = AlertRefreshStateRow & {
+  status: AlertRefreshStatus;
 };
 export type PrepFeedItem = PresentColumns<PrepFeedItemRow, 'caption'> & {
   category: PrepFeedCategory;
@@ -152,6 +161,7 @@ export interface TripDashboardData {
   offlineStatus: OfflineStatus | null;
   astro: AstroData | null;
   alerts: Alert[];
+  alertRefresh: AlertRefreshState[] | null;
   prepFeed: PrepFeedItem[];
   settings: Settings;
 }

@@ -6,6 +6,7 @@
 import { supabase } from './supabase';
 import {
     toAlert,
+    toAlertRefreshState,
     toAstroData,
     toCrewMember,
     toGearItem,
@@ -60,6 +61,7 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         offlineResult,
         astroResult,
         alertsResult,
+        alertRefreshResult,
         settingsResult,
         prepFeedResult,
     ] = await Promise.all([
@@ -75,6 +77,7 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         supabase.from('offline_status').select('*').eq('trip_id', tripId).maybeSingle(),
         supabase.from('astro_data').select('*').eq('trip_id', tripId).maybeSingle(),
         supabase.from('alerts').select('*').eq('trip_id', tripId).eq('is_active', true).order('created_at', { ascending: false }),
+        supabase.from('alert_refresh_state').select('*').eq('trip_id', tripId).order('provider'),
         supabase.from('settings').select('*').eq('trip_id', tripId).single(),
         supabase.from('prep_feed_items').select('*').eq('trip_id', tripId).order('created_at', { ascending: false }),
     ]);
@@ -146,6 +149,13 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         }
     }
 
+    if (alertsResult.error && process.env.NODE_ENV !== 'production') {
+        console.warn('[fetchDashboard] Alerts could not be loaded.');
+    }
+    if (alertRefreshResult.error && process.env.NODE_ENV !== 'production') {
+        console.warn('[fetchDashboard] Alert synchronization status could not be loaded.');
+    }
+
     return {
         trip: toTripDashboard(tripResult.data),
         currentWeather,
@@ -158,7 +168,28 @@ export async function fetchDashboardData(tripId: string): Promise<DashboardData>
         parkIntel: parkIntelResult.data ? toParkIntel(parkIntelResult.data) : null,
         offlineStatus: offlineResult.data ? toOfflineStatus(offlineResult.data) : null,
         astro: astroResult.data ? toAstroData(astroResult.data) : null,
-        alerts: (alertsResult.data ?? []).map(toAlert),
+        alerts: (alertsResult.data ?? []).flatMap((row) => {
+            try {
+                return [toAlert(row)];
+            } catch {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[fetchDashboard] Omitting malformed alert data.');
+                }
+                return [];
+            }
+        }),
+        alertRefresh: alertsResult.error || alertRefreshResult.error
+          ? null
+          : (alertRefreshResult.data ?? []).flatMap((row) => {
+            try {
+                return [toAlertRefreshState(row)];
+            } catch {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[fetchDashboard] Omitting malformed alert refresh state.');
+                }
+                return [];
+            }
+        }),
         prepFeed: (prepFeedResult.data ?? []).map(toPrepFeedItem),
         settings: toSettings(settingsResult.data),
     };

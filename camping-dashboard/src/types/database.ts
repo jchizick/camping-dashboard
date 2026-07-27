@@ -8,6 +8,7 @@ export type TableInsert<T extends TableName> = PublicSchema['Tables'][T]['Insert
 export type TableUpdate<T extends TableName> = PublicSchema['Tables'][T]['Update'];
 
 export type AlertRow = TableRow<'alerts'>;
+export type AlertRefreshStateRow = TableRow<'alert_refresh_state'>;
 export type AstroDataRow = TableRow<'astro_data'>;
 export type CrewMemberRow = TableRow<'crew_members'>;
 export type GearItemRow = TableRow<'gear_items'>;

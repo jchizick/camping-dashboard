@@ -88,6 +88,8 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
                         onChange={(e) => set('severity', e.target.value as AlertSeverity)}
                     >
                         <option value="info">ℹ️ Info</option>
+                        <option value="advisory">Advisory</option>
+                        <option value="watch">Watch</option>
                         <option value="warning">⚠️ Warning</option>
                         <option value="critical">🚨 Critical</option>
                     </select>
