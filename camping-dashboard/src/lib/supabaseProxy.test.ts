@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
 const proxyMocks = vi.hoisted(() => ({
-  getUser: vi.fn(),
+  getClaims: vi.fn(),
   refreshCookies: false,
 }));
 
@@ -24,7 +24,7 @@ vi.mock('@supabase/ssr', () => ({
       }
     ) => ({
       auth: {
-        getUser: async () => {
+        getClaims: async () => {
           if (proxyMocks.refreshCookies) {
             options.cookies.setAll([
               {
@@ -34,7 +34,7 @@ vi.mock('@supabase/ssr', () => ({
               },
             ]);
           }
-          return proxyMocks.getUser();
+          return proxyMocks.getClaims();
         },
       },
     })
@@ -47,7 +47,7 @@ describe('Supabase session proxy', () => {
   beforeEach(() => {
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://project.example.supabase.co');
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-test-key');
-    proxyMocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
+    proxyMocks.getClaims.mockResolvedValue({ data: null, error: null });
     proxyMocks.refreshCookies = false;
   });
 
@@ -73,13 +73,13 @@ describe('Supabase session proxy', () => {
 
     const response = await updateSupabaseSession(request);
 
-    expect(proxyMocks.getUser).not.toHaveBeenCalled();
+    expect(proxyMocks.getClaims).not.toHaveBeenCalled();
     expect(response.headers.get('location')).toBeNull();
   });
 
   it('allows an authenticated protected request and forwards refreshed cookies', async () => {
-    proxyMocks.getUser.mockResolvedValue({
-      data: { user: { id: 'user-123' } },
+    proxyMocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: 'user-123' } },
       error: null,
     });
     proxyMocks.refreshCookies = true;
@@ -101,8 +101,8 @@ describe('Supabase session proxy', () => {
   });
 
   it('does not cache an authenticated protected response without a refresh', async () => {
-    proxyMocks.getUser.mockResolvedValue({
-      data: { user: { id: 'user-123' } },
+    proxyMocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: 'user-123' } },
       error: null,
     });
     const request = new NextRequest('https://dashboard.example/trips/trip-123');
@@ -114,8 +114,8 @@ describe('Supabase session proxy', () => {
   });
 
   it('redirects an expired or invalid protected session without looping', async () => {
-    proxyMocks.getUser.mockResolvedValue({
-      data: { user: null },
+    proxyMocks.getClaims.mockResolvedValue({
+      data: null,
       error: new Error('invalid session'),
     });
     const request = new NextRequest('https://dashboard.example/trips/trip-123');

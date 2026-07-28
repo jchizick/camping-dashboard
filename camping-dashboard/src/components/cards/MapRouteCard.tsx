@@ -10,6 +10,7 @@ import { Map, MapPin, Pencil } from 'lucide-react';
 interface MapRouteCardProps {
     trip: TripDashboard;
     onSaveLocation?: (selection: CampsiteSelection) => Promise<void>;
+    variant?: 'default' | 'home';
 }
 
 const MapInner = dynamic(() => import('./MapRouteCardInner'), {
@@ -33,7 +34,11 @@ function hasCoordinates(trip: TripDashboard) {
         && Number.isFinite(trip.campsite_longitude);
 }
 
-export default function MapRouteCard({ trip, onSaveLocation }: MapRouteCardProps) {
+export default function MapRouteCard({
+    trip,
+    onSaveLocation,
+    variant = 'default',
+}: MapRouteCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const hasLocation = hasCoordinates(trip);
     const isProvisional = trip.campsite_source === 'legacy_site_coordinates_unverified';
@@ -71,7 +76,12 @@ export default function MapRouteCard({ trip, onSaveLocation }: MapRouteCardProps
 
     return (
         <>
-            <Card title="Map / Route" icon={Map} className="h-full" action={action}>
+            <Card
+                title={variant === 'home' ? 'Campsite location' : 'Map / Route'}
+                icon={Map}
+                className="h-full"
+                action={action}
+            >
                 <div className="text-sm text-text-muted mb-4 font-mono">
                     {[trip.park_name, trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || 'Trip campsite'}
                 </div>
@@ -82,7 +92,15 @@ export default function MapRouteCard({ trip, onSaveLocation }: MapRouteCardProps
                     </div>
                 )}
 
-                <div className="relative w-full h-[280px] md:h-[calc(100%-3rem)] min-h-[280px] rounded-xl overflow-hidden border border-border-subtle bg-card-hover">
+                <div
+                    className={`relative w-full overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${
+                        variant === 'home'
+                            ? 'min-h-[340px] flex-1 md:min-h-[430px] lg:min-h-[460px]'
+                            : 'h-[280px] min-h-[280px] md:h-[calc(100%-3rem)]'
+                    }`}
+                    role="region"
+                    aria-label="Campsite map"
+                >
                     {hasLocation ? (
                         <MapInner trip={trip} />
                     ) : (

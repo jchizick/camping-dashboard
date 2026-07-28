@@ -83,10 +83,10 @@ function MoreMenu({
         aria-expanded={open}
         aria-controls={`${id}-menu`}
         onClick={() => setOpen((current) => !current)}
-        className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card-bg ${
+        className={`trip-shell-control inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card-bg ${
           fieldLogActive
             ? 'border-accent-yellow/40 bg-accent-yellow/15 text-accent-yellow'
-            : 'border-border-subtle text-text-muted hover:bg-card-hover hover:text-text-main'
+            : ''
         }`}
       >
         <MoreHorizontal size={18} aria-hidden="true" />
@@ -102,7 +102,7 @@ function MoreMenu({
         <div
           id={`${id}-menu`}
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[var(--layer-menu)] w-64 overflow-hidden rounded-xl border border-border-subtle bg-card-bg p-1.5 shadow-2xl"
+          className="trip-more-menu absolute right-0 top-[calc(100%+0.5rem)] z-[var(--layer-menu)] w-64 overflow-hidden rounded-2xl border p-2"
         >
           <GuardedTripLink
             href={fieldLogHref}
@@ -194,7 +194,6 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
   const draftGuard = useOptionalTripDraftGuard();
   const {
     tripId,
-    role,
     isLoading: roleLoading,
     error: roleError,
   } = useTrip();
@@ -280,21 +279,27 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
       </a>
       <div className="bg-topography" aria-hidden="true" />
 
-      <header className="relative z-[var(--layer-navigation)] border-b border-border-subtle bg-card-bg/95 backdrop-blur md:sticky md:top-0">
-        <div className="mx-auto flex min-h-16 max-w-[1600px] items-center gap-3 px-4 md:px-6 lg:px-8">
+      <header className="trip-app-header relative z-[var(--layer-navigation)] border-b backdrop-blur md:sticky md:top-0">
+        <div className="trip-shell-inner mx-auto flex max-w-[1600px] items-center gap-3 px-3 md:px-6 lg:px-8">
           <GuardedTripLink
             href="/trips"
             aria-label="Back to trips"
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg border border-border-subtle text-text-muted transition-colors hover:bg-card-hover hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="trip-shell-control inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border px-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             <ArrowLeft size={18} aria-hidden="true" />
+            <span className="hidden text-sm font-medium xl:inline">Back to Trips</span>
           </GuardedTripLink>
 
-          <div className="min-w-0 flex-1 md:max-w-40 xl:max-w-[220px]">
-            <p className="truncate text-[10px] font-mono uppercase tracking-widest text-accent-yellow">
-              {trip.park_name}
+          <div
+            className="trip-shell-identity min-w-0 flex-1"
+            title={`${trip.name} · ${[trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || trip.park_name}`}
+          >
+            <p className="truncate text-base font-semibold leading-tight">{trip.name}</p>
+            <p className="trip-shell-location mt-0.5 truncate text-xs leading-tight">
+              {[trip.lake_name, trip.site_name].filter(Boolean).join(' · ') ||
+                trip.park_name ||
+                'Campsite unavailable'}
             </p>
-            <p className="truncate text-sm font-semibold text-text-main">{trip.name}</p>
           </div>
 
           <div className="hidden min-w-0 flex-1 justify-center md:flex">
@@ -302,9 +307,6 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
           </div>
 
           <div className="hidden items-center gap-2 md:flex">
-            <span className="hidden rounded-full border border-border-subtle bg-card-hover px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-text-muted xl:inline-flex">
-              {role ?? 'member'}
-            </span>
             <MoreMenu
               id="desktop-trip-more"
               tripId={tripId}

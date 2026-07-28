@@ -53,12 +53,14 @@ function SummaryLink({
     <GuardedTripLink
       href={href}
       aria-label={`Open ${label}`}
-      className="group flex min-h-36 flex-col rounded-2xl border border-border-subtle bg-card-bg p-4 transition-colors hover:border-accent-yellow/35 hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+      className="workspace-summary-link group flex min-h-40 flex-col border p-5 transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
-          <Icon size={16} className="text-accent-yellow" aria-hidden="true" />
-          {label}
+        <span className="inline-flex min-w-0 items-center gap-3 text-base font-semibold text-text-main">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-yellow/12 text-accent-yellow">
+            <Icon size={19} aria-hidden="true" />
+          </span>
+          <span className="truncate">{label}</span>
         </span>
         <ChevronRight
           size={16}
@@ -66,7 +68,7 @@ function SummaryLink({
           aria-hidden="true"
         />
       </div>
-      <div className="mt-4 flex flex-1 flex-col justify-end">{children}</div>
+      <div className="mt-5 flex flex-1 flex-col justify-end">{children}</div>
     </GuardedTripLink>
   );
 }
@@ -122,7 +124,7 @@ export default function TripSectionLinks({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="workspace-summary-grid">
         <SummaryLink href={`${base}/plan`} label="Plan" icon={CalendarDays}>
           <p className="text-lg font-semibold text-text-main">
             {timeline.length} event{timeline.length === 1 ? '' : 's'}

@@ -22,6 +22,7 @@ interface WeatherCardProps {
     weather: WeatherCurrent | null;
     weatherRefresh: WeatherRefreshState | null;
     astro: AstroData | null;
+    variant?: 'default' | 'home';
 }
 
 type RefreshState = 'idle' | 'loading' | 'success' | 'error';
@@ -65,6 +66,7 @@ export default function WeatherCard({
     weather,
     weatherRefresh,
     astro,
+    variant = 'default',
 }: WeatherCardProps) {
     const { labels } = useTheme();
     const { canEdit } = useTrip();
@@ -116,7 +118,11 @@ export default function WeatherCard({
 
     if (!weather) {
         return (
-            <Card title={labels.weather} icon={CloudRain} className="h-full">
+            <Card
+                title={variant === 'home' ? 'Weather' : labels.weather}
+                icon={CloudRain}
+                className="h-full"
+            >
                 <div className="min-h-48 flex items-center justify-center text-center text-sm text-text-muted">
                     Weather has not been refreshed for this campsite yet.
                 </div>
@@ -138,7 +144,7 @@ export default function WeatherCard({
             unit: weather.visibility >= 1000 ? 'km' : 'm',
         }
         : { value: '—', unit: '' };
-    const stats = [
+    const allStats = [
         { icon: Wind, label: 'Wind', value: valueOrDash(weather.wind_kph), unit: weather.wind_kph === null ? '' : 'km/h' },
         { icon: Droplets, label: 'Humidity', value: valueOrDash(weather.humidity), unit: weather.humidity === null ? '' : '%' },
         { icon: CloudRain, label: 'Rain Chance', value: valueOrDash(weather.rain_chance), unit: weather.rain_chance === null ? '' : '%' },
@@ -146,10 +152,15 @@ export default function WeatherCard({
         { icon: Sunset, label: 'Sunset', value: valueOrDash(weather.sunset_time), unit: '' },
         { icon: Eye, label: 'Visibility', value: visibility.value, unit: visibility.unit },
     ];
+    const stats = variant === 'home' ? allStats.slice(0, 3) : allStats;
 
     return (
-        <Card title={labels.weather} icon={CloudRain} className="h-full">
-            <div className="flex items-center gap-4 mb-6">
+        <Card
+            title={variant === 'home' ? 'Weather' : labels.weather}
+            icon={CloudRain}
+            className="h-full"
+        >
+            <div className="mb-6 flex items-center gap-4">
                 <Star size={48} className="text-accent-yellow fill-accent-yellow shrink-0" />
                 <div>
                     <div className="text-4xl font-bold text-text-main tracking-tighter">
@@ -181,22 +192,24 @@ export default function WeatherCard({
                     </div>
                 ))}
 
-                <div className="pt-2 flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-accent-yellow text-sm">
-                        <Star size={16} />
-                        Sky Quality
-                    </div>
-                    <div className="text-right">
-                        <div className="font-mono text-sm text-text-main font-medium">
-                            {skyQuality}
+                {variant === 'default' && (
+                    <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-3 text-sm text-accent-yellow">
+                            <Star size={16} />
+                            Sky Quality
                         </div>
-                        {skyQualityDescription && (
-                            <div className="text-xs text-text-muted">
-                                {skyQualityDescription}
+                        <div className="text-right">
+                            <div className="font-mono text-sm font-medium text-text-main">
+                                {skyQuality}
                             </div>
-                        )}
+                            {skyQualityDescription && (
+                                <div className="text-xs text-text-muted">
+                                    {skyQualityDescription}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {statusMessage && (

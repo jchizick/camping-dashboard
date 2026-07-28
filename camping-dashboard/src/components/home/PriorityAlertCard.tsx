@@ -1,28 +1,36 @@
 import GuardedTripLink from '@/components/trip/GuardedTripLink';
 import type { Alert } from '@/types';
-import { Badge, Card } from '@/components/ui/Primitives';
+import { Card } from '@/components/ui/Primitives';
 import { AlertTriangle, CheckCircle2, ChevronRight, Info } from 'lucide-react';
 
 function alertTone(severity: Alert['severity']) {
   if (severity === 'critical') {
     return {
       icon: AlertTriangle,
-      badge: 'critical' as const,
       className: 'border-accent-red/30 bg-accent-red/5',
     };
   }
   if (severity === 'info' || severity === 'advisory') {
     return {
       icon: Info,
-      badge: 'info' as const,
       className: 'border-accent-blue/30 bg-accent-blue/5',
     };
   }
   return {
     icon: AlertTriangle,
-    badge: 'warning' as const,
     className: 'border-accent-yellow/30 bg-accent-yellow/5',
   };
+}
+
+function updatedLabel(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString('en-CA', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 export default function PriorityAlertCard({
@@ -50,6 +58,7 @@ export default function PriorityAlertCard({
 
   const tone = alertTone(alert.severity);
   const Icon = tone.icon;
+  const updated = updatedLabel(alert.updated_at);
 
   return (
     <Card
@@ -72,8 +81,13 @@ export default function PriorityAlertCard({
         aria-label={`${alert.severity} priority notice`}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
-          <Icon size={20} className="shrink-0" aria-hidden="true" />
-          <Badge variant={tone.badge}>{alert.severity}</Badge>
+          <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize text-text-main">
+            <Icon size={20} className="shrink-0" aria-hidden="true" />
+            {alert.severity}
+          </span>
+          {updated ? (
+            <span className="text-[11px] text-text-muted">Updated {updated}</span>
+          ) : null}
         </div>
         <h3 className="text-base font-bold text-text-main">{alert.title}</h3>
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted">

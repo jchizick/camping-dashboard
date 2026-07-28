@@ -1,7 +1,16 @@
 import type { Metadata, Viewport } from 'next';
+import { DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 import { TopoBackground } from '@/components/ui/TopoBackground';
+
+const dmSerifDisplay = DM_Serif_Display({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-trip-display',
+  fallback: ['Georgia', 'Times New Roman', 'serif'],
+});
 
 export const metadata: Metadata = {
   title: 'Algonquin Trip — Expedition Control',
@@ -32,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body>
+      <body className={dmSerifDisplay.variable}>
         <TopoBackground />
         <div className="relative z-10 min-h-screen">
           {children}

@@ -14,7 +14,7 @@ export default function TripMobileNav({ tripId }: { tripId: string }) {
   return (
     <nav
       aria-label="Mobile trip sections"
-      className="trip-mobile-nav fixed inset-x-0 bottom-0 z-[var(--layer-navigation)] grid grid-cols-5 border-t border-border-subtle bg-card-bg/95 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur md:hidden"
+      className="trip-mobile-nav fixed inset-x-0 bottom-0 z-[var(--layer-navigation)] grid grid-cols-5 border-t shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur md:hidden"
       data-testid="mobile-trip-navigation"
     >
       {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {
@@ -25,10 +25,10 @@ export default function TripMobileNav({ tripId }: { tripId: string }) {
             key={label}
             href={tripDestinationHref(tripId, segment)}
             aria-current={active ? 'page' : undefined}
-            className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring ${
+            className={`trip-mobile-nav__link relative flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring ${
               active
-                ? 'bg-accent-yellow/10 text-accent-yellow after:absolute after:inset-x-3 after:top-0 after:h-0.5 after:rounded-full after:bg-accent-yellow'
-                : 'text-text-muted hover:bg-card-hover hover:text-text-main'
+                ? 'trip-mobile-nav__link--active after:absolute after:inset-x-3 after:top-0 after:h-0.5 after:rounded-full after:bg-accent-yellow'
+                : 'hover:bg-card-hover hover:text-text-main'
             }`}
           >
             <Icon size={19} aria-hidden="true" />

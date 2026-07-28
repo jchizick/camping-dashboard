@@ -130,6 +130,7 @@ describe('TripAppShell', () => {
     expect(screen.getByRole('menuitem', { name: 'Field Log' }).getAttribute('href')).toBe(
       '/trips/trip-1/field-log'
     );
+    expect(screen.queryByRole('menuitem', { name: /Settings/i })).toBeNull();
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
     expect(screen.getByText('Mission Brief dialog')).toBeTruthy();
@@ -213,5 +214,25 @@ describe('TripAppShell', () => {
 
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it('keeps a long trip identity accessible while applying visual truncation', () => {
+    const value = workspaceValue();
+    value.trip!.name =
+      'A deliberately long Algonquin backcountry expedition name for responsive testing';
+    value.trip!.lake_name = 'Maple Lake';
+    value.trip!.site_name = 'Site 4';
+    mocks.workspace = value;
+
+    const { container } = render(
+      <TripAppShell>
+        <h1>Plan</h1>
+      </TripAppShell>
+    );
+
+    const identity = container.querySelector('.trip-shell-identity');
+    expect(identity?.getAttribute('title')).toContain(value.trip!.name);
+    expect(identity?.querySelector('p')?.classList.contains('truncate')).toBe(true);
+    expect(identity?.textContent).toContain(value.trip!.name);
   });
 });

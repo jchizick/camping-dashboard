@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import GuardedTripLink from '@/components/trip/GuardedTripLink';
 import type { ReadinessScore } from '@/types';
 import { Card } from '@/components/ui/Primitives';
@@ -10,6 +11,12 @@ const READINESS_CATEGORIES = [
   { key: 'weather' as const, label: 'Weather' },
   { key: 'timeline' as const, label: 'Plan' },
 ];
+
+function readinessInterpretation(score: number) {
+  if (score >= 85) return 'Core trip preparations are in strong shape.';
+  if (score >= 65) return 'A few preparation gaps still need attention.';
+  return 'Resolve the lowest readiness areas before departure.';
+}
 
 export default function ReadinessSummaryCard({
   readiness,
@@ -35,42 +42,54 @@ export default function ReadinessSummaryCard({
       action={
         <GuardedTripLink
           href={href}
-          className="inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           aria-label="View detailed gear readiness"
         >
-          Details <ChevronRight size={14} aria-hidden="true" />
+          View gear <ChevronRight size={14} aria-hidden="true" />
         </GuardedTripLink>
       }
     >
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <p className="font-mono text-4xl font-bold tracking-tight text-text-main">
-            {readiness.overall}%
-          </p>
-          <p className="mt-1 text-sm font-medium text-text-muted">{readiness.label}</p>
-        </div>
+      <div className="flex items-center gap-5">
         <div
-          className="h-2 min-w-24 flex-1 overflow-hidden rounded-full bg-border-subtle"
+          className="readiness-ring"
           role="progressbar"
           aria-label="Overall trip readiness"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={readiness.overall}
+          aria-valuetext={`${readiness.overall}% · ${readiness.label}`}
+          style={{ '--readiness-value': readiness.overall } as CSSProperties}
         >
-          <div
-            className="h-full rounded-full bg-accent-yellow transition-[width] motion-reduce:transition-none"
-            style={{ width: `${readiness.overall}%` }}
-          />
+          <span className="text-2xl font-bold text-text-main">{readiness.overall}%</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-base font-semibold text-text-main">{readiness.label}</p>
+          <p className="mt-1 text-sm leading-relaxed text-text-muted">
+            {readinessInterpretation(readiness.overall)}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="mt-5 space-y-3">
         {lowestCategories.map(({ key, label }) => (
-          <div key={key} className="rounded-lg bg-card-hover px-2.5 py-2 text-center">
-            <p className="text-[10px] font-mono uppercase tracking-wide text-text-muted">
-              {label}
-            </p>
-            <p className="mt-1 text-sm font-semibold text-text-main">{readiness[key]}%</p>
+          <div key={key}>
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+              <span className="font-medium text-text-main">{label}</span>
+              <span className="text-text-muted">{readiness[key]}%</span>
+            </div>
+            <div
+              className="h-1.5 overflow-hidden rounded-full bg-card-hover"
+              role="progressbar"
+              aria-label={`${label} readiness`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={readiness[key]}
+            >
+              <div
+                className="h-full rounded-full bg-status-ready transition-[width] motion-reduce:transition-none"
+                style={{ width: `${readiness[key]}%` }}
+              />
+            </div>
           </div>
         ))}
       </div>

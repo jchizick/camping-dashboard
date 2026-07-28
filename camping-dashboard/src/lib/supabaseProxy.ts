@@ -44,11 +44,9 @@ export async function updateSupabaseSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
 
-  if (!user && isProtectedPage(request.nextUrl.pathname)) {
+  if (!claimsData?.claims && isProtectedPage(request.nextUrl.pathname)) {
     const signInUrl = request.nextUrl.clone();
     signInUrl.pathname = '/trips';
     signInUrl.search = '';

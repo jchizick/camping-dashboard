@@ -20,17 +20,6 @@ const workspace = vi.hoisted(() => ({
 vi.mock('@/components/trip/TripWorkspaceProvider', () => ({
   useTripWorkspace: () => workspace.value,
 }));
-vi.mock('@/lib/themeContext', () => ({
-  useTheme: () => ({ themeMode: 'day' }),
-}));
-vi.mock('@/components/cards/HeroHeader', () => ({
-  default: () => (
-    <header>
-      <h1>Maple Lake Weekend</h1>
-      <span>Hero Header</span>
-    </header>
-  ),
-}));
 vi.mock('@/components/cards/MapRouteCard', () => ({
   default: ({ onSaveLocation }: { onSaveLocation?: unknown }) => (
     <div data-testid="map" data-editable={String(Boolean(onSaveLocation))}>
@@ -150,7 +139,12 @@ describe('HomeOverview', () => {
     render(<HomeOverview />);
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(screen.getByText('Hero Header')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' })).toBeTruthy();
+    expect(screen.getByTestId('trip-hero-image').getAttribute('src')).toContain(
+      'sunset-over-the-lake.webp'
+    );
+    expect(screen.getByText('Trip is underway')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Current trip situation' })).toBeTruthy();
     expect(screen.getByTestId('map')).toBeTruthy();
     expect(screen.getByTestId('weather')).toBeTruthy();
     expect(screen.getByText('Forecast unavailable.')).toBeTruthy();
@@ -234,7 +228,7 @@ describe('HomeOverview', () => {
         'aria-valuenow'
       )
     ).toBe('100');
-    expect(screen.getByText('Locked In')).toBeTruthy();
+    expect(screen.getAllByText('Locked In')).toHaveLength(2);
   });
 
   it('reflects canonical section state immediately without calling reload', () => {
@@ -285,13 +279,13 @@ describe('HomeOverview', () => {
     view.rerender(<HomeOverview />);
 
     expect(screen.getByText('1/1 packed')).toBeTruthy();
-    expect(screen.getByText('Portage')).toBeTruthy();
+    expect(screen.getAllByText('Portage')).toHaveLength(2);
     expect(screen.getByText('1 member')).toBeTruthy();
     expect(screen.getByText('Rain watch')).toBeTruthy();
     expect(screen.queryByText('Wind advisory')).toBeNull();
     expect(screen.getByText('Offline checklist started')).toBeTruthy();
     expect(screen.getByText('Canoe packed')).toBeTruthy();
-    expect(screen.getByText('88%')).toBeTruthy();
+    expect(screen.getAllByText('88%').length).toBeGreaterThan(0);
     expect(value.reload).not.toHaveBeenCalled();
   });
 });
