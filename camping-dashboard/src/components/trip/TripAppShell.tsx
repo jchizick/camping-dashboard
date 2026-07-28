@@ -31,6 +31,12 @@ interface MoreMenuProps {
   mobile?: boolean;
 }
 
+type AppInfoDialogName = 'mission-brief' | 'about';
+interface ActiveAppInfoDialog {
+  name: AppInfoDialogName;
+  pathname: string;
+}
+
 function MoreMenu({
   id,
   tripId,
@@ -198,9 +204,10 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     error: roleError,
   } = useTrip();
   const { data, trip, error, isLoading, isReloading, reload } = useTripWorkspace();
-  const [missionBriefOpen, setMissionBriefOpen] = useState(false);
-  const [projectIntelOpen, setProjectIntelOpen] = useState(false);
+  const [openedInfoDialog, setOpenedInfoDialog] = useState<ActiveAppInfoDialog | null>(null);
   const pathname = usePathname();
+  const activeInfoDialog =
+    openedInfoDialog?.pathname === pathname ? openedInfoDialog.name : null;
   const mainRef = useRef<HTMLElement>(null);
   const initialPathRef = useRef(pathname);
   const [routeAnnouncement, setRouteAnnouncement] = useState('');
@@ -216,6 +223,15 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             : pathname.endsWith('/field-log')
               ? 'Field Log'
               : 'Trip Home';
+
+  async function handleSignOut() {
+    setOpenedInfoDialog(null);
+    if (draftGuard) {
+      await draftGuard.requestAction(signOut);
+      return;
+    }
+    await signOut();
+  }
 
   useEffect(() => {
     if (initialPathRef.current === pathname) {
@@ -316,13 +332,11 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             <MoreMenu
               id="desktop-trip-more"
               tripId={tripId}
-              onMissionBrief={() => setMissionBriefOpen(true)}
-              onProjectIntel={() => setProjectIntelOpen(true)}
-              onSignOut={() =>
-                draftGuard
-                  ? draftGuard.requestAction(signOut).then(() => undefined)
-                  : signOut()
+              onMissionBrief={() =>
+                setOpenedInfoDialog({ name: 'mission-brief', pathname })
               }
+              onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+              onSignOut={handleSignOut}
             />
           </div>
 
@@ -333,13 +347,11 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             <MoreMenu
               id="mobile-trip-more"
               tripId={tripId}
-              onMissionBrief={() => setMissionBriefOpen(true)}
-              onProjectIntel={() => setProjectIntelOpen(true)}
-              onSignOut={() =>
-                draftGuard
-                  ? draftGuard.requestAction(signOut).then(() => undefined)
-                  : signOut()
+              onMissionBrief={() =>
+                setOpenedInfoDialog({ name: 'mission-brief', pathname })
               }
+              onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+              onSignOut={handleSignOut}
               mobile
             />
           </div>
@@ -379,12 +391,12 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
       <TripMobileNav tripId={tripId} />
 
       <MissionBriefModal
-        isOpen={missionBriefOpen}
-        onClose={() => setMissionBriefOpen(false)}
+        isOpen={activeInfoDialog === 'mission-brief'}
+        onClose={() => setOpenedInfoDialog(null)}
       />
       <ProjectIntelModal
-        isOpen={projectIntelOpen}
-        onClose={() => setProjectIntelOpen(false)}
+        isOpen={activeInfoDialog === 'about'}
+        onClose={() => setOpenedInfoDialog(null)}
       />
     </div>
   );

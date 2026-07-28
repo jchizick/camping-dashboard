@@ -328,6 +328,207 @@ body {
   --layer-critical: 110;
 }
 
+/* Shared frame for Mission Brief and About. It is portaled outside the inert app shell. */
+.app-info-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-modal);
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.app-info-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--app-shell-background) 78%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.app-info-dialog__panel {
+  position: relative;
+  display: flex;
+  width: min(100%, 48rem);
+  max-height: min(82dvh, 48rem);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-primary);
+}
+
+.app-info-dialog__panel--wide {
+  width: min(100%, 58rem);
+}
+
+.app-info-dialog__header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+}
+
+.app-info-dialog__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--accent-yellow);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.app-info-dialog__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.app-info-dialog__description {
+  max-width: 42rem;
+  margin: 0.45rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.app-info-dialog__close {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.app-info-dialog__close:hover {
+  border-color: var(--border-strong);
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.app-info-dialog__close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.app-info-dialog__content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.app-info-dialog__video-wrap {
+  display: grid;
+  min-height: 0;
+  place-items: center;
+  background: #000;
+}
+
+.app-info-dialog__video {
+  display: block;
+  width: 100%;
+  max-height: min(62dvh, 40rem);
+  background: #000;
+  object-fit: contain;
+}
+
+.app-info-dialog__about {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+}
+
+.app-info-dialog__section {
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  background: var(--surface-secondary);
+  padding: 1rem;
+}
+
+.app-info-dialog__section h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.app-info-dialog__section ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.app-info-dialog__section li {
+  color: var(--text-secondary);
+  font-size: 0.825rem;
+  line-height: 1.5;
+}
+
+.app-info-dialog__section li::marker {
+  color: var(--accent-yellow);
+}
+
+.app-info-dialog__footer {
+  flex: none;
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.75rem clamp(1rem, 2.2vw, 1.5rem);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 639px) {
+  .app-info-dialog {
+    align-items: end;
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .app-info-dialog__panel {
+    max-height: calc(100dvh - 1rem - env(safe-area-inset-bottom));
+    border-radius: 1rem;
+  }
+
+  .app-info-dialog__header {
+    padding: 1rem;
+  }
+
+  .app-info-dialog__description {
+    font-size: 0.8125rem;
+  }
+
+  .app-info-dialog__about {
+    grid-template-columns: 1fr;
+    padding: 0.875rem;
+  }
+
+  .app-info-dialog__video {
+    max-height: 55dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-info-dialog__close {
+    transition: none;
+  }
+}
+
 /*
  * Trip navigation uses one explicit 768px handoff. Keep these selectors
  * independent of the generic Tailwind `hidden` utility so a legacy unlayered

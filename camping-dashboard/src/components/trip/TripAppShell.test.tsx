@@ -44,13 +44,23 @@ vi.mock('./TripWorkspaceProvider', () => ({
 }));
 
 vi.mock('@/components/ui/MissionBriefModal', () => ({
-  default: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div role="dialog">Mission Brief dialog</div> : null,
+  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div role="dialog" aria-label="Mission Brief dialog">
+        Mission Brief dialog
+        <button type="button" onClick={onClose}>Close Mission Brief dialog</button>
+      </div>
+    ) : null,
 }));
 
 vi.mock('@/components/ui/ProjectIntelModal', () => ({
-  default: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div role="dialog">Project Intel dialog</div> : null,
+  default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+    isOpen ? (
+      <div role="dialog" aria-label="About dialog">
+        Project Intel dialog
+        <button type="button" onClick={onClose}>Close About dialog</button>
+      </div>
+    ) : null,
 }));
 
 import TripAppShell from './TripAppShell';
@@ -174,14 +184,41 @@ describe('TripAppShell', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
     expect(screen.getByText('Mission Brief dialog')).toBeTruthy();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.queryByRole('menu')).toBeNull();
 
+    fireEvent.click(screen.getByRole('button', { name: 'Close Mission Brief dialog' }));
     fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
     fireEvent.click(screen.getByRole('menuitem', { name: 'About this app' }));
     expect(screen.getByText('Project Intel dialog')).toBeTruthy();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.queryByRole('menu')).toBeNull();
 
+    fireEvent.click(screen.getByRole('button', { name: 'Close About dialog' }));
     fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
     expect(mocks.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears the active information dialog when the route changes', async () => {
+    const view = render(
+      <TripAppShell>
+        <h1>Plan</h1>
+      </TripAppShell>
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+
+    mocks.pathname = '/trips/trip-1/gear';
+    view.rerender(
+      <TripAppShell>
+        <h1>Gear</h1>
+      </TripAppShell>
+    );
+
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('shows the same membership denial before any nested section content', () => {
