@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { X, Radio } from 'lucide-react';
+import { useOverlayDialog } from './useOverlayDialog';
 
 const MISSION_BRIEF_URL =
   'https://jeelonevfpoifdci.public.blob.vercel-storage.com/mission-brief-v2.mp4';
@@ -14,6 +15,7 @@ interface MissionBriefModalProps {
 export default function MissionBriefModal({ isOpen, onClose }: MissionBriefModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  useOverlayDialog(isOpen, backdropRef);
 
   // Play on open, pause/reset on close
   useEffect(() => {
@@ -33,12 +35,6 @@ export default function MissionBriefModal({ isOpen, onClose }: MissionBriefModal
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -97,7 +93,7 @@ export default function MissionBriefModal({ isOpen, onClose }: MissionBriefModal
         .mission-brief-backdrop {
           position: fixed;
           inset: 0;
-          z-index: 9999;
+          z-index: var(--layer-modal);
           display: flex;
           align-items: center;
           justify-content: center;

@@ -3,7 +3,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import type { PrepFeedCategory } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+import { useTripDraftForm } from '@/components/trip/useTripDraftForm';
+import { Upload, X } from 'lucide-react';
 
 const CATEGORIES: PrepFeedCategory[] = ['Gear', 'Food', 'Shelter', 'Cook Kit', 'Route', 'Campsite', 'Misc'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -16,6 +17,7 @@ interface PrepFeedFormSheetProps {
 }
 
 export default function PrepFeedFormSheet({ isOpen, onClose, onSubmit, defaultUploader = 'Jordan' }: PrepFeedFormSheetProps) {
+    const draftId = React.useId();
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [caption, setCaption] = useState('');
@@ -77,12 +79,30 @@ export default function PrepFeedFormSheet({ isOpen, onClose, onSubmit, defaultUp
         if (inputRef.current) inputRef.current.value = '';
     }
 
+    const { close, saved } = useTripDraftForm({
+        id: `prep-feed-${draftId}`,
+        isOpen,
+        isDirty:
+            file !== null ||
+            caption !== '' ||
+            category !== 'Gear' ||
+            uploadedBy !== defaultUploader,
+        onClose,
+        onDiscard: () => {
+            clearFile();
+            setCaption('');
+            setCategory('Gear');
+            setUploadedBy(defaultUploader);
+        },
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!file) { setError('Select an image to upload'); return; }
         setSaving(true);
         try {
             await onSubmit({ file, caption: caption.trim(), category, uploaded_by: uploadedBy });
+            saved();
             onClose();
         } catch {
             setError('Upload failed. Please try again.');
@@ -92,7 +112,7 @@ export default function PrepFeedFormSheet({ isOpen, onClose, onSubmit, defaultUp
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title="Log Field Asset">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Log Field Asset">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 {/* Drop zone */}
@@ -178,10 +198,10 @@ export default function PrepFeedFormSheet({ isOpen, onClose, onSubmit, defaultUp
                     </div>
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>Cancel</button>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>Cancel</button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving || !file}>
                         {saving ? 'Uploading…' : 'Log Asset'}
                     </button>

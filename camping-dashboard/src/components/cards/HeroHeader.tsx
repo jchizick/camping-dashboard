@@ -72,7 +72,12 @@ export default function HeroHeader({
                 
                 <div>
                     <h2 className="text-accent-yellow text-sm font-mono uppercase tracking-widest mb-1">{trip.park_name}</h2>
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-text-main mb-2">{trip.name}</h1>
+                    <h1
+                        tabIndex={-1}
+                        className="mb-2 scroll-mt-20 text-5xl font-bold tracking-tighter text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:text-7xl"
+                    >
+                        {trip.name}
+                    </h1>
                     <p className="text-text-muted text-lg flex items-center gap-2">
                         {trip.lake_name} <span className="w-1 h-1 rounded-full bg-border-subtle" /> {trip.site_name}
                     </p>

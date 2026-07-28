@@ -6,6 +6,9 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
+import TripAppShell from '@/components/trip/TripAppShell';
+import { TripDraftGuardProvider } from '@/components/trip/TripDraftGuardProvider';
+import { TripWorkspaceProvider } from '@/components/trip/TripWorkspaceProvider';
 import { AuthProvider } from '@/lib/authContext';
 import { TripProvider } from '@/lib/tripContext';
 
@@ -15,7 +18,11 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   return (
     <AuthProvider>
       <TripProvider tripId={tripId}>
-        {children}
+        <TripDraftGuardProvider>
+          <TripWorkspaceProvider>
+            <TripAppShell>{children}</TripAppShell>
+          </TripWorkspaceProvider>
+        </TripDraftGuardProvider>
       </TripProvider>
     </AuthProvider>
   );

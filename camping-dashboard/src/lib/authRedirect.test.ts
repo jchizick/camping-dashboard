@@ -12,13 +12,15 @@ describe('OAuth redirect safety', () => {
       buildOAuthCallbackUrl({
         origin: 'https://dashboard.example',
         pathname: '/trips',
-        search: '?next=%2Ftrips%2Ftrip-123%3Ftab%3Dtimeline',
+        search: '?next=%2Ftrips%2Ftrip-123%2Ffield-log%3Fphoto%3Dprep-1',
       })
     );
 
     expect(callbackUrl.origin).toBe('https://dashboard.example');
     expect(callbackUrl.pathname).toBe('/auth/callback');
-    expect(callbackUrl.searchParams.get('next')).toBe('/trips/trip-123?tab=timeline');
+    expect(callbackUrl.searchParams.get('next')).toBe(
+      '/trips/trip-123/field-log?photo=prep-1'
+    );
   });
 
   it.each([

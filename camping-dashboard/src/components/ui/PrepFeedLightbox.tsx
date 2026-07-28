@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import type { PrepFeedItem, PrepFeedCategory } from '@/types';
 import { X, ChevronLeft, ChevronRight, Camera, Clock, User } from 'lucide-react';
+import { useOverlayDialog } from './useOverlayDialog';
 
 // ── Category colors (match the badge variants) ──────────────
 const CATEGORY_COLOR: Record<PrepFeedCategory, string> = {
@@ -39,6 +40,7 @@ interface PrepFeedLightboxProps {
 
 export default function PrepFeedLightbox({ items, currentIndex, onClose, onNavigate }: PrepFeedLightboxProps) {
     const backdropRef = useRef<HTMLDivElement>(null);
+    useOverlayDialog(true, backdropRef);
     const item = items[currentIndex];
 
     const hasPrev = currentIndex > 0;
@@ -62,12 +64,6 @@ export default function PrepFeedLightbox({ items, currentIndex, onClose, onNavig
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, [onClose, goPrev, goNext]);
-
-    // Lock body scroll
-    useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
-    }, []);
 
     if (!item) return null;
 
@@ -169,7 +165,7 @@ export default function PrepFeedLightbox({ items, currentIndex, onClose, onNavig
                 .lightbox-backdrop {
                     position: fixed;
                     inset: 0;
-                    z-index: 9999;
+                    z-index: var(--layer-lightbox);
                     display: flex;
                     align-items: center;
                     justify-content: center;

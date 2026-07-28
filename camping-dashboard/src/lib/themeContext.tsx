@@ -59,6 +59,13 @@ export function ThemeProvider({
   const [themeOverride, setThemeOverride] = useState<ThemeOverride>(settings?.manual_theme_override ?? 'night');
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => resolveThemeMode(themeOverride, sunriseTime, sunsetTime));
 
+  // The trip workspace mounts before its data is available. Synchronize the
+  // provider when the loaded trip settings replace the fallback values.
+  useEffect(() => {
+    setThemeVariant(settings?.theme_variant ?? 'expedition');
+    setThemeOverride(settings?.manual_theme_override ?? 'night');
+  }, [settings?.manual_theme_override, settings?.theme_variant]);
+
   // Resolve mode when override or sun times change
   useEffect(() => {
     setThemeMode(resolveThemeMode(themeOverride, sunriseTime, sunsetTime));

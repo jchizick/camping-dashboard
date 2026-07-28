@@ -2,42 +2,33 @@
 
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useOverlayDialog } from './useOverlayDialog';
 
 interface CrudSheetProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    panelClassName?: string;
 }
 
-export default function CrudSheet({ isOpen, onClose, title, children }: CrudSheetProps) {
+export default function CrudSheet({ isOpen, onClose, title, children, panelClassName = '' }: CrudSheetProps) {
     const panelRef = useRef<HTMLDivElement>(null);
+    const titleId = React.useId();
+    useOverlayDialog(isOpen, panelRef);
 
-    // Close on Escape key
     useEffect(() => {
-        function onKey(e: KeyboardEvent) {
-            if (e.key === 'Escape') onClose();
+        if (!isOpen) return;
+
+        function onKey(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+            }
         }
-        if (isOpen) document.addEventListener('keydown', onKey);
+        document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [isOpen, onClose]);
-
-    // Trap scroll behind overlay
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => { document.body.style.overflow = ''; };
-    }, [isOpen]);
-
-    // Focus panel when open
-    useEffect(() => {
-        if (isOpen && panelRef.current) {
-            panelRef.current.focus();
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -45,7 +36,12 @@ export default function CrudSheet({ isOpen, onClose, title, children }: CrudShee
     // viewport — not to any ancestor with backdrop-filter or transform,
     // both of which create a new CSS stacking context that breaks fixed positioning.
     return createPortal(
-        <div className="crud-sheet" role="dialog" aria-modal="true" aria-label={title}>
+        <div
+            className="crud-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+        >
             {/* Backdrop */}
             <div
                 className="crud-sheet__overlay"
@@ -55,12 +51,12 @@ export default function CrudSheet({ isOpen, onClose, title, children }: CrudShee
 
             {/* Panel */}
             <div
-                className="crud-sheet__panel"
+                className={`crud-sheet__panel ${panelClassName}`}
                 ref={panelRef}
                 tabIndex={-1}
             >
                 <div className="crud-sheet__header">
-                    <h3 className="crud-sheet__title">{title}</h3>
+                    <h2 id={titleId} className="crud-sheet__title">{title}</h2>
                     <button
                         className="crud-sheet__close"
                         onClick={onClose}

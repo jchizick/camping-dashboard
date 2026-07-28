@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import type { Meal, MealType, PrepType } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import {
+    draftValuesEqual,
+    useTripDraftForm,
+} from '@/components/trip/useTripDraftForm';
 import { Leaf, Flame, Coffee, Store } from 'lucide-react';
 
 interface MealFormSheetProps {
@@ -15,6 +19,7 @@ interface MealFormSheetProps {
 }
 
 export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, defaultDay = 1, totalDays }: MealFormSheetProps) {
+    const draftId = React.useId();
     const defaultForm = {
         day_number: defaultDay,
         meal_type: 'breakfast' as MealType,
@@ -41,12 +46,22 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, initialMeal]);
 
+    const initialForm = initialMeal ?? { ...defaultForm, day_number: defaultDay };
+    const { close, saved } = useTripDraftForm({
+        id: `meal-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, initialForm),
+        onClose,
+        onDiscard: () => setForm(initialForm),
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!form.title.trim()) { setError('Meal title is required'); return; }
         setSaving(true);
         try {
             await onSubmit(form);
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -58,7 +73,7 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
     const isEdit = !!initialMeal;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit Meal' : 'Add Meal'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Meal' : 'Add Meal'}>
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__row">
@@ -102,6 +117,8 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
                         onChange={(e) => set('title', e.target.value)}
                         placeholder="e.g. Oatmeal with Berries"
                         required
+                        aria-invalid={error ? 'true' : undefined}
+                        aria-describedby={error ? 'meal-form-error' : undefined}
                     />
                 </div>
 
@@ -168,10 +185,10 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
                     />
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p id="meal-form-error" className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>Cancel</button>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>Cancel</button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>
                         {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Meal'}
                     </button>

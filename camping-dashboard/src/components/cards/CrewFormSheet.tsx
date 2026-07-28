@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { CrewMember } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface CrewFormSheetProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ const defaultForm = {
 };
 
 export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember }: CrewFormSheetProps) {
+    const draftId = React.useId();
     const [form, setForm] = useState(initialMember ?? defaultForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -36,12 +38,22 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
         }
     }, [isOpen, initialMember]);
 
+    const initialForm = initialMember ?? defaultForm;
+    const { close, saved } = useTripDraftForm({
+        id: `crew-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, initialForm),
+        onClose,
+        onDiscard: () => setForm(initialForm),
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!form.name.trim()) { setError('Name is required'); return; }
         setSaving(true);
         try {
             await onSubmit(form);
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -53,7 +65,7 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
     const isEdit = !!initialMember;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit Crew Member' : 'Add Crew Member'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Crew Member' : 'Add Crew Member'}>
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">
@@ -66,6 +78,8 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
                         onChange={(e) => set('name', e.target.value)}
                         placeholder="e.g. Jordan"
                         required
+                        aria-invalid={error ? 'true' : undefined}
+                        aria-describedby={error ? 'crew-form-error' : undefined}
                     />
                 </div>
 
@@ -134,10 +148,10 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
                     />
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p id="crew-form-error" className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>Cancel</button>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>Cancel</button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>
                         {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Member'}
                     </button>

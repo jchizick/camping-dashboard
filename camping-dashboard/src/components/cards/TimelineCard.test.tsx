@@ -48,6 +48,32 @@ describe('TimelineCard', () => {
         expect(titles).toEqual(['Earlier event', 'Later event']);
     });
 
+    it('groups by day_number and renders the stored event_time', () => {
+        render(
+            <TimelineCard
+                events={[
+                    event({ id: 'day-1', title: 'Day one launch', event_time: '09:15' }),
+                    event({
+                        id: 'day-2',
+                        title: 'Day two paddle',
+                        day_number: 2,
+                        event_time: '07:30',
+                    }),
+                ]}
+                tripDays={2}
+            />
+        );
+
+        expect(screen.getByText('Day one launch')).toBeTruthy();
+        expect(screen.getByText('09:15')).toBeTruthy();
+        expect(screen.queryByText('Day two paddle')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Day 2' }));
+        expect(screen.getByText('Day two paddle')).toBeTruthy();
+        expect(screen.getByText('07:30')).toBeTruthy();
+        expect(screen.queryByText('Day one launch')).toBeNull();
+    });
+
     it('renders a newly created trip with no timeline events', () => {
         render(<TimelineCard events={[]} tripDays={1} />);
 

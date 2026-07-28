@@ -53,14 +53,16 @@ describe('Supabase session proxy', () => {
 
   it('redirects an anonymous protected request to sign-in with a safe next path', async () => {
     const request = new NextRequest(
-      'https://dashboard.example/trips/trip-123?tab=timeline'
+      'https://dashboard.example/trips/trip-123/guide?panel=alerts'
     );
 
     const response = await updateSupabaseSession(request);
     const location = new URL(response.headers.get('location') ?? '');
 
     expect(location.pathname).toBe('/trips');
-    expect(location.searchParams.get('next')).toBe('/trips/trip-123?tab=timeline');
+    expect(location.searchParams.get('next')).toBe(
+      '/trips/trip-123/guide?panel=alerts'
+    );
     expect(response.headers.get('cache-control')).toBe('private, no-store');
   });
 

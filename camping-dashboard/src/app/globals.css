@@ -151,6 +151,36 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+:root {
+  --trip-mobile-nav-height: 3.5rem;
+  --layer-navigation: 40;
+  --layer-menu: 50;
+  --layer-sheet: 70;
+  --layer-modal: 80;
+  --layer-dialog: 90;
+  --layer-lightbox: 100;
+  --layer-critical: 110;
+}
+
+/* Persistent trip shell: keep mobile content clear of the five-item bottom nav. */
+.trip-app-main {
+  min-width: 0;
+  overflow-x: clip;
+  padding-bottom: calc(var(--trip-mobile-nav-height) + 1rem + env(safe-area-inset-bottom, 0px));
+  scroll-padding-top: 5rem;
+}
+
+.trip-mobile-nav {
+  min-height: var(--trip-mobile-nav-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 768px) {
+  .trip-app-main {
+    padding-bottom: 0;
+  }
+}
+
 /* Base container for the background */
 .bg-topo-grid {
   position: fixed;
@@ -227,7 +257,7 @@ body {
 .crud-sheet {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: var(--layer-sheet);
   display: flex;
   justify-content: flex-end;
 }
@@ -244,7 +274,7 @@ body {
   background-color: var(--card-bg);
   width: 100%;
   max-width: 400px;
-  height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
@@ -574,6 +604,43 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.trip-draft-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-dialog);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.trip-draft-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 9, 8, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.trip-draft-dialog__panel {
+  position: relative;
+  width: min(100%, 32rem);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  background: var(--card-bg);
+  padding: 1.25rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .campsite-selected-marker {

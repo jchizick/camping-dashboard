@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import type { TripMapStyle } from '@/types';
 import CampsiteMapSelector, { type CampsiteSelection } from './CampsiteMapSelector';
+import CrudSheet from '@/components/ui/CrudSheet';
+import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface CampsiteLocationSheetProps {
     isOpen: boolean;
@@ -22,6 +23,7 @@ export default function CampsiteLocationSheet({
     onClose,
     onSave,
 }: CampsiteLocationSheetProps) {
+    const draftId = React.useId();
     const [selection, setSelection] = useState<CampsiteSelection | null>(initialValue);
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -34,6 +36,17 @@ export default function CampsiteLocationSheet({
         setError(null);
     }, [initialValue, isOpen]);
 
+    const { close, saved } = useTripDraftForm({
+        id: `campsite-${draftId}`,
+        isOpen,
+        isDirty: dirty && !draftValuesEqual(selection, initialValue),
+        onClose,
+        onDiscard: () => {
+            setSelection(initialValue);
+            setDirty(false);
+        },
+    });
+
     if (!isOpen) return null;
 
     async function handleSave() {
@@ -42,6 +55,7 @@ export default function CampsiteLocationSheet({
         setError(null);
         try {
             await onSave(selection);
+            saved();
             onClose();
         } catch (saveError) {
             console.error('[CampsiteLocationSheet] Save failed', saveError);
@@ -52,26 +66,17 @@ export default function CampsiteLocationSheet({
     }
 
     return (
-        <div className="crud-sheet" role="dialog" aria-modal="true" aria-label="Edit campsite location">
-            <button className="crud-sheet__overlay" onClick={onClose} aria-label="Close campsite editor" />
-            <div className="crud-sheet__panel max-w-3xl">
-                <div className="crud-sheet__header">
-                    <div>
-                        <h2 className="crud-sheet__title">
-                            {initialValue ? 'Reposition campsite' : 'Set campsite location'}
-                        </h2>
-                        {isProvisional && (
-                            <p className="mt-1 text-xs text-accent-yellow">
-                                This location was imported from legacy data. Refine it before relying on it.
-                            </p>
-                        )}
-                    </div>
-                    <button className="crud-sheet__close" onClick={onClose} aria-label="Close">
-                        <X size={18} />
-                    </button>
-                </div>
-
-                <div className="crud-sheet__body">
+        <CrudSheet
+            isOpen={isOpen}
+            onClose={close}
+            title={initialValue ? 'Reposition campsite' : 'Set campsite location'}
+            panelClassName="max-w-3xl"
+        >
+                    {isProvisional && (
+                        <p className="mb-4 text-xs text-accent-yellow">
+                            This location was imported from legacy data. Refine it before relying on it.
+                        </p>
+                    )}
                     <CampsiteMapSelector
                         value={selection}
                         onChange={(nextSelection) => {
@@ -95,10 +100,10 @@ export default function CampsiteLocationSheet({
                         )}
                     </div>
 
-                    {error && <p className="crud-form__error mt-3">{error}</p>}
+                    {error && <p className="crud-form__error mt-3" role="alert">{error}</p>}
 
                     <div className="crud-form__actions mt-5">
-                        <button className="crud-form__btn crud-form__btn--cancel" onClick={onClose} disabled={saving}>
+                        <button className="crud-form__btn crud-form__btn--cancel" onClick={close} disabled={saving}>
                             Cancel
                         </button>
                         <button
@@ -109,8 +114,6 @@ export default function CampsiteLocationSheet({
                             {saving ? 'Saving…' : 'Save location'}
                         </button>
                     </div>
-                </div>
-            </div>
-        </div>
+        </CrudSheet>
     );
 }

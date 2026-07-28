@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { GearItem, Priority } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface GearFormSheetProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ const defaultForm = {
 };
 
 export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }: GearFormSheetProps) {
+    const draftId = React.useId();
     const [form, setForm] = useState(initialItem ?? defaultForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,12 +41,22 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
         }
     }, [isOpen, initialItem]);
 
+    const initialForm = initialItem ?? defaultForm;
+    const { close, saved } = useTripDraftForm({
+        id: `gear-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, initialForm),
+        onClose,
+        onDiscard: () => setForm(initialForm),
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!form.name.trim()) { setError('Name is required'); return; }
         setSaving(true);
         try {
             await onSubmit(form);
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -56,7 +68,7 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
     const isEdit = !!initialItem;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit Gear Item' : 'Add Gear Item'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Gear Item' : 'Add Gear Item'}>
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">
@@ -69,6 +81,8 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
                         onChange={(e) => set('name', e.target.value)}
                         placeholder="e.g. Sleeping Bag"
                         required
+                        aria-invalid={error ? 'true' : undefined}
+                        aria-describedby={error ? 'gear-form-error' : undefined}
                     />
                 </div>
 
@@ -159,10 +173,10 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
                     <label className="crud-form__label" htmlFor="gear-packed">Already packed</label>
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p id="gear-form-error" className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>
                         Cancel
                     </button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>

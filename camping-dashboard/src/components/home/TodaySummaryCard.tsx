@@ -1,0 +1,67 @@
+import GuardedTripLink from '@/components/trip/GuardedTripLink';
+import type { HomeScheduleSummary } from './homeSelectors';
+import { Card } from '@/components/ui/Primitives';
+import { CalendarClock, ChevronRight, Clock3 } from 'lucide-react';
+
+export default function TodaySummaryCard({
+  summary,
+  href,
+}: {
+  summary: HomeScheduleSummary;
+  href: string;
+}) {
+  return (
+    <Card
+      title={`${summary.label} · Day ${summary.dayNumber}`}
+      icon={CalendarClock}
+      className="h-full"
+      action={
+        <GuardedTripLink
+          href={href}
+          className="inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          aria-label="View full trip plan"
+        >
+          Full plan <ChevronRight size={14} aria-hidden="true" />
+        </GuardedTripLink>
+      }
+    >
+      {summary.events.length > 0 ? (
+        <ol className="space-y-3">
+          {summary.events.map((event) => (
+            <li
+              key={event.id}
+              className="flex gap-3 border-b border-border-subtle/60 pb-3 last:border-0 last:pb-0"
+            >
+              <span className="inline-flex w-14 shrink-0 items-center gap-1 font-mono text-xs text-text-muted">
+                <Clock3 size={13} aria-hidden="true" />
+                {event.event_time}
+              </span>
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-text-main">
+                  {event.title}
+                </h3>
+                <p className="mt-0.5 text-[11px] font-mono text-text-muted">
+                  {event.phase === null ? 'Uncategorized' : event.phase}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border-subtle px-5 py-8 text-center">
+          <p className="text-sm text-text-muted">
+            {summary.label === 'Trip complete'
+              ? 'No events were recorded for the final trip day.'
+              : 'No events are planned for this day yet.'}
+          </p>
+          <GuardedTripLink
+            href={href}
+            className="mt-3 rounded text-sm font-medium text-accent-yellow underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          >
+            Open Plan
+          </GuardedTripLink>
+        </div>
+      )}
+    </Card>
+  );
+}

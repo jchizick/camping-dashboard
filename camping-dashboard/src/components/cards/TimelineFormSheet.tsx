@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import type { TimelineEvent } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import {
+    draftValuesEqual,
+    useTripDraftForm,
+} from '@/components/trip/useTripDraftForm';
 
 interface TimelineFormSheetProps {
     isOpen: boolean;
@@ -15,6 +19,7 @@ interface TimelineFormSheetProps {
 }
 
 export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEvent, defaultDay = 1, tripDays, nextSortOrder = 100 }: TimelineFormSheetProps) {
+    const draftId = React.useId();
     const defaultForm = {
         day_number: defaultDay,
         event_time: '09:00',
@@ -40,12 +45,22 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, initialEvent]);
 
+    const initialForm = initialEvent ?? { ...defaultForm, day_number: defaultDay, sort_order: nextSortOrder };
+    const { close, saved } = useTripDraftForm({
+        id: `timeline-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, initialForm),
+        onClose,
+        onDiscard: () => setForm(initialForm),
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!form.title.trim()) { setError('Event title is required'); return; }
         setSaving(true);
         try {
             await onSubmit(form);
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -57,7 +72,7 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
     const isEdit = !!initialEvent;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit Event' : 'Add Event'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Event' : 'Add Event'}>
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__row">
@@ -97,6 +112,8 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
                         onChange={(e) => set('title', e.target.value)}
                         placeholder="e.g. Launch canoes"
                         required
+                        aria-invalid={error ? 'true' : undefined}
+                        aria-describedby={error ? 'event-form-error' : undefined}
                     />
                 </div>
 
@@ -146,10 +163,10 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
                     <span className="crud-form__hint">Lower numbers appear first</span>
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p id="event-form-error" className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>Cancel</button>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>Cancel</button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>
                         {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Event'}
                     </button>

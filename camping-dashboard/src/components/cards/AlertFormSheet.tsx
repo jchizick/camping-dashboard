@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { AlertSeverity } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface AlertFormSheetProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ const defaultForm = {
 };
 
 export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormSheetProps) {
+    const draftId = React.useId();
     const [form, setForm] = useState(defaultForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -32,6 +34,14 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
         }
     }, [isOpen]);
 
+    const { close, saved } = useTripDraftForm({
+        id: `alert-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, defaultForm),
+        onClose,
+        onDiscard: () => setForm(defaultForm),
+    });
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!form.title.trim()) { setError('Title is required'); return; }
@@ -42,6 +52,7 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
                 source: 'manual',
                 is_active: true,
             });
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -51,7 +62,7 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title="Add Note / Alert">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Add Note / Alert">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">
@@ -64,6 +75,8 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
                         onChange={(e) => set('title', e.target.value)}
                         placeholder="e.g. Check portage conditions"
                         required
+                        aria-invalid={error ? 'true' : undefined}
+                        aria-describedby={error ? 'alert-form-error' : undefined}
                     />
                 </div>
 
@@ -95,10 +108,10 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
                     </select>
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p id="alert-form-error" className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>Cancel</button>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>Cancel</button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>
                         {saving ? 'Saving…' : 'Add Note'}
                     </button>

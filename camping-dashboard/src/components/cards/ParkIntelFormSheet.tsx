@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import type { ParkIntel } from '@/types';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface ParkIntelFormSheetProps {
     isOpen: boolean;
@@ -12,14 +13,16 @@ interface ParkIntelFormSheetProps {
 }
 
 export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }: ParkIntelFormSheetProps) {
-    const [form, setForm] = useState({
+    const draftId = React.useId();
+    const initialForm = {
         fire_restriction: intel.fire_restriction,
         wildlife_notes: intel.wildlife_notes,
         ranger_station: intel.ranger_station,
         firewood_percent: intel.firewood_percent,
         water_notes: intel.water_notes,
         custom_notes: intel.custom_notes,
-    });
+    };
+    const [form, setForm] = useState(initialForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +41,14 @@ export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }:
         }
     }, [isOpen, intel]);
 
+    const { close, saved } = useTripDraftForm({
+        id: `park-intel-${draftId}`,
+        isOpen,
+        isDirty: !draftValuesEqual(form, initialForm),
+        onClose,
+        onDiscard: () => setForm(initialForm),
+    });
+
     function set<K extends keyof typeof form>(key: K, val: (typeof form)[K]) {
         setForm((prev) => ({ ...prev, [key]: val }));
     }
@@ -47,6 +58,7 @@ export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }:
         setSaving(true);
         try {
             await onSubmit(form);
+            saved();
             onClose();
         } catch {
             setError('Failed to save. Please try again.');
@@ -56,7 +68,7 @@ export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }:
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={onClose} title="Edit Park Intelligence">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Edit Park Intelligence">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">
@@ -132,10 +144,10 @@ export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }:
                     />
                 </div>
 
-                {error && <p className="crud-form__error">{error}</p>}
+                {error && <p className="crud-form__error" role="alert">{error}</p>}
 
                 <div className="crud-form__actions">
-                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={onClose}>
+                    <button type="button" className="crud-form__btn crud-form__btn--cancel" onClick={close}>
                         Cancel
                     </button>
                     <button type="submit" className="crud-form__btn crud-form__btn--save" disabled={saving}>

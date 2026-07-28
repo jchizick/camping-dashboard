@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { X, FileText } from 'lucide-react';
+import { useOverlayDialog } from './useOverlayDialog';
 
 const PROJECT_INTEL_TEXT = `
 # 🧭 Camping Dashboard — Tools & Technology Stack
@@ -126,6 +127,7 @@ interface ProjectIntelModalProps {
 
 export default function ProjectIntelModal({ isOpen, onClose }: ProjectIntelModalProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
+  useOverlayDialog(isOpen, backdropRef);
 
   // ESC to close
   useEffect(() => {
@@ -134,12 +136,6 @@ export default function ProjectIntelModal({ isOpen, onClose }: ProjectIntelModal
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -194,7 +190,7 @@ export default function ProjectIntelModal({ isOpen, onClose }: ProjectIntelModal
         .mission-brief-backdrop {
           position: fixed;
           inset: 0;
-          z-index: 9999;
+          z-index: var(--layer-modal);
           display: flex;
           align-items: center;
           justify-content: center;
