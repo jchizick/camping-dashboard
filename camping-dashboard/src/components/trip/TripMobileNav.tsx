@@ -14,7 +14,7 @@ export default function TripMobileNav({ tripId }: { tripId: string }) {
   return (
     <nav
       aria-label="Mobile trip sections"
-      className="trip-mobile-nav fixed inset-x-0 bottom-0 z-[var(--layer-navigation)] grid grid-cols-5 border-t shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur md:hidden"
+      className="trip-navigation-mobile-bar trip-mobile-nav fixed inset-x-0 bottom-0 z-[var(--layer-navigation)] grid-cols-5 border-t shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur"
       data-testid="mobile-trip-navigation"
     >
       {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {

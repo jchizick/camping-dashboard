@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   cleanup,
   fireEvent,
@@ -81,6 +83,44 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('TripAppShell', () => {
+  it('uses one shared 768px handoff for desktop and mobile navigation', () => {
+    const { container } = render(
+      <TripAppShell>
+        <h1>Plan</h1>
+      </TripAppShell>
+    );
+
+    const desktopNavShell = screen.getByTestId('desktop-trip-navigation-shell');
+    const desktopMoreShell = screen.getByTestId('desktop-trip-more-shell');
+    const mobileNav = screen.getByTestId('mobile-trip-navigation');
+    const mobileMoreShell = screen.getByTestId('mobile-trip-more-shell');
+
+    expect(desktopNavShell.classList.contains('trip-navigation-desktop')).toBe(true);
+    expect(desktopMoreShell.classList.contains('trip-navigation-desktop')).toBe(true);
+    expect(mobileNav.classList.contains('trip-navigation-mobile-bar')).toBe(true);
+    expect(mobileMoreShell.classList.contains('trip-navigation-mobile-more')).toBe(true);
+    expect(container.querySelector('[data-testid="desktop-trip-navigation"]')?.classList.contains('hidden'))
+      .toBe(false);
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/app/globals.css'),
+      'utf8'
+    );
+    expect(css).toMatch(/\.trip-navigation-desktop\s*\{\s*display:\s*none;/);
+    expect(css).toMatch(/\.trip-navigation-mobile-more\s*\{\s*display:\s*block;/);
+    expect(css).toMatch(/\.trip-navigation-mobile-bar\s*\{\s*display:\s*grid;/);
+
+    const sharedHandoff = css.slice(
+      css.indexOf('@media (min-width: 768px)'),
+      css.indexOf('@media (max-width: 1023px)')
+    );
+    expect(sharedHandoff).toMatch(/\.trip-navigation-desktop\s*\{\s*display:\s*flex;/);
+    expect(sharedHandoff).toMatch(
+      /\.trip-navigation-mobile-more,\s*\.trip-navigation-mobile-bar\s*\{\s*display:\s*none;/
+    );
+    expect(sharedHandoff).toMatch(/\.trip-app-main\s*\{\s*padding-bottom:\s*0;/);
+  });
+
   it('renders one shared header, one main landmark, and canonical navigation', () => {
     render(
       <TripAppShell>

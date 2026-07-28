@@ -14,7 +14,7 @@ export default function TripPrimaryNav({ tripId }: { tripId: string }) {
   return (
     <nav
       aria-label="Trip sections"
-      className="hidden min-w-0 items-stretch gap-1 md:flex"
+      className="flex min-w-0 items-stretch gap-1"
       data-testid="desktop-trip-navigation"
     >
       {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {

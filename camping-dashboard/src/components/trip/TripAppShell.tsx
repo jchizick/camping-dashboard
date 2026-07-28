@@ -302,11 +302,17 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             </p>
           </div>
 
-          <div className="hidden min-w-0 flex-1 justify-center md:flex">
+          <div
+            className="trip-navigation-desktop min-w-0 flex-1 justify-center"
+            data-testid="desktop-trip-navigation-shell"
+          >
             <TripPrimaryNav tripId={tripId} />
           </div>
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div
+            className="trip-navigation-desktop items-center gap-2"
+            data-testid="desktop-trip-more-shell"
+          >
             <MoreMenu
               id="desktop-trip-more"
               tripId={tripId}
@@ -320,7 +326,10 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             />
           </div>
 
-          <div className="md:hidden">
+          <div
+            className="trip-navigation-mobile-more"
+            data-testid="mobile-trip-more-shell"
+          >
             <MoreMenu
               id="mobile-trip-more"
               tripId={tripId}

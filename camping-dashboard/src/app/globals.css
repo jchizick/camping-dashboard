@@ -328,6 +328,23 @@ body {
   --layer-critical: 110;
 }
 
+/*
+ * Trip navigation uses one explicit 768px handoff. Keep these selectors
+ * independent of the generic Tailwind `hidden` utility so a legacy unlayered
+ * `.hidden` rule cannot suppress the responsive desktop navigation.
+ */
+.trip-navigation-desktop {
+  display: none;
+}
+
+.trip-navigation-mobile-more {
+  display: block;
+}
+
+.trip-navigation-mobile-bar {
+  display: grid;
+}
+
 /* Persistent trip shell: keep mobile content clear of the five-item bottom nav. */
 .trip-app-main {
   min-width: 0;
@@ -697,6 +714,15 @@ body {
 }
 
 @media (min-width: 768px) {
+  .trip-navigation-desktop {
+    display: flex;
+  }
+
+  .trip-navigation-mobile-more,
+  .trip-navigation-mobile-bar {
+    display: none;
+  }
+
   .trip-app-main {
     padding-bottom: 0;
   }
