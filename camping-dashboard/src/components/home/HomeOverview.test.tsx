@@ -29,7 +29,12 @@ vi.mock('@/components/cards/MapRouteCard', () => ({
   ),
 }));
 vi.mock('@/components/cards/WeatherCard', () => ({
-  default: () => <div data-testid="weather">Weather Card</div>,
+  default: ({ forecast }: { forecast?: WeatherForecast[] }) => (
+    <div data-testid="weather" data-forecast-count={forecast?.length ?? 0}>
+      Weather Card
+      <span>5-day forecast</span>
+    </div>
+  ),
 }));
 vi.mock('@/components/ui/MissionBriefModal', () => ({
   default: () => null,
@@ -160,17 +165,25 @@ describe('HomeOverview', () => {
     const weatherSurface = within(
       screen.getByRole('region', { name: 'Weather and forecast' })
     );
-    expect(weatherSurface.getByTestId('weather')).toBeTruthy();
-    expect(weatherSurface.getByText('Forecast')).toBeTruthy();
-    expect(weatherSurface.getByText('Light rain')).toBeTruthy();
-    expect(weatherSurface.getByText('24°')).toBeTruthy();
+    expect(weatherSurface.getByTestId('weather').getAttribute('data-forecast-count')).toBe('1');
+    expect(weatherSurface.getAllByText('5-day forecast')).toHaveLength(1);
+    expect(weatherSurface.queryByRole('heading', { name: 'Forecast' })).toBeNull();
     expect(screen.getByRole('progressbar', { name: 'Overall trip readiness' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'View gear' }).getAttribute('href')).toBe(
+      '/trips/trip-1/gear'
+    );
+    expect(screen.getByText('View gear').classList.contains(
+      'home-readiness-header-action__label'
+    )).toBe(true);
     for (const category of ['Offline', 'Gear', 'Plan']) {
       expect(
         screen.getByRole('progressbar', { name: `${category} readiness` })
       ).toBeTruthy();
     }
     expect(screen.getByText('Today · Day 1')).toBeTruthy();
+    expect(screen.getByText('View full plan').closest('a')?.getAttribute('href')).toBe(
+      '/trips/trip-1/plan'
+    );
     expect(screen.getByText('Wind advisory')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 3, name: 'Launch' })).toBeTruthy();
     expect(screen.getAllByText('09:00')).toHaveLength(2);

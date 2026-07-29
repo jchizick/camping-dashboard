@@ -4,7 +4,6 @@ import React from 'react';
 import MapRouteCard from '@/components/cards/MapRouteCard';
 import WeatherCard from '@/components/cards/WeatherCard';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
-import CompactForecastCard from './CompactForecastCard';
 import PriorityAlertCard from './PriorityAlertCard';
 import ReadinessSummaryCard from './ReadinessSummaryCard';
 import TodaySummaryCard from './TodaySummaryCard';
@@ -76,9 +75,9 @@ export default function HomeOverview() {
             weather={data.currentWeather}
             weatherRefresh={data.weatherRefresh}
             astro={data.astro}
+            forecast={data.forecast}
             variant="home"
           />
-          <CompactForecastCard forecast={data.forecast} />
         </section>
 
         <div className="home-readiness">

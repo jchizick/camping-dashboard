@@ -42,10 +42,12 @@ export default function ReadinessSummaryCard({
       action={
         <GuardedTripLink
           href={href}
-          className="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          aria-label="View detailed gear readiness"
+          className="home-readiness-header-action inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          aria-label="View gear"
+          title="View gear"
         >
-          View gear <ChevronRight size={14} aria-hidden="true" />
+          <span className="home-readiness-header-action__label">View gear</span>
+          <ChevronRight size={14} aria-hidden="true" />
         </GuardedTripLink>
       }
     >

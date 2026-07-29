@@ -18,7 +18,7 @@ export default function TodaySummaryCard({
       action={
         <GuardedTripLink
           href={href}
-          className="inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="home-today-header-action inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           aria-label="View full trip plan"
         >
           Full plan <ChevronRight size={14} aria-hidden="true" />
@@ -40,10 +40,10 @@ export default function TodaySummaryCard({
               </span>
               <span className="today-timeline__marker" aria-hidden="true" />
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-text-main">
+                <h3 className="break-words text-sm font-semibold text-text-main">
                   {event.title}
                 </h3>
-                <p className="mt-0.5 text-[11px] font-mono text-text-muted">
+                <p className="mt-0.5 break-words text-[11px] font-mono text-text-muted">
                   {event.phase === null ? 'Uncategorized' : event.phase}
                 </p>
               </div>
@@ -64,6 +64,12 @@ export default function TodaySummaryCard({
             Open Plan
           </GuardedTripLink>
         </div>
+      )}
+      {summary.events.length > 0 && (
+        <GuardedTripLink href={href} className="home-today-footer-action">
+          <span>View full plan</span>
+          <ChevronRight size={14} aria-hidden="true" />
+        </GuardedTripLink>
       )}
     </Card>
   );
