@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
@@ -10,6 +10,7 @@ import type {
   OfflineStatus,
   PrepFeedItem,
   TimelineEvent,
+  WeatherForecast,
 } from '@/types';
 import type { TripWorkspaceValue } from '@/components/trip/TripWorkspaceProvider';
 
@@ -69,7 +70,17 @@ function workspaceValue(editable = true): TripWorkspaceValue {
     data: {
       currentWeather: null,
       weatherRefresh: null,
-      forecast: [],
+      forecast: [
+        {
+          id: 'forecast-1',
+          trip_id: 'trip-1',
+          forecast_date: '2026-07-28',
+          high_c: 24,
+          low_c: 14,
+          condition_label: 'Light rain',
+          rain_chance: 30,
+        } as WeatherForecast,
+      ],
       astro: null,
       settings: {
         show_meals: true,
@@ -146,11 +157,23 @@ describe('HomeOverview', () => {
     expect(screen.getByText('Trip is underway')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Current trip situation' })).toBeTruthy();
     expect(screen.getByTestId('map')).toBeTruthy();
-    expect(screen.getByTestId('weather')).toBeTruthy();
-    expect(screen.getByText('Forecast unavailable.')).toBeTruthy();
+    const weatherSurface = within(
+      screen.getByRole('region', { name: 'Weather and forecast' })
+    );
+    expect(weatherSurface.getByTestId('weather')).toBeTruthy();
+    expect(weatherSurface.getByText('Forecast')).toBeTruthy();
+    expect(weatherSurface.getByText('Light rain')).toBeTruthy();
+    expect(weatherSurface.getByText('24°')).toBeTruthy();
     expect(screen.getByRole('progressbar', { name: 'Overall trip readiness' })).toBeTruthy();
+    for (const category of ['Offline', 'Gear', 'Plan']) {
+      expect(
+        screen.getByRole('progressbar', { name: `${category} readiness` })
+      ).toBeTruthy();
+    }
     expect(screen.getByText('Today · Day 1')).toBeTruthy();
     expect(screen.getByText('Wind advisory')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Launch' })).toBeTruthy();
+    expect(screen.getAllByText('09:00')).toHaveLength(2);
     for (const legacyTitle of [
       'Timeline',
       'Meals',
@@ -165,7 +188,7 @@ describe('HomeOverview', () => {
     }
 
     for (const label of ['Plan', 'Gear', 'Crew', 'Field Guide', 'Field Log']) {
-      expect(screen.getByRole('link', { name: `Open ${label}` })).toBeTruthy();
+      expect(screen.getAllByRole('link', { name: `Open ${label}` })).toHaveLength(1);
     }
     expect(screen.getByRole('link', { name: 'Open Plan' }).getAttribute('href')).toBe(
       '/trips/trip-1/plan'

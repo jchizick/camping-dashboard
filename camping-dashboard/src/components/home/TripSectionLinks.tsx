@@ -42,23 +42,25 @@ function SummaryLink({
   href,
   label,
   icon: Icon,
+  tone,
   children,
 }: {
   href: string;
   label: string;
   icon: typeof CalendarDays;
+  tone: 'plan' | 'gear' | 'crew' | 'guide' | 'field-log';
   children: React.ReactNode;
 }) {
   return (
     <GuardedTripLink
       href={href}
       aria-label={`Open ${label}`}
-      className="workspace-summary-link group flex min-h-40 flex-col border p-5 transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+      className={`workspace-summary-link workspace-summary-link--${tone} group flex min-h-32 flex-col border p-3.5 transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
     >
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex min-w-0 items-center gap-3 text-base font-semibold text-text-main">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-yellow/12 text-accent-yellow">
-            <Icon size={19} aria-hidden="true" />
+          <span className="workspace-summary-link__icon grid h-10 w-10 shrink-0 place-items-center rounded-full">
+            <Icon size={20} aria-hidden="true" />
           </span>
           <span className="truncate">{label}</span>
         </span>
@@ -68,7 +70,9 @@ function SummaryLink({
           aria-hidden="true"
         />
       </div>
-      <div className="mt-5 flex flex-1 flex-col justify-end">{children}</div>
+      <div className="workspace-summary-link__content mt-3 flex flex-1 flex-col justify-end">
+        {children}
+      </div>
     </GuardedTripLink>
   );
 }
@@ -114,7 +118,7 @@ export default function TripSectionLinks({
   const latestPrep = latestPrepItem(prepFeed);
 
   return (
-    <section aria-labelledby="trip-workspaces-heading" className="space-y-4">
+    <section aria-labelledby="trip-workspaces-heading" className="home-workspace-section">
       <div>
         <h2 id="trip-workspaces-heading" className="text-xl font-bold text-text-main">
           Trip workspaces
@@ -125,44 +129,44 @@ export default function TripSectionLinks({
       </div>
 
       <div className="workspace-summary-grid">
-        <SummaryLink href={`${base}/plan`} label="Plan" icon={CalendarDays}>
-          <p className="text-lg font-semibold text-text-main">
+        <SummaryLink href={`${base}/plan`} label="Plan" icon={CalendarDays} tone="plan">
+          <p className="workspace-summary-link__metric">
             {timeline.length} event{timeline.length === 1 ? '' : 's'}
           </p>
-          <p className="mt-1 text-xs text-text-muted">
+          <p className="workspace-summary-link__support mt-1">
             {tripDays} trip day{tripDays === 1 ? '' : 's'}
             {showMeals ? ` · ${meals.length} meals` : ''}
           </p>
           {schedule.events[0] ? (
-            <p className="mt-2 truncate text-xs text-text-muted">
+            <p className="workspace-summary-link__support mt-1.5 truncate">
               Next: {schedule.events[0].event_time} {schedule.events[0].title}
             </p>
           ) : null}
         </SummaryLink>
 
-        <SummaryLink href={`${base}/gear`} label="Gear" icon={Backpack}>
-          <p className="text-lg font-semibold text-text-main">
+        <SummaryLink href={`${base}/gear`} label="Gear" icon={Backpack} tone="gear">
+          <p className="workspace-summary-link__metric">
             {packedCount}/{gear.length} packed
           </p>
-          <p className="mt-1 text-xs text-text-muted">{acquiredCount} acquired</p>
-          <p className="mt-2 text-xs text-text-muted">
+          <p className="workspace-summary-link__support mt-1">{acquiredCount} acquired</p>
+          <p className="workspace-summary-link__support mt-1.5">
             {criticalUnresolved === 0
               ? 'No critical gaps'
               : `${criticalUnresolved} critical unresolved`}
           </p>
         </SummaryLink>
 
-        <SummaryLink href={`${base}/crew`} label="Crew" icon={Users}>
+        <SummaryLink href={`${base}/crew`} label="Crew" icon={Users} tone="crew">
           {showCrew ? (
             <>
-              <p className="text-lg font-semibold text-text-main">
+              <p className="workspace-summary-link__metric">
                 {crew.length} member{crew.length === 1 ? '' : 's'}
               </p>
-              <p className="mt-1 text-xs text-text-muted">
+              <p className="workspace-summary-link__support mt-1">
                 {assignedLoad.toFixed(1)} kg assigned load
               </p>
               {crew.length > 0 ? (
-                <p className="mt-2 truncate text-xs text-text-muted">
+                <p className="workspace-summary-link__support mt-1.5 truncate">
                   {crew.map((member) => member.role || member.name).join(' · ')}
                 </p>
               ) : null}
@@ -172,14 +176,14 @@ export default function TripSectionLinks({
           )}
         </SummaryLink>
 
-        <SummaryLink href={`${base}/guide`} label="Field Guide" icon={Compass}>
-          <p className="text-lg font-semibold text-text-main">
+        <SummaryLink href={`${base}/guide`} label="Field Guide" icon={Compass} tone="guide">
+          <p className="workspace-summary-link__metric">
             {alerts.length} active notice{alerts.length === 1 ? '' : 's'}
           </p>
-          <p className="mt-1 text-xs text-text-muted">
+          <p className="workspace-summary-link__support mt-1">
             {parkIntel ? 'Park details available' : 'Park details unavailable'}
           </p>
-          <p className="mt-2 text-xs text-text-muted">
+          <p className="workspace-summary-link__support mt-1.5">
             {showOffline
               ? offlineStatus
                 ? 'Offline checklist started'
@@ -190,11 +194,16 @@ export default function TripSectionLinks({
           </p>
         </SummaryLink>
 
-        <SummaryLink href={`${base}/field-log`} label="Field Log" icon={BookOpenText}>
-          <p className="text-lg font-semibold text-text-main">
+        <SummaryLink
+          href={`${base}/field-log`}
+          label="Field Log"
+          icon={BookOpenText}
+          tone="field-log"
+        >
+          <p className="workspace-summary-link__metric">
             {prepFeed.length} photo{prepFeed.length === 1 ? '' : 's'}
           </p>
-          <p className="mt-1 line-clamp-2 text-xs text-text-muted">
+          <p className="workspace-summary-link__support mt-1 line-clamp-2">
             {latestPrep?.caption || 'No preparation photos yet'}
           </p>
         </SummaryLink>

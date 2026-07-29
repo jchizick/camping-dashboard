@@ -15,20 +15,20 @@ export default function CompactForecastCard({
   forecast: WeatherForecast[];
 }) {
   return (
-    <Card title="Forecast" icon={CalendarDays} className="h-full">
+    <Card title="Forecast" icon={CalendarDays} className="home-forecast-card">
       {forecast.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
           {forecast.slice(0, 5).map((day, index) => (
             <div
               key={day.id}
-              className={`forecast-day rounded-xl border border-border-subtle bg-card-bg/50 p-3 text-center ${
-                index === 4 ? 'hidden lg:block' : ''
+              className={`forecast-day min-w-0 rounded-lg border border-border-subtle bg-card-bg/50 px-1.5 py-2 text-center ${
+                index === 3 ? 'hidden sm:block' : index === 4 ? 'hidden lg:block' : ''
               }`}
             >
               <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
                 {dayLabel(day.forecast_date)}
               </p>
-              <p className="mt-2 text-sm font-semibold text-text-main">
+              <p className="mt-1 text-sm font-semibold text-text-main">
                 {day.high_c === null ? '—' : `${Math.round(day.high_c)}°`}
                 <span className="ml-1 font-normal text-text-muted">
                   / {day.low_c === null ? '—' : `${Math.round(day.low_c)}°`}
@@ -37,7 +37,7 @@ export default function CompactForecastCard({
               <p className="mt-1 line-clamp-1 text-[11px] text-text-muted">
                 {day.condition_label}
               </p>
-              <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-accent-blue">
+              <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-accent-blue">
                 <CloudRain size={12} aria-hidden="true" />
                 {day.rain_chance === null ? 'Unavailable' : `${day.rain_chance}%`}
               </p>

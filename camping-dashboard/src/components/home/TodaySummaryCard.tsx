@@ -14,7 +14,7 @@ export default function TodaySummaryCard({
     <Card
       title={`${summary.label} · Day ${summary.dayNumber}`}
       icon={CalendarClock}
-      className="h-full"
+      className="home-today-card h-full"
       action={
         <GuardedTripLink
           href={href}
@@ -26,16 +26,19 @@ export default function TodaySummaryCard({
       }
     >
       {summary.events.length > 0 ? (
-        <ol className="space-y-3">
-          {summary.events.map((event) => (
+        <ol className="today-timeline">
+          {summary.events.map((event, index) => (
             <li
               key={event.id}
-              className="flex gap-3 border-b border-border-subtle/60 pb-3 last:border-0 last:pb-0"
+              className={`today-timeline__item ${
+                index === 0 ? 'today-timeline__item--next' : ''
+              }`}
             >
-              <span className="inline-flex w-14 shrink-0 items-center gap-1 font-mono text-xs text-text-muted">
-                <Clock3 size={13} aria-hidden="true" />
+              <span className="today-timeline__time">
+                <Clock3 size={12} aria-hidden="true" />
                 {event.event_time}
               </span>
+              <span className="today-timeline__marker" aria-hidden="true" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-text-main">
                   {event.title}

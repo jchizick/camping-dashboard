@@ -102,11 +102,16 @@ export default function WeatherCard({
     };
 
     const refreshControl = canEdit ? (
-        <div className="mt-4 pt-4 border-t border-border-subtle">
+        <div className={`weather-refresh-control ${variant === 'home' ? 'mt-2 pt-2' : 'mt-4 pt-4'} border-t border-border-subtle`}>
             <button
+                type="button"
                 onClick={handleRefresh}
                 disabled={refreshState === 'loading' || refreshState === 'success'}
-                className="w-full text-xs font-mono px-3 py-2 rounded border border-border-subtle text-text-muted hover:text-text-main hover:bg-card-hover transition-colors flex justify-center items-center gap-2 disabled:opacity-60"
+                className={`flex min-h-11 w-full items-center justify-center gap-2 rounded px-3 py-2 text-xs font-medium text-text-muted transition-colors hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-60 ${
+                    variant === 'home'
+                        ? 'border border-transparent bg-card-hover/60 hover:bg-card-hover'
+                        : 'border border-border-subtle hover:bg-card-hover'
+                }`}
             >
                 {refreshState === 'error' && (
                     <AlertCircle size={14} className="text-accent-red" />
@@ -121,7 +126,7 @@ export default function WeatherCard({
             <Card
                 title={variant === 'home' ? 'Weather' : labels.weather}
                 icon={CloudRain}
-                className="h-full"
+                className={variant === 'home' ? 'home-weather-card' : 'h-full'}
             >
                 <div className="min-h-48 flex items-center justify-center text-center text-sm text-text-muted">
                     Weather has not been refreshed for this campsite yet.
@@ -158,12 +163,15 @@ export default function WeatherCard({
         <Card
             title={variant === 'home' ? 'Weather' : labels.weather}
             icon={CloudRain}
-            className="h-full"
+            className={variant === 'home' ? 'home-weather-card' : 'h-full'}
         >
-            <div className="mb-6 flex items-center gap-4">
-                <Star size={48} className="text-accent-yellow fill-accent-yellow shrink-0" />
+            <div className={`weather-current-summary ${variant === 'home' ? 'mb-2 gap-3' : 'mb-6 gap-4'} flex items-center`}>
+                <Star
+                    size={variant === 'home' ? 36 : 48}
+                    className="shrink-0 fill-accent-yellow text-accent-yellow"
+                />
                 <div>
-                    <div className="text-4xl font-bold text-text-main tracking-tighter">
+                    <div className={`${variant === 'home' ? 'text-3xl' : 'text-4xl'} font-bold tracking-tighter text-text-main`}>
                         {Math.round(weather.temperature_c)}
                         <span className="text-2xl text-text-muted font-normal">°C</span>
                     </div>
@@ -173,11 +181,13 @@ export default function WeatherCard({
                 </div>
             </div>
 
-            <div className="space-y-3 flex-1">
+            <div className={`weather-current-stats ${variant === 'home' ? 'space-y-0' : 'space-y-3'} flex-1`}>
                 {stats.map((stat) => (
                     <div
                         key={stat.label}
-                        className="flex items-center justify-between py-2 border-b border-border-subtle/50 last:border-0"
+                        className={`flex items-center justify-between border-b border-border-subtle/50 last:border-0 ${
+                            variant === 'home' ? 'py-1' : 'py-2'
+                        }`}
                     >
                         <div className="flex items-center gap-3 text-text-muted text-sm">
                             <stat.icon size={16} />
@@ -213,7 +223,9 @@ export default function WeatherCard({
             </div>
 
             {statusMessage && (
-                <p className="mt-4 text-xs text-text-muted">{statusMessage}</p>
+                <p className={`weather-current-status ${variant === 'home' ? 'mt-2' : 'mt-4'} text-xs text-text-muted`}>
+                    {statusMessage}
+                </p>
             )}
             {refreshControl}
         </Card>

@@ -42,6 +42,9 @@ export default function MapRouteCard({
     const [sheetOpen, setSheetOpen] = useState(false);
     const hasLocation = hasCoordinates(trip);
     const isProvisional = trip.campsite_source === 'legacy_site_coordinates_unverified';
+    const campsiteIdentity =
+        [trip.park_name, trip.lake_name, trip.site_name].filter(Boolean).join(' · ')
+        || 'Trip campsite';
 
     const initialSelection = useMemo<CampsiteSelection | null>(() => {
         if (!hasLocation) return null;
@@ -62,7 +65,7 @@ export default function MapRouteCard({
                 <button
                     type="button"
                     onClick={() => setSheetOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-card-bg px-3 py-1 text-xs font-mono text-text-muted transition-colors hover:bg-card-hover hover:text-text-main"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border-subtle bg-card-bg px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-card-hover hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
                 >
                     {hasLocation ? <Pencil size={12} /> : <MapPin size={12} />}
                     {hasLocation ? 'Reposition' : 'Set location'}
@@ -77,25 +80,34 @@ export default function MapRouteCard({
     return (
         <>
             <Card
-                title={variant === 'home' ? 'Campsite location' : 'Map / Route'}
+                title={
+                    variant === 'home' ? (
+                        <span className="home-map-card__heading">
+                            <span>Campsite location</span>
+                            <span className="home-map-card__subtitle">{campsiteIdentity}</span>
+                        </span>
+                    ) : (
+                        'Map / Route'
+                    )
+                }
                 icon={Map}
-                className="h-full"
+                className={variant === 'home' ? 'home-map-card h-full' : 'h-full'}
                 action={action}
             >
-                <div className="text-sm text-text-muted mb-4 font-mono">
-                    {[trip.park_name, trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || 'Trip campsite'}
+                <div className={`text-sm text-text-muted ${variant === 'home' ? 'home-map-card__location mb-3' : 'mb-4'} font-mono`}>
+                    {campsiteIdentity}
                 </div>
 
                 {isProvisional && (
-                    <div className="mb-3 rounded-lg border border-accent-yellow/30 bg-accent-yellow/10 px-3 py-2 text-xs text-accent-yellow">
+                    <div className="home-map-card__provisional mb-3 rounded-lg border border-accent-yellow/30 bg-accent-yellow/10 px-3 py-2 text-xs text-accent-yellow">
                         Imported legacy coordinates — owner/editor verification recommended.
                     </div>
                 )}
 
                 <div
-                    className={`relative w-full overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${
+                    className={`home-map-card__canvas relative w-full overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${
                         variant === 'home'
-                            ? 'min-h-[340px] flex-1 md:min-h-[430px] lg:min-h-[460px]'
+                            ? 'h-[350px] min-h-[350px] md:h-[390px] md:min-h-[390px]'
                             : 'h-[280px] min-h-[280px] md:h-[calc(100%-3rem)]'
                     }`}
                     role="region"

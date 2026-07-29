@@ -70,7 +70,7 @@ export default function HomeOverview() {
           />
         </div>
 
-        <div className="home-weather">
+        <section className="home-weather" aria-label="Weather and forecast">
           <WeatherCard
             tripId={trip.id}
             weather={data.currentWeather}
@@ -79,7 +79,7 @@ export default function HomeOverview() {
             variant="home"
           />
           <CompactForecastCard forecast={data.forecast} />
-        </div>
+        </section>
 
         <div className="home-readiness">
           <ReadinessSummaryCard
@@ -120,7 +120,7 @@ export default function HomeOverview() {
         />
       </div>
 
-      <footer className="py-8 text-center text-xs text-text-muted">
+      <footer className="home-overview__footer text-center text-xs text-text-muted">
         {trip.park_name} · Workspace synced
       </footer>
     </div>

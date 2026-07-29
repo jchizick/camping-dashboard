@@ -38,7 +38,7 @@ export default function ReadinessSummaryCard({
     <Card
       title="Readiness"
       icon={Activity}
-      className="h-full"
+      className="home-readiness-card h-full"
       action={
         <GuardedTripLink
           href={href}
@@ -49,7 +49,7 @@ export default function ReadinessSummaryCard({
         </GuardedTripLink>
       }
     >
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3.5">
         <div
           className="readiness-ring"
           role="progressbar"
@@ -64,21 +64,23 @@ export default function ReadinessSummaryCard({
         </div>
         <div className="min-w-0">
           <p className="text-base font-semibold text-text-main">{readiness.label}</p>
-          <p className="mt-1 text-sm leading-relaxed text-text-muted">
+          <p className="mt-0.5 text-sm leading-snug text-text-muted">
             {readinessInterpretation(readiness.overall)}
           </p>
         </div>
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-3.5 space-y-2">
         {lowestCategories.map(({ key, label }) => (
           <div key={key}>
-            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+            <div className="mb-1 flex items-center justify-between gap-3 text-xs">
               <span className="font-medium text-text-main">{label}</span>
-              <span className="text-text-muted">{readiness[key]}%</span>
+              <span className="min-w-9 text-right font-mono text-text-muted">
+                {readiness[key]}%
+              </span>
             </div>
             <div
-              className="h-1.5 overflow-hidden rounded-full bg-card-hover"
+              className="h-2 overflow-hidden rounded-full bg-card-hover"
               role="progressbar"
               aria-label={`${label} readiness`}
               aria-valuemin={0}
