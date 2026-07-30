@@ -2783,3 +2783,393 @@ body {
 .campsite-selected-marker:active {
   cursor: grabbing;
 }
+
+/* ============================================================
+   Home colour pilot
+   Reversible, Home-only semantic colour experiment.
+   ============================================================ */
+
+.theme-clean [data-trip-app-shell]:has(.home-overview) {
+  --color-bg-canvas: #f3f1ea;
+  --color-bg-surface: #fcfbf7;
+  --color-bg-subtle: #efeee7;
+  --color-border-subtle: #d1ccc0;
+  --color-text-primary: #263029;
+  --color-text-secondary: #62685f;
+  --color-action-primary: #24513d;
+  --color-action-primary-hover: #1d4433;
+  --color-focus-ring: #9a5f18;
+  --color-category-weather: #2f6f8f;
+  --color-category-map: #2f6f8f;
+  --color-category-readiness: #4d8a5f;
+  --color-category-daylight: #a4651a;
+  --color-category-plan: #24513d;
+  --color-category-gear: #4d8a5f;
+  --color-category-crew: #4f7f91;
+  --color-category-guide: #a4651a;
+  --color-category-record: #68746d;
+  --color-status-positive: #4d8a5f;
+  --color-status-warning: #a4651a;
+  --color-status-danger: #a44532;
+  --color-status-info: #2f6f8f;
+  --home-page-background: var(--color-bg-canvas);
+  --home-card-surface: var(--color-bg-surface);
+  --home-card-secondary: var(--color-bg-subtle);
+  --home-card-border: var(--color-border-subtle);
+  --home-secondary-border: color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
+  --home-card-shadow: 0 12px 28px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  --home-secondary-shadow: 0 7px 20px color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+  --home-rail-surface: color-mix(in srgb, var(--color-bg-surface) 82%, transparent);
+  --home-rail-border: color-mix(in srgb, var(--color-border-subtle) 76%, transparent);
+  --home-rail-shadow: 0 9px 24px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  --focus-ring: var(--color-focus-ring);
+}
+
+.theme-clean.dark [data-trip-app-shell]:has(.home-overview),
+.theme-expedition [data-trip-app-shell]:has(.home-overview) {
+  --color-bg-canvas: #101915;
+  --color-bg-surface: #17221c;
+  --color-bg-subtle: #1e2c24;
+  --color-border-subtle: #34453c;
+  --color-text-primary: #f1f0e8;
+  --color-text-secondary: #b7bcaf;
+  --color-action-primary: #8ebf9b;
+  --color-action-primary-hover: #a5cfad;
+  --color-focus-ring: #e0ae55;
+  --color-category-weather: #76b2cf;
+  --color-category-map: #76b2cf;
+  --color-category-readiness: #82b990;
+  --color-category-daylight: #d5a14b;
+  --color-category-plan: #8ebf9b;
+  --color-category-gear: #82b990;
+  --color-category-crew: #78a9b9;
+  --color-category-guide: #d5a14b;
+  --color-category-record: #aab4ad;
+  --color-status-positive: #82b990;
+  --color-status-warning: #d5a14b;
+  --color-status-danger: #e07b65;
+  --color-status-info: #76b2cf;
+  --home-page-background: var(--color-bg-canvas);
+  --home-card-surface: var(--color-bg-surface);
+  --home-card-secondary: var(--color-bg-subtle);
+  --home-card-border: var(--color-border-subtle);
+  --home-secondary-border: color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
+  --home-card-shadow: 0 16px 38px color-mix(in srgb, var(--color-bg-canvas) 72%, transparent);
+  --home-secondary-shadow: 0 9px 24px color-mix(in srgb, var(--color-bg-canvas) 58%, transparent);
+  --home-rail-surface: color-mix(in srgb, var(--color-bg-surface) 86%, transparent);
+  --home-rail-border: color-mix(in srgb, var(--color-border-subtle) 66%, transparent);
+  --home-rail-shadow: 0 11px 28px color-mix(in srgb, var(--color-bg-canvas) 68%, transparent);
+  --focus-ring: var(--color-focus-ring);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-app-header,
+[data-trip-app-shell]:has(.home-overview) .trip-mobile-nav {
+  border-color: var(--color-border-subtle);
+  background: color-mix(in srgb, var(--color-bg-surface) 96%, transparent);
+  color: var(--color-text-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-shell-location,
+[data-trip-app-shell]:has(.home-overview) .trip-primary-nav-link,
+[data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link,
+[data-trip-app-shell]:has(.home-overview) .trip-shell-control {
+  color: var(--color-text-secondary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-primary-nav-link:hover,
+[data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link:hover,
+[data-trip-app-shell]:has(.home-overview) .trip-shell-control:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 10%, var(--color-bg-surface));
+  color: var(--color-action-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-primary-nav-link--active,
+[data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link--active {
+  background: color-mix(in srgb, var(--color-action-primary) 14%, var(--color-bg-surface));
+  color: var(--color-action-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-action-primary) 16%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link--active::after {
+  background: var(--color-action-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-overview,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-temperature,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-stat__value,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast-day__temperature strong,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card p:first-child,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-today-card h3,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card h3,
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__metric {
+  color: var(--color-text-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-updated,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-temperature span,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-condition,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-stat__label,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-stat__value small,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-daylight__duration,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-daylight__times,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast__label,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast-day__name,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast-day__temperature span,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast__empty,
+[data-trip-app-shell]:has(.home-overview) .home-overview .weather-current-status,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card p:not(:first-child),
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card span,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-today-card p,
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card p,
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__support {
+  color: var(--color-text-secondary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-hero__status[data-tone="warning"] {
+  border-color: color-mix(in srgb, var(--color-status-warning) 52%, transparent);
+  background: color-mix(in srgb, var(--color-status-warning) 70%, var(--color-bg-canvas));
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-hero__status[data-tone="active"] {
+  border-color: color-mix(in srgb, var(--color-action-primary-hover) 52%, transparent);
+  background: color-mix(in srgb, var(--color-action-primary) 72%, var(--color-bg-canvas));
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-hero__status[data-tone="positive"] {
+  border-color: color-mix(in srgb, var(--color-status-positive) 42%, transparent);
+  background: color-mix(in srgb, var(--color-status-positive) 58%, var(--color-bg-canvas));
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail {
+  color: var(--color-text-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__label,
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__detail {
+  color: var(--color-text-secondary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__item {
+  border-color: color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__item--weather > svg {
+  color: var(--color-category-weather);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__item--readiness > svg {
+  color: var(--color-category-readiness);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__item--sunset > svg {
+  color: var(--color-category-daylight);
+}
+
+[data-trip-app-shell]:has(.home-overview) .trip-situation-rail__item--next-event > svg {
+  color: var(--color-category-plan);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card > div:first-child > div:first-child > svg {
+  color: var(--color-category-map);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-card > div:first-child > div:first-child > svg,
+[data-trip-app-shell]:has(.home-overview) .home-weather-primary__icon,
+[data-trip-app-shell]:has(.home-overview) .home-weather-forecast-day__icon,
+[data-trip-app-shell]:has(.home-overview) .home-weather-forecast-day__rain,
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__times svg {
+  color: var(--color-category-weather);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-readiness-card > div:first-child > div:first-child > svg {
+  color: var(--color-category-readiness);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-today-card > div:first-child > div:first-child > svg {
+  color: var(--color-category-plan);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card:has([data-tone="info"]) > div:first-child > div:first-child > svg {
+  color: var(--color-status-info);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card:has([data-tone="warning"]) > div:first-child > div:first-child > svg {
+  color: var(--color-status-warning);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card:has([data-tone="danger"]) > div:first-child > div:first-child > svg {
+  color: var(--color-status-danger);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card:has([data-tone="positive"]) > div:first-child > div:first-child > svg {
+  color: var(--color-status-positive);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card__action,
+[data-trip-app-shell]:has(.home-overview) .home-action-link,
+[data-trip-app-shell]:has(.home-overview) .home-today-footer-action {
+  color: var(--color-action-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card__action:hover,
+[data-trip-app-shell]:has(.home-overview) .home-action-link:hover,
+[data-trip-app-shell]:has(.home-overview) .home-today-footer-action:hover {
+  background: color-mix(in srgb, var(--color-action-primary) 10%, var(--color-bg-subtle));
+  color: var(--color-action-primary-hover);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card__provisional {
+  border-color: color-mix(in srgb, var(--color-status-warning) 38%, transparent);
+  background: color-mix(in srgb, var(--color-status-warning) 10%, var(--color-bg-surface));
+  color: var(--color-status-warning);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card .campsite-selected-marker {
+  border-color: var(--color-bg-surface);
+  background: var(--color-category-map);
+  box-shadow:
+    0 4px 18px color-mix(in srgb, var(--color-bg-canvas) 55%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--color-category-map) 38%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-map-card .campsite-selected-marker:focus-visible {
+  outline-color: var(--color-focus-ring);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__heading svg {
+  color: var(--color-category-daylight);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__track {
+  background: color-mix(in srgb, var(--color-border-subtle) 68%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__segment {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-category-daylight) 72%, var(--color-bg-subtle)),
+    var(--color-category-daylight)
+  );
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--color-category-daylight) 22%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__marker {
+  border-color: var(--color-bg-surface);
+  background: var(--color-category-daylight);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__marker[data-state="before"],
+[data-trip-app-shell]:has(.home-overview) .home-weather-daylight__marker[data-state="after"] {
+  background: var(--color-category-weather);
+}
+
+[data-trip-app-shell]:has(.home-overview) .readiness-ring {
+  background:
+    radial-gradient(circle, var(--color-bg-surface) 58%, transparent 59%),
+    conic-gradient(var(--color-category-readiness) calc(var(--readiness-value) * 1%), var(--color-bg-subtle) 0);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-readiness-card [role="progressbar"] > div {
+  background: var(--color-category-readiness);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-readiness-card [role="progressbar"]:not(.readiness-ring) {
+  background: var(--color-bg-subtle);
+}
+
+[data-trip-app-shell]:has(.home-overview) .today-timeline__item:not(:last-child)::after {
+  background: color-mix(in srgb, var(--color-border-subtle) 84%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .today-timeline__marker {
+  border-color: var(--color-bg-surface);
+  background: color-mix(in srgb, var(--color-text-secondary) 58%, var(--color-bg-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-border-subtle) 76%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .today-timeline__item--next .today-timeline__marker {
+  background: var(--color-category-plan);
+  box-shadow:
+    0 0 0 2px var(--color-bg-surface),
+    0 0 0 4px color-mix(in srgb, var(--color-category-plan) 32%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .today-timeline__item--next h3,
+[data-trip-app-shell]:has(.home-overview) .home-today-footer-action svg {
+  color: var(--color-category-plan);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice {
+  border-color: color-mix(in srgb, currentColor 32%, transparent);
+  background: color-mix(in srgb, currentColor 8%, var(--color-bg-subtle));
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice[data-tone="info"] {
+  color: var(--color-status-info);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice[data-tone="warning"] {
+  color: var(--color-status-warning);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice[data-tone="danger"] {
+  color: var(--color-status-danger);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice[data-tone="positive"] {
+  color: var(--color-status-positive);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice h3 {
+  color: var(--color-text-primary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice .home-priority-card__severity span {
+  color: inherit;
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority-card__notice p {
+  color: var(--color-text-secondary);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link {
+  --workspace-accent: var(--color-category-plan);
+  border-color: color-mix(in srgb, var(--workspace-accent) 18%, var(--color-border-subtle));
+  background: color-mix(in srgb, var(--workspace-accent) 5%, var(--color-bg-subtle));
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--gear {
+  --workspace-accent: var(--color-category-gear);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--crew {
+  --workspace-accent: var(--color-category-crew);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--guide {
+  --workspace-accent: var(--color-category-guide);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--field-log {
+  --workspace-accent: var(--color-category-record);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__icon {
+  color: var(--workspace-accent);
+  background: color-mix(in srgb, var(--workspace-accent) 12%, var(--color-bg-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--workspace-accent) 22%, transparent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link > div:first-child > svg {
+  color: var(--workspace-accent);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link:hover {
+  border-color: color-mix(in srgb, var(--workspace-accent) 42%, var(--color-border-subtle));
+  background: color-mix(in srgb, var(--workspace-accent) 9%, var(--color-bg-surface));
+  box-shadow: var(--home-card-shadow);
+}
+
+[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--field-log:hover {
+  border-color: color-mix(in srgb, var(--color-category-map) 34%, var(--color-border-subtle));
+}

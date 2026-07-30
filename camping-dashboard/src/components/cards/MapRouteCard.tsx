@@ -65,7 +65,7 @@ export default function MapRouteCard({
                 <button
                     type="button"
                     onClick={() => setSheetOpen(true)}
-                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border-subtle bg-card-bg px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-card-hover hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                    className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border-subtle bg-card-bg px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-card-hover hover:text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring${variant === 'home' ? ' home-map-card__action' : ''}`}
                 >
                     {hasLocation ? <Pencil size={12} /> : <MapPin size={12} />}
                     {hasLocation ? 'Reposition' : 'Set location'}

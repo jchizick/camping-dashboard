@@ -42,7 +42,7 @@ export default function ReadinessSummaryCard({
       action={
         <GuardedTripLink
           href={href}
-          className="home-readiness-header-action inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="home-action-link home-readiness-header-action inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           aria-label="View gear"
           title="View gear"
         >

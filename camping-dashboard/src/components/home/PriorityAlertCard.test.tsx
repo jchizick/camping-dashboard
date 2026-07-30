@@ -105,5 +105,23 @@ describe('PriorityAlertCard', () => {
 
     expect(screen.getByText('No active notices')).toBeTruthy();
     expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.getByRole('status').getAttribute('data-tone')).toBe('positive');
+  });
+
+  it.each([
+    ['info', 'info'],
+    ['advisory', 'info'],
+    ['watch', 'warning'],
+    ['warning', 'warning'],
+    ['critical', 'danger'],
+  ] as const)('maps %s notices to the %s semantic tone', (severity, tone) => {
+    render(
+      <PriorityAlertCard
+        alert={alert({ severity })}
+        href="/trips/trip-1/guide"
+      />
+    );
+
+    expect(screen.getByRole('status').getAttribute('data-tone')).toBe(tone);
   });
 });

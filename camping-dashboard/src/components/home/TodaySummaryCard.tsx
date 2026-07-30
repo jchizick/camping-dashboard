@@ -18,7 +18,7 @@ export default function TodaySummaryCard({
       action={
         <GuardedTripLink
           href={href}
-          className="home-today-header-action inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="home-action-link home-today-header-action inline-flex items-center gap-1 rounded text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           aria-label="View full trip plan"
         >
           Full plan <ChevronRight size={14} aria-hidden="true" />
@@ -59,7 +59,7 @@ export default function TodaySummaryCard({
           </p>
           <GuardedTripLink
             href={href}
-            className="mt-3 rounded text-sm font-medium text-accent-yellow underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="home-action-link mt-3 rounded text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             Open Plan
           </GuardedTripLink>

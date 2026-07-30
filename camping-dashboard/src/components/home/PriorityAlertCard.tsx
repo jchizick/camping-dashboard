@@ -12,18 +12,18 @@ function alertTone(severity: Alert['severity']) {
   if (severity === 'critical') {
     return {
       icon: AlertTriangle,
-      className: 'border-accent-red/30 bg-accent-red/5',
+      tone: 'danger',
     };
   }
   if (severity === 'info' || severity === 'advisory') {
     return {
       icon: Info,
-      className: 'border-accent-blue/30 bg-accent-blue/5',
+      tone: 'info',
     };
   }
   return {
     icon: AlertTriangle,
-    className: 'border-accent-yellow/30 bg-accent-yellow/5',
+    tone: 'warning',
   };
 }
 
@@ -116,8 +116,12 @@ export default function PriorityAlertCard({
         icon={CheckCircle2}
         className="home-priority-card h-full"
       >
-        <div className="flex flex-1 items-center gap-3 rounded-xl border border-accent-green/20 bg-accent-green/5 p-4">
-          <CheckCircle2 className="shrink-0 text-accent-green" size={22} />
+        <div
+          className="home-priority-card__notice flex flex-1 items-center gap-3 rounded-xl border p-4"
+          data-tone="positive"
+          role="status"
+        >
+          <CheckCircle2 className="shrink-0" size={22} />
           <div>
             <h3 className="text-sm font-semibold text-text-main">No active notices</h3>
             <p className="mt-1 text-xs text-text-muted">
@@ -143,7 +147,7 @@ export default function PriorityAlertCard({
       action={
         <GuardedTripLink
           href={href}
-          className="inline-flex items-center gap-1 rounded text-xs font-medium text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="home-action-link inline-flex items-center gap-1 rounded text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           aria-label="View all field guide notices"
         >
           Field Guide <ChevronRight size={14} aria-hidden="true" />
@@ -151,7 +155,8 @@ export default function PriorityAlertCard({
       }
     >
       <div
-        className={`flex flex-1 flex-col justify-center rounded-xl border p-3.5 ${tone.className}`}
+        className="home-priority-card__notice flex flex-1 flex-col justify-center rounded-xl border p-3.5"
+        data-tone={tone.tone}
         role="status"
         aria-label={`${alert.severity} priority notice: ${displayTitle}`}
       >

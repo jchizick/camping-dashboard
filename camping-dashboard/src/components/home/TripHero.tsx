@@ -58,9 +58,13 @@ function formatTripDates(startDate: string, endDate: string) {
 
 function tripStatus(trip: TripDashboard, now: Date) {
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  if (today < dateOrdinal(trip.start_date)) return 'Trip is approaching';
-  if (today > dateOrdinal(trip.end_date)) return 'Trip complete';
-  return 'Trip is underway';
+  if (today < dateOrdinal(trip.start_date)) {
+    return { label: 'Trip is approaching', tone: 'warning' } as const;
+  }
+  if (today > dateOrdinal(trip.end_date)) {
+    return { label: 'Trip complete', tone: 'positive' } as const;
+  }
+  return { label: 'Trip is underway', tone: 'active' } as const;
 }
 
 export default function TripHero({
@@ -78,6 +82,7 @@ export default function TripHero({
   const campsite = [trip.lake_name, trip.site_name].filter(Boolean).join(' · ');
   const nights = Math.max(tripDays - 1, 0);
   const showImage = Boolean(imageSrc) && failedImageSrc !== imageSrc;
+  const status = tripStatus(trip, now);
 
   return (
     <section className="trip-hero" aria-labelledby="trip-hero-title">
@@ -100,9 +105,9 @@ export default function TripHero({
       <div className="trip-hero__overlay" aria-hidden="true" />
 
       <div className="trip-hero__content">
-        <p className="trip-hero__status">
+        <p className="trip-hero__status" data-tone={status.tone}>
           <Route size={15} aria-hidden="true" />
-          {tripStatus(trip, now)}
+          {status.label}
         </p>
         <h1 id="trip-hero-title" tabIndex={-1} className="trip-hero__title">
           {trip.name}

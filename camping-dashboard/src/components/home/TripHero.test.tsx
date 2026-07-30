@@ -57,6 +57,17 @@ describe('TripHero', () => {
     expect(screen.getByText('Jul 27 – 29, 2026')).toBeTruthy();
     expect(screen.getByText('3 days · 2 nights')).toBeTruthy();
     expect(screen.getByText('Trip is underway')).toBeTruthy();
+    expect(screen.getByText('Trip is underway').getAttribute('data-tone')).toBe('active');
+  });
+
+  it.each([
+    ['Trip is approaching', 'warning', new Date(2026, 6, 26, 12)],
+    ['Trip is underway', 'active', new Date(2026, 6, 28, 12)],
+    ['Trip complete', 'positive', new Date(2026, 6, 30, 12)],
+  ])('exposes the %s semantic tone', (label, tone, now) => {
+    render(<TripHero trip={trip} tripDays={3} now={now} />);
+
+    expect(screen.getByText(label).getAttribute('data-tone')).toBe(tone);
   });
 
   it('renders the local atmospheric fallback safely without fake trip data', () => {
