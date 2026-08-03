@@ -7,7 +7,7 @@ import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
 import PriorityAlertCard from './PriorityAlertCard';
 import ReadinessSummaryCard from './ReadinessSummaryCard';
 import TodaySummaryCard from './TodaySummaryCard';
-import TripHero, { resolveTripHeroImage } from './TripHero';
+import TripHero from './TripHero';
 import TripSituationRail from './TripSituationRail';
 import TripSectionLinks from './TripSectionLinks';
 import {
@@ -47,12 +47,8 @@ export default function HomeOverview() {
 
   return (
     <div className="home-overview">
-      <div className="home-hero-stage">
-        <TripHero
-          trip={trip}
-          tripDays={tripDays}
-          imageSrc={resolveTripHeroImage(trip)}
-        />
+      <div className="home-heading-region">
+        <TripHero trip={trip} tripDays={tripDays} />
         <TripSituationRail
           weather={data.currentWeather}
           readiness={readiness}

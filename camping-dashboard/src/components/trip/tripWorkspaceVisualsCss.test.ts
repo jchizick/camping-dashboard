@@ -40,13 +40,16 @@ describe('trip workspace visual tokens', () => {
     }
   });
 
-  it('activates only the scene and sidebar token groups in Phase 2', () => {
+  it('activates the scene, shell, and integrated Home header groups in Phase 3', () => {
     for (const token of [
       'scene-filter',
       'scene-overlay',
       'scene-fallback',
       'glass-sidebar',
       'glass-sidebar-translucent',
+      'glass-standard',
+      'glass-standard-translucent',
+      'glass-dense',
       'border-subtle',
       'border-strong',
       'elevation',
@@ -58,12 +61,7 @@ describe('trip workspace visual tokens', () => {
       expect(css).toContain(`var(--workspace-${token})`);
     }
 
-    for (const token of [
-      'glass-standard',
-      'glass-dense',
-      'warning-surface',
-      'danger-surface',
-    ]) {
+    for (const token of ['warning-surface', 'danger-surface']) {
       expect(css).not.toContain(`var(--workspace-${token})`);
     }
   });

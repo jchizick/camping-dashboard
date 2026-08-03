@@ -1,13 +1,5 @@
-'use client';
-
-import Image from 'next/image';
-import { useState } from 'react';
 import type { TripDashboard } from '@/types';
-import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
 import { CalendarDays, MapPin, MoonStar, Route } from 'lucide-react';
-
-// Temporary compatibility export while Home still owns hero image selection.
-export const resolveTripHeroImage = resolveTripWorkspaceBackground;
 
 function dateOrdinal(value: string) {
   const [year, month, day] = value.split('-').map(Number);
@@ -57,40 +49,18 @@ function tripStatus(trip: TripDashboard, now: Date) {
 export default function TripHero({
   trip,
   tripDays,
-  imageSrc = null,
   now = new Date(),
 }: {
   trip: TripDashboard;
   tripDays: number;
-  imageSrc?: string | null;
   now?: Date;
 }) {
-  const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
   const campsite = [trip.lake_name, trip.site_name].filter(Boolean).join(' · ');
   const nights = Math.max(tripDays - 1, 0);
-  const showImage = Boolean(imageSrc) && failedImageSrc !== imageSrc;
   const status = tripStatus(trip, now);
 
   return (
     <section className="trip-hero" aria-labelledby="trip-hero-title">
-      <div className="trip-hero__media" aria-hidden="true">
-        {showImage ? (
-          <Image
-            src={imageSrc!}
-            alt=""
-            fill
-            priority
-            sizes="(max-width: 768px) calc(100vw - 24px), (max-width: 1600px) calc(100vw - 48px), 1536px"
-            className="trip-hero__image"
-            data-testid="trip-hero-image"
-            onError={() => setFailedImageSrc(imageSrc)}
-          />
-        ) : (
-          <div className="trip-hero__fallback" data-testid="trip-hero-fallback" />
-        )}
-      </div>
-      <div className="trip-hero__overlay" aria-hidden="true" />
-
       <div className="trip-hero__content">
         <p className="trip-hero__status" data-tone={status.tone}>
           <Route size={15} aria-hidden="true" />

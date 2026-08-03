@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TripDashboard } from '@/types';
 import TripHero from './TripHero';
@@ -42,30 +42,43 @@ describe('TripHero', () => {
     expect(screen.getByText(label).getAttribute('data-tone')).toBe(tone);
   });
 
-  it('renders the local atmospheric fallback safely without fake trip data', () => {
-    render(<TripHero trip={trip} tripDays={3} imageSrc={null} />);
+  it('is a semantic text-only header with no scene ownership', () => {
+    const { container } = render(<TripHero trip={trip} tripDays={3} />);
 
-    expect(screen.getByTestId('trip-hero-fallback')).toBeTruthy();
-    expect(screen.queryByText(/16°C|79%|July 3/i)).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('.trip-hero__media')).toBeNull();
+    expect(container.querySelector('.trip-hero__fallback')).toBeNull();
+    expect(container.querySelector('.trip-hero__overlay')).toBeNull();
   });
 
-  it('renders the approved image decoratively and returns to fallback on load failure', () => {
-    render(
-      <TripHero
-        trip={trip}
-        tripDays={3}
-        imageSrc="/sunset-over-the-lake.webp"
-      />
-    );
+  it('keeps long trip identity values available and wrappable', () => {
+    const longTrip = {
+      ...trip,
+      name: 'A deliberately long Algonquin backcountry expedition name that must wrap naturally',
+      lake_name: 'A very long lake identity for a remote northern access point',
+      site_name: 'Site 4 with an extended campsite designation',
+    } as TripDashboard;
+    render(<TripHero trip={longTrip} tripDays={12} />);
 
-    const image = screen.getByTestId('trip-hero-image');
-    expect(image.getAttribute('alt')).toBe('');
-    expect(image.getAttribute('src')).toContain('sunset-over-the-lake.webp');
-    fireEvent.error(image);
-    expect(screen.queryByTestId('trip-hero-image')).toBeNull();
-    expect(screen.getByTestId('trip-hero-fallback')).toBeTruthy();
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' })
-    ).toBeTruthy();
+    const title = screen.getByRole('heading', { level: 1, name: longTrip.name });
+    expect(title.classList.contains('trip-hero__title')).toBe(true);
+    expect(screen.getByText(`${longTrip.lake_name} · ${longTrip.site_name}`)).toBeTruthy();
+    expect(screen.getByText('12 days · 11 nights')).toBeTruthy();
+  });
+
+  it('preserves missing identity, date, and one-day fallbacks', () => {
+    const incompleteTrip = {
+      ...trip,
+      park_name: null,
+      lake_name: null,
+      site_name: null,
+      start_date: 'TBD',
+      end_date: 'Later',
+    } as unknown as TripDashboard;
+    render(<TripHero trip={incompleteTrip} tripDays={1} />);
+
+    expect(screen.getByText('Campsite unavailable')).toBeTruthy();
+    expect(screen.getByText('TBD – Later')).toBeTruthy();
+    expect(screen.getByText('1 day · 0 nights')).toBeTruthy();
   });
 });

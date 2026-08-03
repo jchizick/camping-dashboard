@@ -156,11 +156,16 @@ describe('HomeOverview', () => {
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' })).toBeTruthy();
-    expect(screen.getByTestId('trip-hero-image').getAttribute('src')).toContain(
-      'sunset-over-the-lake.webp'
-    );
+    expect(document.querySelector('.home-heading-region img')).toBeNull();
     expect(screen.getByText('Trip is underway')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Current trip situation' })).toBeTruthy();
+    const headingRegion = document.querySelector('.home-heading-region');
+    const hero = headingRegion?.querySelector('.trip-hero');
+    const situation = screen.getByRole('region', { name: 'Current trip situation' });
+    expect(headingRegion).toBeTruthy();
+    expect(hero).toBeTruthy();
+    expect(headingRegion?.contains(situation)).toBe(true);
+    expect(hero!.compareDocumentPosition(situation) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
     expect(screen.getByTestId('map')).toBeTruthy();
     const weatherSurface = within(
       screen.getByRole('region', { name: 'Weather and forecast' })
