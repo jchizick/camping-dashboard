@@ -93,7 +93,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('TripAppShell', () => {
-  it('uses one shared 768px handoff for desktop and mobile navigation', () => {
+  it('uses explicit 768px and 1280px navigation presentation contracts', () => {
     const { container } = render(
       <TripAppShell>
         <h1>Plan</h1>
@@ -104,11 +104,13 @@ describe('TripAppShell', () => {
     const desktopMoreShell = screen.getByTestId('desktop-trip-more-shell');
     const mobileNav = screen.getByTestId('mobile-trip-navigation');
     const mobileMoreShell = screen.getByTestId('mobile-trip-more-shell');
+    const sidebarShell = screen.getByTestId('wide-trip-sidebar-shell');
 
     expect(desktopNavShell.classList.contains('trip-navigation-desktop')).toBe(true);
     expect(desktopMoreShell.classList.contains('trip-navigation-desktop')).toBe(true);
     expect(mobileNav.classList.contains('trip-navigation-mobile-bar')).toBe(true);
     expect(mobileMoreShell.classList.contains('trip-navigation-mobile-more')).toBe(true);
+    expect(sidebarShell.classList.contains('trip-workspace-sidebar')).toBe(true);
     expect(container.querySelector('[data-testid="desktop-trip-navigation"]')?.classList.contains('hidden'))
       .toBe(false);
 
@@ -129,6 +131,19 @@ describe('TripAppShell', () => {
       /\.trip-navigation-mobile-more,\s*\.trip-navigation-mobile-bar\s*\{\s*display:\s*none;/
     );
     expect(sharedHandoff).toMatch(/\.trip-app-main\s*\{\s*padding-bottom:\s*0;/);
+
+    const wideHandoffStart = css.indexOf(
+      '@media (min-width: 1280px) {',
+      css.indexOf('@media (min-width: 768px)')
+    );
+    const wideHandoff = css.slice(
+      wideHandoffStart,
+      css.indexOf('@supports ((backdrop-filter', wideHandoffStart)
+    );
+    expect(wideHandoff).toMatch(/\.trip-workspace-sidebar\s*{[\s\S]*display:\s*block;/);
+    expect(wideHandoff).toMatch(/\.trip-app-header,[\s\S]*display:\s*none;/);
+    expect(wideHandoff).toMatch(/grid-template-columns:\s*11rem minmax\(0, 1fr\)/);
+    expect(wideHandoff).not.toMatch(/overflow-y:\s*auto/);
   });
 
   it('renders one shared header, one main landmark, and canonical navigation', () => {
@@ -141,6 +156,8 @@ describe('TripAppShell', () => {
     expect(screen.getAllByRole('banner')).toHaveLength(1);
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1, name: 'Plan' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Skip to trip content' }).getAttribute('href'))
+      .toBe('#trip-main');
     expect(screen.getByRole('link', { name: 'Back to trips' }).getAttribute('href')).toBe(
       '/trips'
     );
@@ -155,7 +172,7 @@ describe('TripAppShell', () => {
     const activePlanLinks = screen
       .getAllByRole('link', { name: /Plan/ })
       .filter((link) => link.getAttribute('aria-current') === 'page');
-    expect(activePlanLinks).toHaveLength(2);
+    expect(activePlanLinks).toHaveLength(3);
 
     for (const href of [
       '/trips/trip-1',
@@ -234,6 +251,37 @@ describe('TripAppShell', () => {
     expect(screen.getByRole('link', { name: /Back to Trips/ }).getAttribute('href')).toBe(
       '/trips'
     );
+    expect(screen.queryByText('Maple Lake Weekend')).toBeNull();
+    expect(document.querySelector('.trip-workspace-background img')).toBeNull();
+  });
+
+  it('keeps loading and initialization retry states on the atmospheric fallback', () => {
+    mocks.trip.isLoading = true;
+    const view = render(
+      <TripAppShell>
+        <h1>Secret section</h1>
+      </TripAppShell>
+    );
+    expect(screen.getByRole('status').textContent).toContain('Loading Trip Dashboard');
+    expect(document.querySelector('[data-background-state="fallback"]')).toBeTruthy();
+
+    mocks.trip.isLoading = false;
+    const reload = vi.fn();
+    mocks.workspace = {
+      ...workspaceValue(),
+      data: null,
+      trip: null,
+      error: 'We could not load this trip workspace. Please try again.',
+      reload,
+    } as unknown as TripWorkspaceValue;
+    view.rerender(
+      <TripAppShell>
+        <h1>Secret section</h1>
+      </TripAppShell>
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('[data-background-state="fallback"]')).toBeTruthy();
   });
 
   it('marks Field Log as current inside the secondary menu', () => {

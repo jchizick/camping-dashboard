@@ -40,8 +40,30 @@ describe('trip workspace visual tokens', () => {
     }
   });
 
-  it('keeps the Phase 1 tokens inactive', () => {
-    for (const token of workspaceTokens) {
+  it('activates only the scene and sidebar token groups in Phase 2', () => {
+    for (const token of [
+      'scene-filter',
+      'scene-overlay',
+      'scene-fallback',
+      'glass-sidebar',
+      'glass-sidebar-translucent',
+      'border-subtle',
+      'border-strong',
+      'elevation',
+      'text-primary',
+      'text-secondary',
+      'accent-sage',
+      'focus-ring',
+    ]) {
+      expect(css).toContain(`var(--workspace-${token})`);
+    }
+
+    for (const token of [
+      'glass-standard',
+      'glass-dense',
+      'warning-surface',
+      'danger-surface',
+    ]) {
       expect(css).not.toContain(`var(--workspace-${token})`);
     }
   });

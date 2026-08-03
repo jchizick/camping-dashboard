@@ -703,8 +703,52 @@ body {
   display: grid;
 }
 
+.trip-workspace-shell,
+.trip-workspace-state-frame {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+}
+
+.trip-workspace-background {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--workspace-scene-fallback);
+}
+
+.trip-workspace-background__image {
+  object-fit: cover;
+  filter: var(--workspace-scene-filter);
+}
+
+.trip-workspace-background__topography {
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image:
+    radial-gradient(ellipse at 18% 28%, transparent 0 15%, currentColor 15.2% 15.45%, transparent 15.7%),
+    radial-gradient(ellipse at 74% 66%, transparent 0 20%, currentColor 20.15% 20.4%, transparent 20.7%);
+  background-size: 26rem 22rem, 34rem 28rem;
+  color: var(--workspace-text-secondary);
+}
+
+.trip-workspace-background__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--workspace-scene-overlay);
+}
+
+.trip-workspace-sidebar {
+  display: none;
+}
+
 /* Persistent trip shell: keep mobile content clear of the five-item bottom nav. */
 .trip-app-main {
+  position: relative;
+  z-index: 1;
   min-width: 0;
   overflow-x: clip;
   background: var(--app-background);
@@ -771,6 +815,95 @@ body {
   background: var(--surface-elevated);
   border-color: var(--border-strong);
   box-shadow: var(--shadow-elevated);
+}
+
+.trip-workspace-sidebar__surface {
+  color: var(--workspace-text-primary);
+  background: var(--workspace-glass-sidebar);
+  border: 1px solid var(--workspace-border-strong);
+  box-shadow: var(--workspace-elevation);
+}
+
+.trip-workspace-sidebar__control,
+.trip-workspace-sidebar__nav-link {
+  color: var(--workspace-text-secondary);
+}
+
+.trip-workspace-sidebar__control:hover,
+.trip-workspace-sidebar__nav-link:hover {
+  color: var(--workspace-text-primary);
+  background: color-mix(in srgb, var(--workspace-accent-sage) 12%, transparent);
+}
+
+.trip-workspace-sidebar__control:focus-visible,
+.trip-workspace-sidebar__nav-link:focus-visible,
+.trip-workspace-sidebar .trip-shell-control:focus-visible {
+  outline: 2px solid var(--workspace-focus-ring);
+  outline-offset: 2px;
+}
+
+.trip-workspace-sidebar__back,
+.trip-workspace-sidebar__nav-link {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.8rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.trip-workspace-sidebar__back {
+  border: 1px solid var(--workspace-border-subtle);
+}
+
+.trip-workspace-sidebar__identity {
+  margin-block: 1.35rem 1.15rem;
+  padding-inline: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.trip-workspace-sidebar__trip-name {
+  color: var(--workspace-text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.trip-workspace-sidebar__location {
+  margin-top: 0.25rem;
+  color: var(--workspace-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.trip-workspace-sidebar__nav {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.trip-workspace-sidebar__nav-link--active {
+  color: var(--workspace-text-primary);
+  background: color-mix(in srgb, var(--workspace-accent-sage) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--workspace-accent-sage) 22%, transparent);
+}
+
+.trip-workspace-sidebar__more {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.trip-workspace-sidebar .trip-shell-control {
+  color: var(--workspace-text-secondary);
+  border-color: var(--workspace-border-subtle);
+  background: transparent;
+}
+
+.trip-workspace-sidebar .trip-shell-control:hover {
+  color: var(--workspace-text-primary);
+  background: color-mix(in srgb, var(--workspace-accent-sage) 12%, transparent);
 }
 
 .trip-mobile-nav {
@@ -1741,7 +1874,10 @@ body {
   padding-block: 1.25rem 0.75rem;
 }
 
-@media (min-width: 1280px) {
+/* The immersive sidebar reduces Home's available inline space. Keep the
+   existing dense Home composition for viewports that still provide its
+   original content width; smaller wide screens retain the current fluid grid. */
+@media (min-width: 1536px) {
   .home-overview {
     min-height: calc(100vh - 5rem);
     padding: 0 0 0.35rem;
@@ -2295,6 +2431,77 @@ body {
 
   .trip-app-main {
     padding-bottom: 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .trip-workspace-shell {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem;
+  }
+
+  .trip-workspace-sidebar {
+    position: sticky;
+    top: 1rem;
+    z-index: var(--layer-navigation);
+    display: block;
+    grid-column: 1;
+    height: calc(100dvh - 2rem);
+    min-height: 34rem;
+  }
+
+  .trip-workspace-sidebar__surface {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    border-radius: 1.25rem;
+    padding: 1rem;
+  }
+
+  .trip-app-header,
+  .trip-navigation-mobile-bar {
+    display: none;
+  }
+
+  .trip-app-main {
+    grid-column: 2;
+    min-height: calc(100dvh - 2rem);
+    padding-bottom: 0;
+    border-radius: var(--radius-hero);
+    scroll-padding-top: 1rem;
+  }
+
+  .trip-app-main:has(.home-overview) {
+    border-radius: var(--radius-hero);
+  }
+
+  .home-overview {
+    min-height: calc(100dvh - 2rem);
+  }
+}
+
+@media (min-width: 1440px) {
+  .trip-workspace-shell {
+    grid-template-columns: 13rem minmax(0, 1fr);
+  }
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .trip-workspace-sidebar__surface {
+    background: var(--workspace-glass-sidebar-translucent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+    backdrop-filter: blur(18px) saturate(1.08);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .trip-workspace-sidebar__surface {
+    background: var(--workspace-glass-sidebar);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 

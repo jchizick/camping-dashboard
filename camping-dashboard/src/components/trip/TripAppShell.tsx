@@ -2,34 +2,19 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  ArrowLeft,
-  BookOpenText,
-  ChevronDown,
-  FileText,
-  LogOut,
-  MoreHorizontal,
-  Radio,
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useTrip } from '@/lib/tripContext';
 import MissionBriefModal from '@/components/ui/MissionBriefModal';
 import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
 import TripMobileNav from './TripMobileNav';
+import TripMoreMenu from './TripMoreMenu';
 import TripPrimaryNav from './TripPrimaryNav';
-import { tripDestinationHref } from './tripNavigation';
+import TripSidebar from './TripSidebar';
+import TripWorkspaceBackground from './TripWorkspaceBackground';
 import { useTripWorkspace } from './TripWorkspaceProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
-
-interface MoreMenuProps {
-  id: string;
-  tripId: string;
-  onMissionBrief: () => void;
-  onProjectIntel: () => void;
-  onSignOut: () => Promise<void>;
-  mobile?: boolean;
-}
 
 type AppInfoDialogName = 'mission-brief' | 'about';
 interface ActiveAppInfoDialog {
@@ -37,126 +22,11 @@ interface ActiveAppInfoDialog {
   pathname: string;
 }
 
-function MoreMenu({
-  id,
-  tripId,
-  onMissionBrief,
-  onProjectIntel,
-  onSignOut,
-  mobile = false,
-}: MoreMenuProps) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const pathname = usePathname();
-  const fieldLogHref = tripDestinationHref(tripId, 'field-log');
-  const fieldLogActive = pathname === fieldLogHref;
-
-  useEffect(() => {
-    if (!open) return;
-
-    function closeOnOutsideClick(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    document.addEventListener('pointerdown', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsideClick);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [open]);
-
-  function runAction(action: () => void | Promise<void>) {
-    setOpen(false);
-    triggerRef.current?.focus();
-    void action();
-  }
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={mobile ? 'More trip actions' : undefined}
-        aria-expanded={open}
-        aria-controls={`${id}-menu`}
-        onClick={() => setOpen((current) => !current)}
-        className={`trip-shell-control inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card-bg ${
-          fieldLogActive
-            ? 'border-accent-yellow/40 bg-accent-yellow/15 text-accent-yellow'
-            : ''
-        }`}
-      >
-        <MoreHorizontal size={18} aria-hidden="true" />
-        {!mobile && 'More'}
-        <ChevronDown
-          size={14}
-          aria-hidden="true"
-          className={`transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {open && (
-        <div
-          id={`${id}-menu`}
-          role="menu"
-          className="trip-more-menu absolute right-0 top-[calc(100%+0.5rem)] z-[var(--layer-menu)] w-64 overflow-hidden rounded-2xl border p-2"
-        >
-          <GuardedTripLink
-            href={fieldLogHref}
-            role="menuitem"
-            aria-current={fieldLogActive ? 'page' : undefined}
-            onClick={() => setOpen(false)}
-            className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <BookOpenText size={17} aria-hidden="true" />
-            Field Log
-          </GuardedTripLink>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onMissionBrief)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <Radio size={17} aria-hidden="true" />
-            Mission Brief
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onProjectIntel)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <FileText size={17} aria-hidden="true" />
-            About this app
-          </button>
-          <div className="my-1 border-t border-border-subtle" />
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onSignOut)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-accent-red hover:bg-accent-red/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <LogOut size={17} aria-hidden="true" />
-            Sign out
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function WorkspaceLoading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-app-bg font-sans">
+    <div className="trip-workspace-state-frame">
+      <TripWorkspaceBackground />
+      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center font-sans">
       <style>{`
         @keyframes spin-slow { to { transform: rotate(360deg); } }
         @keyframes spin-reverse { to { transform: rotate(-360deg); } }
@@ -191,7 +61,8 @@ function WorkspaceLoading() {
           <span className="[animation:blink_1.2s_step-end_infinite]">_</span>
         </p>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
@@ -252,48 +123,69 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
 
   if (roleError) {
     return (
-      <main className="dashboard theme-night flex min-h-screen items-center justify-center p-8 text-center">
-        <div>
-          <h1 className="mb-4 text-2xl text-[#ffb74d]">Access Denied</h1>
-          <p className="text-white/70">{roleError}</p>
-          <GuardedTripLink
-            href="/trips"
-            className="mt-4 inline-block text-[#eab308] underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
-          >
-            ← Back to Trips
-          </GuardedTripLink>
-        </div>
-      </main>
+      <div className="trip-workspace-state-frame">
+        <TripWorkspaceBackground />
+        <main className="dashboard theme-night relative z-10 flex min-h-[100dvh] items-center justify-center p-8 text-center">
+          <div>
+            <h1 className="mb-4 text-2xl text-[#ffb74d]">Access Denied</h1>
+            <p className="text-white/70">{roleError}</p>
+            <GuardedTripLink
+              href="/trips"
+              className="mt-4 inline-block text-[#eab308] underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
+            >
+              ← Back to Trips
+            </GuardedTripLink>
+          </div>
+        </main>
+      </div>
     );
   }
 
   if (error && (!data || !trip)) {
     return (
-      <main className="dashboard theme-night min-h-screen p-8 text-center">
-        <h1 className="text-2xl text-[#ffb74d]">System Initialization Error</h1>
-        <p className="text-white/70">{error}</p>
-        <button
-          type="button"
-          onClick={() => void reload()}
-          className="mt-5 min-h-11 rounded-lg border border-[#eab308]/40 px-4 text-sm font-semibold text-[#eab308] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
-        >
-          Try again
-        </button>
-      </main>
+      <div className="trip-workspace-state-frame">
+        <TripWorkspaceBackground />
+        <main className="dashboard theme-night relative z-10 min-h-[100dvh] p-8 text-center">
+          <h1 className="text-2xl text-[#ffb74d]">System Initialization Error</h1>
+          <p className="text-white/70">{error}</p>
+          <button
+            type="button"
+            onClick={() => void reload()}
+            className="mt-5 min-h-11 rounded-lg border border-[#eab308]/40 px-4 text-sm font-semibold text-[#eab308] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
+          >
+            Try again
+          </button>
+        </main>
+      </div>
     );
   }
 
   if (!data || !trip || roleLoading || isLoading) return <WorkspaceLoading />;
 
   return (
-    <div className="min-h-screen bg-app-bg text-text-main" data-trip-app-shell>
+    <div className="trip-workspace-shell min-h-[100dvh] text-text-main" data-trip-app-shell>
+      <TripWorkspaceBackground trip={trip} />
       <a
         href="#trip-main"
         className="fixed left-3 top-3 z-[var(--layer-critical)] -translate-y-20 rounded-md bg-card-bg px-4 py-2 text-sm font-semibold text-text-main shadow-lg focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-focus-ring"
       >
         Skip to trip content
       </a>
-      <div className="bg-topography" aria-hidden="true" />
+
+      <TripSidebar
+        tripId={tripId}
+        tripName={trip.name}
+        tripLocation={
+          [trip.lake_name, trip.site_name].filter(Boolean).join(' · ') ||
+          trip.park_name ||
+          'Campsite unavailable'
+        }
+        onMissionBrief={() =>
+          setOpenedInfoDialog({ name: 'mission-brief', pathname })
+        }
+        onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+        onSignOut={handleSignOut}
+      />
 
       <header className="trip-app-header relative z-[var(--layer-navigation)] border-b backdrop-blur md:sticky md:top-0">
         <div className="trip-shell-inner mx-auto flex max-w-[1600px] items-center gap-3 px-3 md:px-6 lg:px-8">
@@ -329,7 +221,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             className="trip-navigation-desktop items-center gap-2"
             data-testid="desktop-trip-more-shell"
           >
-            <MoreMenu
+            <TripMoreMenu
               id="desktop-trip-more"
               tripId={tripId}
               onMissionBrief={() =>
@@ -344,7 +236,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             className="trip-navigation-mobile-more"
             data-testid="mobile-trip-more-shell"
           >
-            <MoreMenu
+            <TripMoreMenu
               id="mobile-trip-more"
               tripId={tripId}
               onMissionBrief={() =>
