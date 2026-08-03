@@ -4,7 +4,7 @@ import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TripDashboard } from '@/types';
-import TripHero, { resolveTripHeroImage } from './TripHero';
+import TripHero from './TripHero';
 
 const trip = {
   id: 'trip-1',
@@ -19,34 +19,6 @@ const trip = {
 afterEach(cleanup);
 
 describe('TripHero', () => {
-  it('resolves only the approved Algonquin and Maple Lake identity', () => {
-    expect(resolveTripHeroImage(trip)).toBe('/sunset-over-the-lake.webp');
-    expect(
-      resolveTripHeroImage({
-        park_name: 'Algonquin Provincial Park',
-        lake_name: 'Maple Lake',
-      })
-    ).toBe('/sunset-over-the-lake.webp');
-    expect(
-      resolveTripHeroImage({
-        park_name: 'Algonquin Provincial Park',
-        lake_name: 'Maple Leaf Lake',
-      })
-    ).toBe('/sunset-over-the-lake.webp');
-    expect(
-      resolveTripHeroImage({
-        park_name: 'Algonquin Park',
-        lake_name: 'Opeongo Lake',
-      })
-    ).toBeNull();
-    expect(
-      resolveTripHeroImage({
-        park_name: 'Killarney Provincial Park',
-        lake_name: 'Maple Lake',
-      })
-    ).toBeNull();
-  });
-
   it('uses the display type only on the canonical Home h1', () => {
     render(<TripHero trip={trip} tripDays={3} now={new Date(2026, 6, 28, 12)} />);
 

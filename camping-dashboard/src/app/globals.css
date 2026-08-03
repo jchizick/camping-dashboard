@@ -262,6 +262,163 @@
   --hero-rail-muted: #a7b5bc;
 }
 
+/*
+ * Immersive trip workspace foundation.
+ *
+ * Phase 1 intentionally leaves these tokens unused. Opaque surface values are
+ * the safe baseline; future shell/card variants may opt into the corresponding
+ * translucent values only when backdrop filtering is supported.
+ */
+:root,
+.theme-expedition {
+  --workspace-scene-filter: brightness(1) saturate(1.04) contrast(1);
+  --workspace-scene-overlay: linear-gradient(
+    90deg,
+    rgba(5, 18, 14, 0.78) 0%,
+    rgba(7, 22, 17, 0.36) 48%,
+    rgba(8, 17, 15, 0.16) 100%
+  );
+  --workspace-scene-fallback: linear-gradient(
+    145deg,
+    #10271f 0%,
+    #17372c 38%,
+    #1d3440 68%,
+    #78562c 100%
+  );
+  --workspace-glass-sidebar: #183127;
+  --workspace-glass-standard: #20382e;
+  --workspace-glass-dense: #1a2f28;
+  --workspace-glass-sidebar-translucent: rgba(15, 34, 27, 0.88);
+  --workspace-glass-standard-translucent: rgba(23, 43, 35, 0.78);
+  --workspace-glass-dense-translucent: rgba(18, 35, 29, 0.9);
+  --workspace-border-subtle: rgba(235, 241, 231, 0.18);
+  --workspace-border-strong: rgba(235, 241, 231, 0.3);
+  --workspace-elevation: 0 22px 60px rgba(2, 12, 9, 0.3);
+  --workspace-text-primary: #f6f2e7;
+  --workspace-text-secondary: #c5cec5;
+  --workspace-accent-sage: #91c69b;
+  --workspace-accent-amber: #dda04d;
+  --workspace-warning-surface: #3c3021;
+  --workspace-warning-border: #b57935;
+  --workspace-warning-text: #f2c77f;
+  --workspace-danger-surface: #3a2523;
+  --workspace-danger-border: #ba6259;
+  --workspace-danger-text: #f0a099;
+  --workspace-focus-ring: #b7dfa9;
+}
+
+.dark,
+.theme-expedition.dark {
+  --workspace-scene-filter: brightness(0.72) saturate(0.92) contrast(1.04);
+  --workspace-scene-overlay: linear-gradient(
+    90deg,
+    rgba(2, 12, 14, 0.9) 0%,
+    rgba(4, 17, 18, 0.6) 50%,
+    rgba(7, 13, 16, 0.34) 100%
+  );
+  --workspace-scene-fallback: linear-gradient(
+    145deg,
+    #061511 0%,
+    #0a211b 38%,
+    #0c2029 72%,
+    #392d20 100%
+  );
+  --workspace-glass-sidebar: #0c1e19;
+  --workspace-glass-standard: #12251f;
+  --workspace-glass-dense: #0d1e1a;
+  --workspace-glass-sidebar-translucent: rgba(7, 22, 18, 0.91);
+  --workspace-glass-standard-translucent: rgba(12, 29, 24, 0.82);
+  --workspace-glass-dense-translucent: rgba(8, 23, 20, 0.93);
+  --workspace-border-subtle: rgba(220, 233, 224, 0.16);
+  --workspace-border-strong: rgba(220, 233, 224, 0.28);
+  --workspace-elevation: 0 24px 70px rgba(0, 0, 0, 0.48);
+  --workspace-text-primary: #f7f3e9;
+  --workspace-text-secondary: #b8c5bd;
+  --workspace-accent-sage: #94cda0;
+  --workspace-accent-amber: #e3a14b;
+  --workspace-warning-surface: #33271a;
+  --workspace-warning-border: #c17a31;
+  --workspace-warning-text: #f3c37a;
+  --workspace-danger-surface: #35201f;
+  --workspace-danger-border: #c5635c;
+  --workspace-danger-text: #f2a29c;
+  --workspace-focus-ring: #bde5af;
+}
+
+.theme-clean {
+  --workspace-scene-filter: brightness(0.97) saturate(0.88) contrast(0.98);
+  --workspace-scene-overlay: linear-gradient(
+    90deg,
+    rgba(237, 243, 239, 0.86) 0%,
+    rgba(231, 239, 236, 0.48) 50%,
+    rgba(228, 235, 235, 0.22) 100%
+  );
+  --workspace-scene-fallback: linear-gradient(
+    145deg,
+    #dce7e1 0%,
+    #c7dad3 42%,
+    #b8cdd5 72%,
+    #dfc79e 100%
+  );
+  --workspace-glass-sidebar: #f3f6f3;
+  --workspace-glass-standard: #f8faf8;
+  --workspace-glass-dense: #f2f6f4;
+  --workspace-glass-sidebar-translucent: rgba(242, 247, 244, 0.9);
+  --workspace-glass-standard-translucent: rgba(249, 251, 249, 0.84);
+  --workspace-glass-dense-translucent: rgba(245, 248, 246, 0.94);
+  --workspace-border-subtle: rgba(49, 76, 67, 0.17);
+  --workspace-border-strong: rgba(49, 76, 67, 0.28);
+  --workspace-elevation: 0 20px 55px rgba(31, 54, 48, 0.18);
+  --workspace-text-primary: #183128;
+  --workspace-text-secondary: #5b7068;
+  --workspace-accent-sage: #4c8b61;
+  --workspace-accent-amber: #b87324;
+  --workspace-warning-surface: #fff4df;
+  --workspace-warning-border: #c68538;
+  --workspace-warning-text: #86510f;
+  --workspace-danger-surface: #fbe9e6;
+  --workspace-danger-border: #bf655c;
+  --workspace-danger-text: #8f352e;
+  --workspace-focus-ring: #2f7762;
+}
+
+.theme-clean.dark {
+  --workspace-scene-filter: brightness(0.68) saturate(0.84) contrast(1.02);
+  --workspace-scene-overlay: linear-gradient(
+    90deg,
+    rgba(8, 19, 25, 0.9) 0%,
+    rgba(12, 25, 31, 0.62) 50%,
+    rgba(15, 24, 29, 0.36) 100%
+  );
+  --workspace-scene-fallback: linear-gradient(
+    145deg,
+    #0c191e 0%,
+    #12272a 42%,
+    #142a35 72%,
+    #403326 100%
+  );
+  --workspace-glass-sidebar: #16262a;
+  --workspace-glass-standard: #1c3035;
+  --workspace-glass-dense: #17282d;
+  --workspace-glass-sidebar-translucent: rgba(17, 34, 38, 0.91);
+  --workspace-glass-standard-translucent: rgba(22, 43, 48, 0.84);
+  --workspace-glass-dense-translucent: rgba(18, 36, 41, 0.94);
+  --workspace-border-subtle: rgba(219, 231, 232, 0.17);
+  --workspace-border-strong: rgba(219, 231, 232, 0.3);
+  --workspace-elevation: 0 23px 65px rgba(0, 0, 0, 0.42);
+  --workspace-text-primary: #edf3ef;
+  --workspace-text-secondary: #a9bab5;
+  --workspace-accent-sage: #82bd91;
+  --workspace-accent-amber: #daa15b;
+  --workspace-warning-surface: #392c20;
+  --workspace-warning-border: #bd8142;
+  --workspace-warning-text: #edc58a;
+  --workspace-danger-surface: #3a2525;
+  --workspace-danger-border: #c26b64;
+  --workspace-danger-text: #f0aaa4;
+  --workspace-focus-ring: #8dcdb7;
+}
+
 :root,
 .theme-expedition {
   --hero-image-brightness: 1;

@@ -3,24 +3,11 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import type { TripDashboard } from '@/types';
+import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
 import { CalendarDays, MapPin, MoonStar, Route } from 'lucide-react';
 
-const ALGONQUIN_HERO_IMAGE = '/sunset-over-the-lake.webp';
-
-function normalizedIdentity(value: string | null | undefined) {
-  return value?.trim().toLocaleLowerCase('en-CA') ?? '';
-}
-
-export function resolveTripHeroImage(
-  trip: Pick<TripDashboard, 'park_name' | 'lake_name'>
-): string | null {
-  const park = normalizedIdentity(trip.park_name);
-  const lake = normalizedIdentity(trip.lake_name);
-  const isAlgonquin =
-    park === 'algonquin park' || park === 'algonquin provincial park';
-  const isApprovedLake = lake === 'maple lake' || lake === 'maple leaf lake';
-  return isAlgonquin && isApprovedLake ? ALGONQUIN_HERO_IMAGE : null;
-}
+// Temporary compatibility export while Home still owns hero image selection.
+export const resolveTripHeroImage = resolveTripWorkspaceBackground;
 
 function dateOrdinal(value: string) {
   const [year, month, day] = value.split('-').map(Number);
