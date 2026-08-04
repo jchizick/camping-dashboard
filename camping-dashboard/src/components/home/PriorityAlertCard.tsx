@@ -114,7 +114,7 @@ export default function PriorityAlertCard({
       <Card
         title="Priority notice"
         icon={CheckCircle2}
-        className="home-priority-card h-full"
+        className="home-priority-card home-glass-surface home-glass-surface--warning h-full"
       >
         <div
           className="home-priority-card__notice flex flex-1 items-center gap-3 rounded-xl border p-4"
@@ -143,7 +143,7 @@ export default function PriorityAlertCard({
     <Card
       title="Priority notice"
       icon={AlertTriangle}
-      className="home-priority-card h-full"
+      className="home-priority-card home-glass-surface home-glass-surface--warning h-full"
       action={
         <GuardedTripLink
           href={href}

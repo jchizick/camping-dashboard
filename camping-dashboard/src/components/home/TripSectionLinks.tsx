@@ -55,7 +55,7 @@ function SummaryLink({
     <GuardedTripLink
       href={href}
       aria-label={`Open ${label}`}
-      className={`workspace-summary-link workspace-summary-link--${tone} group flex min-h-32 flex-col border p-3.5 transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
+      className={`workspace-summary-link home-glass-surface--navigation workspace-summary-link--${tone} group flex min-h-32 flex-col border p-3.5 transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
     >
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex min-w-0 items-center gap-3 text-base font-semibold text-text-main">

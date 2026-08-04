@@ -50,18 +50,22 @@ describe('trip workspace visual tokens', () => {
       'glass-standard',
       'glass-standard-translucent',
       'glass-dense',
+      'glass-dense-translucent',
       'border-subtle',
       'border-strong',
       'elevation',
       'text-primary',
       'text-secondary',
       'accent-sage',
+      'warning-surface',
+      'warning-border',
+      'danger-border',
       'focus-ring',
     ]) {
       expect(css).toContain(`var(--workspace-${token})`);
     }
 
-    for (const token of ['warning-surface', 'danger-surface']) {
+    for (const token of ['danger-surface']) {
       expect(css).not.toContain(`var(--workspace-${token})`);
     }
   });

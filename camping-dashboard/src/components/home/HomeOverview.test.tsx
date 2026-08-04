@@ -166,6 +166,11 @@ describe('HomeOverview', () => {
     expect(headingRegion?.contains(situation)).toBe(true);
     expect(hero!.compareDocumentPosition(situation) & Node.DOCUMENT_POSITION_FOLLOWING)
       .toBeTruthy();
+    expect(
+      Array.from(document.querySelectorAll('[data-home-module]')).map((module) =>
+        module.getAttribute('data-home-module')
+      )
+    ).toEqual(['map', 'weather', 'readiness', 'day-plan', 'priority-notice']);
     expect(screen.getByTestId('map')).toBeTruthy();
     const weatherSurface = within(
       screen.getByRole('region', { name: 'Weather and forecast' })

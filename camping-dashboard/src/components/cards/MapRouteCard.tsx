@@ -91,7 +91,7 @@ export default function MapRouteCard({
                     )
                 }
                 icon={Map}
-                className={variant === 'home' ? 'home-map-card h-full' : 'h-full'}
+                className={variant === 'home' ? 'home-map-card home-glass-surface home-glass-surface--standard h-full' : 'h-full'}
                 action={action}
             >
                 <div className={`text-sm text-text-muted ${variant === 'home' ? 'home-map-card__location mb-3' : 'mb-4'} font-mono`}>

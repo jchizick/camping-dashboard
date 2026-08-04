@@ -282,7 +282,7 @@ export default function WeatherCard({
                 title="Weather"
                 icon={CloudRain}
                 action={homeHeaderAction}
-                className="home-weather-card"
+                className="home-weather-card home-glass-surface home-glass-surface--dense"
             >
                 <div className="home-weather-current">
                     {weather ? (

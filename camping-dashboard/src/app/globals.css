@@ -346,12 +346,12 @@
 }
 
 .theme-clean {
-  --workspace-scene-filter: brightness(0.97) saturate(0.88) contrast(0.98);
+  --workspace-scene-filter: brightness(1.02) saturate(0.96) contrast(1);
   --workspace-scene-overlay: linear-gradient(
     90deg,
-    rgba(237, 243, 239, 0.86) 0%,
-    rgba(231, 239, 236, 0.48) 50%,
-    rgba(228, 235, 235, 0.22) 100%
+    rgba(237, 243, 239, 0.68) 0%,
+    rgba(231, 239, 236, 0.3) 50%,
+    rgba(228, 235, 235, 0.1) 100%
   );
   --workspace-scene-fallback: linear-gradient(
     145deg,
@@ -363,9 +363,9 @@
   --workspace-glass-sidebar: #f3f6f3;
   --workspace-glass-standard: #f8faf8;
   --workspace-glass-dense: #f2f6f4;
-  --workspace-glass-sidebar-translucent: rgba(242, 247, 244, 0.9);
-  --workspace-glass-standard-translucent: rgba(249, 251, 249, 0.84);
-  --workspace-glass-dense-translucent: rgba(245, 248, 246, 0.94);
+  --workspace-glass-sidebar-translucent: rgba(242, 247, 244, 0.72);
+  --workspace-glass-standard-translucent: rgba(249, 251, 249, 0.68);
+  --workspace-glass-dense-translucent: rgba(245, 248, 246, 0.82);
   --workspace-border-subtle: rgba(49, 76, 67, 0.17);
   --workspace-border-strong: rgba(49, 76, 67, 0.28);
   --workspace-elevation: 0 20px 55px rgba(31, 54, 48, 0.18);
@@ -3475,4 +3475,297 @@ body {
 
 [data-trip-app-shell]:has(.home-overview) .workspace-summary-link--field-log:hover {
   border-color: color-mix(in srgb, var(--color-category-map) 34%, var(--color-border-subtle));
+}
+
+/* ============================================================
+   Home expedition glass surfaces — explicit, scoped variants.
+   The shared Card primitive keeps its default appearance.
+   ============================================================ */
+
+.home-glass-surface,
+.home-glass-surface--navigation {
+  color: var(--workspace-text-primary);
+  border-color: var(--workspace-border-strong) !important;
+  box-shadow: var(--workspace-elevation) !important;
+}
+
+.home-glass-surface--standard,
+.home-glass-surface--navigation {
+  background: var(--workspace-glass-standard) !important;
+}
+
+.home-glass-surface--dense {
+  background: var(--workspace-glass-dense) !important;
+}
+
+.home-glass-surface--warning {
+  border-color: var(--workspace-warning-border) !important;
+  background: var(--workspace-warning-surface) !important;
+}
+
+[data-trip-app-shell]:has(.home-overview) .home-priority > .home-glass-surface--warning {
+  border-color: var(--workspace-warning-border) !important;
+  background: var(--workspace-warning-surface) !important;
+  box-shadow: var(--workspace-elevation) !important;
+}
+
+.home-glass-surface > div:first-child {
+  border-color: var(--workspace-border-subtle) !important;
+  background: color-mix(
+    in srgb,
+    var(--workspace-glass-dense) 86%,
+    var(--workspace-glass-standard)
+  ) !important;
+}
+
+.home-glass-surface--warning > div:first-child {
+  border-color: color-mix(in srgb, var(--workspace-warning-border) 66%, transparent) !important;
+  background: var(--workspace-warning-surface) !important;
+}
+
+.home-glass-surface > div:last-child {
+  background: transparent;
+}
+
+.home-glass-surface--warning .home-priority-card__notice {
+  border-color: color-mix(in srgb, var(--workspace-warning-border) 58%, transparent);
+  background: transparent;
+}
+
+.home-glass-surface--warning .home-priority-card__notice[data-tone="danger"] {
+  border-color: color-mix(in srgb, var(--workspace-danger-border) 62%, transparent);
+}
+
+.home-glass-surface--warning .home-priority-card__notice[data-tone="positive"] {
+  border-color: color-mix(in srgb, var(--workspace-accent-sage) 48%, transparent);
+}
+
+.home-glass-surface :is(a, button):focus-visible,
+.home-glass-surface--navigation:focus-visible {
+  outline: 2px solid var(--workspace-focus-ring);
+  outline-offset: 2px;
+}
+
+.home-map-card__canvas {
+  background: var(--workspace-glass-dense);
+  box-shadow: inset 0 0 0 1px var(--workspace-border-subtle);
+}
+
+.home-overview .readiness-ring {
+  background:
+    radial-gradient(circle, var(--workspace-glass-dense) 58%, transparent 59%),
+    conic-gradient(
+      var(--workspace-accent-sage) calc(var(--readiness-value) * 1%),
+      color-mix(in srgb, var(--workspace-text-secondary) 18%, transparent) 0
+    );
+}
+
+.home-overview .home-readiness-card [role="progressbar"] > div {
+  background: var(--workspace-accent-sage);
+}
+
+.home-overview .home-readiness-card [role="progressbar"]:not(.readiness-ring) {
+  background: color-mix(in srgb, var(--workspace-text-secondary) 18%, transparent);
+}
+
+.theme-clean .trip-workspace-background__topography {
+  opacity: 0.09;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .home-glass-surface > div:first-child {
+    background: var(--workspace-glass-dense-translucent) !important;
+  }
+
+  .home-glass-surface--warning > div:first-child {
+    background: color-mix(in srgb, var(--workspace-warning-surface) 72%, transparent) !important;
+  }
+
+  .home-glass-surface--standard,
+  .home-glass-surface--navigation {
+    background: var(--workspace-glass-standard-translucent) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.06);
+    backdrop-filter: blur(14px) saturate(1.06);
+  }
+
+  .home-glass-surface--dense {
+    background: var(--workspace-glass-dense-translucent) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.08);
+    backdrop-filter: blur(16px) saturate(1.08);
+  }
+
+  .home-glass-surface--warning {
+    background: color-mix(in srgb, var(--workspace-warning-surface) 72%, transparent) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.06);
+    backdrop-filter: blur(14px) saturate(1.06);
+  }
+
+  [data-trip-app-shell]:has(.home-overview) .home-priority > .home-glass-surface--warning {
+    background: color-mix(in srgb, var(--workspace-warning-surface) 72%, transparent) !important;
+  }
+}
+
+.home-overview .home-weather-condition {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.home-overview__footer {
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  margin-inline: auto;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--workspace-border-subtle);
+  border-radius: 999px;
+  background: var(--workspace-glass-standard-translucent);
+  color: var(--workspace-text-secondary);
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--workspace-glass-dense) 72%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .home-glass-surface--standard,
+  .home-glass-surface--navigation {
+    background: var(--workspace-glass-standard) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .home-glass-surface--dense {
+    background: var(--workspace-glass-dense) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .home-glass-surface--warning {
+    background: var(--workspace-warning-surface) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+
+  [data-trip-app-shell]:has(.home-overview) .home-priority > .home-glass-surface--warning {
+    background: var(--workspace-warning-surface) !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .home-overview {
+    min-height: calc(100dvh - 2rem);
+    padding: 0 0 0.35rem;
+  }
+
+  .home-heading-region {
+    margin-bottom: 0;
+    padding: clamp(3.5rem, 5vw, 5.25rem) clamp(2.5rem, 3.75vw, 3.75rem) 1.15rem;
+  }
+
+  .trip-situation-rail {
+    width: min(100%, 61rem);
+  }
+
+  .home-primary-grid {
+    position: relative;
+    z-index: 3;
+    width: calc(100% - 2.5rem);
+    margin: 1rem auto 0;
+    grid-template-columns:
+      minmax(0, 5fr)
+      minmax(17.5rem, 3fr)
+      minmax(0, 2.25fr)
+      minmax(0, 2.25fr);
+    grid-template-rows: auto auto;
+    align-items: stretch;
+    gap: 0.875rem 1rem;
+  }
+
+  .home-map {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .home-weather {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    overflow: visible;
+  }
+
+  .home-readiness {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .home-today {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .home-priority {
+    grid-column: 3 / 5;
+    grid-row: 2;
+  }
+
+  .home-map-card__canvas {
+    height: auto !important;
+    min-height: 24rem !important;
+    flex: 1;
+  }
+
+  .home-weather-card,
+  .home-map-card {
+    min-height: 100%;
+  }
+
+  .home-weather-primary {
+    gap: 0.5rem;
+  }
+
+  .home-weather-primary__icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .home-readiness-card > div:last-child > div:first-child p:last-child {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: initial;
+  }
+
+  .home-today-card > div:last-child {
+    padding-bottom: 0;
+  }
+
+  .home-today-card .today-timeline__item {
+    min-height: 2.65rem;
+  }
+
+  .home-today-card .today-timeline__item h3 {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .home-today-card .today-timeline__item p {
+    display: block;
+  }
+
+  .home-priority-card [role="status"] {
+    min-height: 5.75rem;
+    height: auto;
+  }
+
+  .home-priority-card__title,
+  .home-priority-card__summary {
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-workspaces {
+    width: calc(100% - 2.5rem);
+    margin: 0.875rem auto 0;
+  }
 }

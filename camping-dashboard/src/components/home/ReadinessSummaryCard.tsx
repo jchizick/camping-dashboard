@@ -38,7 +38,7 @@ export default function ReadinessSummaryCard({
     <Card
       title="Readiness"
       icon={Activity}
-      className="home-readiness-card h-full"
+      className="home-readiness-card home-glass-surface home-glass-surface--dense h-full"
       action={
         <GuardedTripLink
           href={href}

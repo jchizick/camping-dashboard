@@ -14,7 +14,7 @@ export default function TodaySummaryCard({
     <Card
       title={`${summary.label} · Day ${summary.dayNumber}`}
       icon={CalendarClock}
-      className="home-today-card h-full"
+      className="home-today-card home-glass-surface home-glass-surface--dense h-full"
       action={
         <GuardedTripLink
           href={href}

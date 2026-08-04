@@ -56,8 +56,8 @@ export default function HomeOverview() {
         />
       </div>
 
-      <div className="home-primary-grid">
-        <div className="home-map">
+      <div className="home-primary-grid" data-home-grid="operational">
+        <div className="home-map" data-home-module="map">
           <MapRouteCard
             trip={trip}
             onSaveLocation={editableActions?.saveCampsite}
@@ -65,7 +65,7 @@ export default function HomeOverview() {
           />
         </div>
 
-        <section className="home-weather" aria-label="Weather and forecast">
+        <section className="home-weather" data-home-module="weather" aria-label="Weather and forecast">
           <WeatherCard
             tripId={trip.id}
             weather={data.currentWeather}
@@ -76,7 +76,7 @@ export default function HomeOverview() {
           />
         </section>
 
-        <div className="home-readiness">
+        <div className="home-readiness" data-home-module="readiness">
           <ReadinessSummaryCard
             readiness={readiness}
             href={`${base}/gear`}
@@ -85,11 +85,11 @@ export default function HomeOverview() {
           />
         </div>
 
-        <div className="home-today">
+        <div className="home-today" data-home-module="day-plan">
           <TodaySummaryCard summary={schedule} href={`${base}/plan`} />
         </div>
 
-        <div className="home-priority">
+        <div className="home-priority" data-home-module="priority-notice">
           <PriorityAlertCard alert={priorityAlert} href={`${base}/guide`} />
         </div>
       </div>
