@@ -684,6 +684,12 @@ body {
   .app-info-dialog__close {
     transition: none;
   }
+
+  .trip-workspace-state-panel,
+  .trip-workspace-state-panel * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /*
@@ -975,6 +981,120 @@ body {
 
 .trip-app-main:has(.home-overview) {
   background: transparent;
+}
+
+/* Phase 5 trip-section surfaces are opt-in and do not alter the shared Card. */
+.trip-app-main:has(.trip-section-page) {
+  background: transparent;
+}
+
+.trip-section-page {
+  --card-bg: var(--workspace-glass-dense);
+  --card-hover: color-mix(in srgb, var(--workspace-accent-sage) 11%, var(--workspace-glass-dense));
+  --border-subtle: var(--workspace-border-subtle);
+  --surface-primary: var(--workspace-glass-dense);
+  --surface-secondary: var(--workspace-glass-standard);
+  --surface-elevated: var(--workspace-glass-dense);
+  --text-main: var(--workspace-text-primary);
+  --text-muted: var(--workspace-text-secondary);
+  --text-primary: var(--workspace-text-primary);
+  --text-secondary: var(--workspace-text-secondary);
+  --accent-yellow: var(--workspace-accent-sage);
+  --focus-ring: var(--workspace-focus-ring);
+  color: var(--workspace-text-primary);
+}
+
+.trip-section-header {
+  position: relative;
+  padding: 0.65rem 1rem;
+  border-left: 3px solid var(--workspace-accent-sage);
+  border-radius: 0 1rem 1rem 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--workspace-glass-dense) 82%, transparent),
+    transparent 92%
+  );
+}
+
+.trip-section-header h1 {
+  color: var(--workspace-text-primary);
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--workspace-glass-dense) 62%, transparent);
+}
+
+.trip-section-header p {
+  color: var(--workspace-text-secondary);
+}
+
+.trip-section-surface > :first-child {
+  border-color: var(--workspace-border-strong);
+  box-shadow: var(--workspace-elevation);
+}
+
+.trip-section-page .timeline-card {
+  max-height: none;
+}
+
+.trip-section-page .timeline-card__events,
+.trip-section-page .park-intel-scroll,
+.trip-section-page .prep-feed-scroll {
+  max-height: none;
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.trip-section-page .gear-checklist-card {
+  max-height: none;
+}
+
+.trip-section-page .gear-checklist-card__items {
+  overflow: visible;
+}
+
+.trip-section-empty-state {
+  color: var(--workspace-text-secondary);
+  background: var(--workspace-glass-dense);
+  border-color: var(--workspace-border-strong);
+  box-shadow: var(--workspace-elevation);
+}
+
+.trip-section-inline-alert {
+  color: var(--workspace-danger-text);
+  background: var(--workspace-danger-surface);
+  border-color: var(--workspace-danger-border);
+  box-shadow: var(--workspace-elevation);
+}
+
+.trip-workspace-state-panel {
+  color: var(--workspace-text-primary);
+  background: var(--workspace-glass-dense);
+  border: 1px solid var(--workspace-border-strong);
+  border-radius: 1.25rem;
+  box-shadow: var(--workspace-elevation);
+}
+
+.trip-workspace-state-panel__title {
+  color: var(--workspace-warning-text);
+}
+
+.trip-workspace-state-panel__copy {
+  color: var(--workspace-text-secondary);
+}
+
+.trip-workspace-state-panel__action {
+  color: var(--workspace-warning-text);
+  background: color-mix(in srgb, var(--workspace-warning-surface) 78%, transparent);
+  border-color: var(--workspace-warning-border);
+}
+
+.trip-workspace-state-panel__action:hover {
+  color: var(--workspace-text-primary);
+  background: var(--workspace-warning-surface);
+}
+
+.trip-workspace-state-panel__action:focus-visible {
+  outline: 2px solid var(--workspace-focus-ring);
+  outline-offset: 3px;
 }
 
 .home-overview {
@@ -2443,6 +2563,24 @@ body {
     -webkit-backdrop-filter: blur(18px) saturate(1.08);
     backdrop-filter: blur(18px) saturate(1.08);
   }
+
+  .trip-section-surface > :first-child,
+  .trip-section-empty-state,
+  .trip-workspace-state-panel {
+    background: var(--workspace-glass-dense-translucent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+    backdrop-filter: blur(18px) saturate(1.08);
+  }
+
+  .theme-clean:not(.dark) .trip-section-surface > :first-child,
+  .theme-clean:not(.dark) .trip-section-empty-state,
+  .theme-clean:not(.dark) .trip-workspace-state-panel {
+    background: color-mix(
+      in srgb,
+      var(--workspace-glass-dense) 62%,
+      var(--workspace-glass-dense-translucent)
+    );
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -2454,6 +2592,14 @@ body {
 
   .trip-situation-rail {
     background: var(--workspace-glass-standard);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .trip-section-surface > :first-child,
+  .trip-section-empty-state,
+  .trip-workspace-state-panel {
+    background: var(--workspace-glass-dense);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
@@ -3020,6 +3166,35 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Section routes use document scrolling; legacy cards retain their caps elsewhere. */
+.trip-section-page .park-intel-scroll,
+.trip-section-page .prep-feed-scroll {
+  max-height: none;
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.crud-sheet__panel--workspace {
+  --card-bg: var(--workspace-glass-dense);
+  --card-hover: color-mix(in srgb, var(--workspace-accent-sage) 11%, var(--workspace-glass-dense));
+  --app-bg: color-mix(in srgb, var(--workspace-glass-dense) 78%, #000);
+  --border-subtle: var(--workspace-border-subtle);
+  --text-main: var(--workspace-text-primary);
+  --text-muted: var(--workspace-text-secondary);
+  --accent-yellow: var(--workspace-accent-sage);
+  --accent-red: var(--workspace-danger-text);
+  color: var(--workspace-text-primary);
+  background: var(--workspace-glass-dense);
+  border-color: var(--workspace-border-strong);
+  box-shadow: var(--workspace-elevation);
+}
+
+.crud-sheet__panel--workspace :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--workspace-focus-ring);
+  outline-offset: 2px;
 }
 
 .trip-draft-dialog {

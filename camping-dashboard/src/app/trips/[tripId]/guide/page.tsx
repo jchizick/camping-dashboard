@@ -4,7 +4,7 @@ import AlertsCard from '@/components/cards/AlertsCard';
 import AstroCard from '@/components/cards/AstroCard';
 import OfflineVaultCard from '@/components/cards/OfflineVaultCard';
 import ParkIntelCard from '@/components/cards/ParkIntelCard';
-import TripPageHeader from '@/components/trip/TripPageHeader';
+import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
 
 export default function TripGuidePage() {
@@ -18,16 +18,16 @@ export default function TripGuidePage() {
   if (!data) return null;
 
   return (
-    <div className="relative z-10 mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+    <TripSectionPage route="guide">
       <TripPageHeader title="Field Guide" description="Park information and advisories" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-4">
+        <div className="trip-section-surface lg:col-span-4">
           <ParkIntelCard
             intel={parkIntel}
             onUpdate={editableActions?.updateParkIntel}
           />
         </div>
-        <div className="lg:col-span-8 lg:row-span-2">
+        <div className="trip-section-surface lg:col-span-8 lg:row-span-2">
           <AlertsCard
             alerts={alerts}
             refreshStates={data.alertRefresh}
@@ -38,7 +38,7 @@ export default function TripGuidePage() {
           />
         </div>
         {data.settings.show_offline && (
-          <div className="lg:col-span-4">
+          <div className="trip-section-surface lg:col-span-4">
             <OfflineVaultCard
               status={offlineStatus}
               onToggle={editableActions?.toggleOfflineStatus}
@@ -46,11 +46,11 @@ export default function TripGuidePage() {
           </div>
         )}
         {data.settings.show_astro && (
-          <div className="lg:col-span-12">
+          <div className="trip-section-surface lg:col-span-12">
             <AstroCard astro={data.astro} weather={data.currentWeather} />
           </div>
         )}
       </div>
-    </div>
+    </TripSectionPage>
   );
 }

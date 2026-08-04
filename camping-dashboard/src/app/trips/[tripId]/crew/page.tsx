@@ -2,6 +2,7 @@
 
 import CrewRosterCard from '@/components/cards/CrewRosterCard';
 import TripPageHeader, {
+  TripSectionPage,
   TripSectionEmptyState,
 } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
@@ -11,10 +12,10 @@ export default function TripCrewPage() {
   if (!data) return null;
 
   return (
-    <div className="relative z-10 mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+    <TripSectionPage route="crew">
       <TripPageHeader title="Crew" description="Roster and load balance" />
       {data.settings.show_crew ? (
-        <div className="max-w-5xl">
+        <div className="trip-section-surface max-w-5xl">
           <CrewRosterCard
             crew={crew}
             onAdd={editableActions?.addCrewMember}
@@ -27,6 +28,6 @@ export default function TripCrewPage() {
           The crew module is hidden for this trip.
         </TripSectionEmptyState>
       )}
-    </div>
+    </TripSectionPage>
   );
 }

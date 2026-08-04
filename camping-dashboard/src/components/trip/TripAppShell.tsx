@@ -26,7 +26,7 @@ function WorkspaceLoading() {
   return (
     <div className="trip-workspace-state-frame">
       <TripWorkspaceBackground />
-      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center font-sans">
+      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center p-6 font-sans">
       <style>{`
         @keyframes spin-slow { to { transform: rotate(360deg); } }
         @keyframes spin-reverse { to { transform: rotate(-360deg); } }
@@ -45,7 +45,7 @@ function WorkspaceLoading() {
         }
       `}</style>
       <div
-        className="flex flex-col items-center gap-8 [animation:fade-up_0.6s_ease_forwards]"
+        className="trip-workspace-state-panel flex flex-col items-center gap-8 px-8 py-10 text-center [animation:fade-up_0.6s_ease_forwards]"
         role="status"
         aria-live="polite"
       >
@@ -56,7 +56,7 @@ function WorkspaceLoading() {
           <div className="absolute inset-5 rounded-full border border-transparent border-b-accent-yellow/50 border-l-accent-yellow/15 [animation:spin-reverse_1.2s_linear_infinite]" />
           <div className="h-2 w-2 rounded-full bg-accent-yellow shadow-[0_0_12px_3px_color-mix(in_srgb,var(--accent-yellow)_50%,transparent)]" />
         </div>
-        <p className="text-sm font-semibold uppercase tracking-widest text-text-main/90">
+        <p className="text-sm font-semibold uppercase tracking-widest">
           Loading Trip Dashboard
           <span className="[animation:blink_1.2s_step-end_infinite]">_</span>
         </p>
@@ -125,13 +125,13 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     return (
       <div className="trip-workspace-state-frame">
         <TripWorkspaceBackground />
-        <main className="dashboard theme-night relative z-10 flex min-h-[100dvh] items-center justify-center p-8 text-center">
-          <div>
-            <h1 className="mb-4 text-2xl text-[#ffb74d]">Access Denied</h1>
-            <p className="text-white/70">{roleError}</p>
+        <main className="relative z-10 flex min-h-[100dvh] items-center justify-center p-6 text-center">
+          <div className="trip-workspace-state-panel max-w-lg px-8 py-10">
+            <h1 tabIndex={-1} className="trip-workspace-state-panel__title mb-4 text-2xl">Access Denied</h1>
+            <p className="trip-workspace-state-panel__copy">{roleError}</p>
             <GuardedTripLink
               href="/trips"
-              className="mt-4 inline-block text-[#eab308] underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
+              className="trip-workspace-state-panel__action mt-5 inline-flex min-h-11 items-center rounded-lg border px-4 font-semibold focus-visible:outline-none"
             >
               ← Back to Trips
             </GuardedTripLink>
@@ -145,16 +145,18 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     return (
       <div className="trip-workspace-state-frame">
         <TripWorkspaceBackground />
-        <main className="dashboard theme-night relative z-10 min-h-[100dvh] p-8 text-center">
-          <h1 className="text-2xl text-[#ffb74d]">System Initialization Error</h1>
-          <p className="text-white/70">{error}</p>
+        <main className="relative z-10 flex min-h-[100dvh] items-center justify-center p-6 text-center">
+          <div className="trip-workspace-state-panel max-w-lg px-8 py-10" role="alert">
+          <h1 tabIndex={-1} className="trip-workspace-state-panel__title text-2xl">System Initialization Error</h1>
+          <p className="trip-workspace-state-panel__copy mt-3">{error}</p>
           <button
             type="button"
             onClick={() => void reload()}
-            className="mt-5 min-h-11 rounded-lg border border-[#eab308]/40 px-4 text-sm font-semibold text-[#eab308] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#eab308]"
+            className="trip-workspace-state-panel__action mt-5 min-h-11 rounded-lg border px-4 text-sm font-semibold focus-visible:outline-none"
           >
             Try again
           </button>
+          </div>
         </main>
       </div>
     );
@@ -259,7 +261,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
       >
         {error ? (
           <div
-            className="mx-auto mt-4 flex max-w-[calc(1600px-2rem)] flex-wrap items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3 text-sm text-text-main"
+            className="trip-section-inline-alert mx-auto mt-4 flex max-w-[calc(1600px-2rem)] flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
             role="alert"
           >
             <span>{error}</span>

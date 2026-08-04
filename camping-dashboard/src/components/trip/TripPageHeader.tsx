@@ -1,5 +1,22 @@
 import React from 'react';
 
+export function TripSectionPage({
+  route,
+  children,
+}: {
+  route: 'plan' | 'gear' | 'crew' | 'guide' | 'field-log';
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="trip-section-page relative z-10 mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8"
+      data-trip-section={route}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function TripPageHeader({
   title,
   description,
@@ -8,7 +25,7 @@ export default function TripPageHeader({
   description?: string;
 }) {
   return (
-    <header className="space-y-1">
+    <header className="trip-section-header space-y-1">
       <h1
         tabIndex={-1}
         className="scroll-mt-20 text-3xl font-bold tracking-tight text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:text-4xl"
@@ -23,7 +40,7 @@ export default function TripPageHeader({
 export function TripSectionEmptyState({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="rounded-xl border border-dashed border-border-subtle bg-card-bg/60 px-6 py-12 text-center text-sm text-text-muted"
+      className="trip-section-empty-state rounded-xl border border-dashed px-6 py-12 text-center text-sm"
       role="status"
     >
       {children}

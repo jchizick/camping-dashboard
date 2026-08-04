@@ -68,7 +68,7 @@ export default function ParkIntelFormSheet({ isOpen, onClose, onSubmit, intel }:
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title="Edit Park Intelligence">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Edit Park Intelligence" surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">

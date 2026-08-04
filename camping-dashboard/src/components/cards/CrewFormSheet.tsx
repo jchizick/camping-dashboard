@@ -65,7 +65,7 @@ export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember
     const isEdit = !!initialMember;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Crew Member' : 'Add Crew Member'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Crew Member' : 'Add Crew Member'} surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">

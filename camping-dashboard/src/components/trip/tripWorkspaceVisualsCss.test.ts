@@ -65,8 +65,35 @@ describe('trip workspace visual tokens', () => {
       expect(css).toContain(`var(--workspace-${token})`);
     }
 
-    for (const token of ['danger-surface']) {
-      expect(css).not.toContain(`var(--workspace-${token})`);
-    }
+    expect(css).toContain('var(--workspace-danger-surface)');
+  });
+
+  it('keeps section glass opt-in with opaque and reduced-transparency fallbacks', () => {
+    expect(css).toContain('.trip-section-page');
+    expect(css).toContain('.trip-section-surface > :first-child');
+    expect(css).toContain('background: var(--workspace-glass-dense);');
+    expect(css).toContain('background: var(--workspace-glass-dense-translucent);');
+
+    const reducedTransparency = css.slice(
+      css.indexOf('@media (prefers-reduced-transparency: reduce)'),
+      css.indexOf('@media (max-width: 1023px)')
+    );
+    expect(reducedTransparency).toContain('.trip-section-surface > :first-child');
+    expect(reducedTransparency).toContain('backdrop-filter: none');
+    expect(css).not.toMatch(/\.bg-card-bg\s*\{[^}]*workspace-glass/);
+  });
+
+  it('preserves natural route scrolling and reduced-motion state treatment', () => {
+    expect(css).toMatch(/\.trip-section-page \.timeline-card\s*\{\s*max-height:\s*none;/);
+    expect(css).toMatch(/\.trip-section-page \.gear-checklist-card\s*\{\s*max-height:\s*none;/);
+    expect(css).toContain('.trip-section-page .park-intel-scroll');
+    expect(css).toContain('.trip-section-page .prep-feed-scroll');
+
+    const reducedMotion = css.slice(
+      css.indexOf('@media (prefers-reduced-motion: reduce)'),
+      css.indexOf('Trip navigation uses one explicit 768px handoff')
+    );
+    expect(reducedMotion).toContain('.trip-workspace-state-panel *');
+    expect(reducedMotion).toContain('animation: none !important');
   });
 });

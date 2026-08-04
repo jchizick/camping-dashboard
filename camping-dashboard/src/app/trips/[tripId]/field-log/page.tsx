@@ -1,7 +1,7 @@
 'use client';
 
 import FieldPrepFeedCard from '@/components/cards/FieldPrepFeedCard';
-import TripPageHeader from '@/components/trip/TripPageHeader';
+import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
 
 export default function TripFieldLogPage() {
@@ -9,9 +9,9 @@ export default function TripFieldLogPage() {
   if (!data) return null;
 
   return (
-    <div className="relative z-10 mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+    <TripSectionPage route="field-log">
       <TripPageHeader title="Field Log" description="Trip preparation feed" />
-      <div className="max-w-5xl">
+      <div className="trip-section-surface max-w-5xl">
         <FieldPrepFeedCard
           items={prepFeed}
           onAdd={editableActions?.addPrepFeedItem}
@@ -19,6 +19,6 @@ export default function TripFieldLogPage() {
           defaultUploader={uploaderName}
         />
       </div>
-    </div>
+    </TripSectionPage>
   );
 }

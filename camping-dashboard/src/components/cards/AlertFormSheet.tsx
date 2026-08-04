@@ -62,7 +62,7 @@ export default function AlertFormSheet({ isOpen, onClose, onSubmit }: AlertFormS
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title="Add Note / Alert">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Add Note / Alert" surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">

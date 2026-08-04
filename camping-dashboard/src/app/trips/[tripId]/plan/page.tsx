@@ -2,7 +2,7 @@
 
 import MealPlannerCard from '@/components/cards/MealPlannerCard';
 import TimelineCard from '@/components/cards/TimelineCard';
-import TripPageHeader from '@/components/trip/TripPageHeader';
+import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
 
 export default function TripPlanPage() {
@@ -10,10 +10,10 @@ export default function TripPlanPage() {
   if (!data) return null;
 
   return (
-    <div className="relative z-10 mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+    <TripSectionPage route="plan">
       <TripPageHeader title="Plan" description="Schedule and meals" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className={data.settings.show_meals ? 'lg:col-span-8' : 'lg:col-span-12'}>
+        <div className={`trip-section-surface ${data.settings.show_meals ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
           <TimelineCard
             events={timeline}
             tripDays={tripDays}
@@ -23,7 +23,7 @@ export default function TripPlanPage() {
           />
         </div>
         {data.settings.show_meals && (
-          <div className="lg:col-span-4">
+          <div className="trip-section-surface lg:col-span-4">
             <MealPlannerCard
               meals={meals}
               totalDays={tripDays}
@@ -34,6 +34,6 @@ export default function TripPlanPage() {
           </div>
         )}
       </div>
-    </div>
+    </TripSectionPage>
   );
 }

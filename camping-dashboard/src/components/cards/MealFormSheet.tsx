@@ -73,7 +73,7 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
     const isEdit = !!initialMeal;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Meal' : 'Add Meal'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Meal' : 'Add Meal'} surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__row">

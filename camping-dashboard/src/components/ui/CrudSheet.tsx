@@ -10,9 +10,10 @@ interface CrudSheetProps {
     title: string;
     children: React.ReactNode;
     panelClassName?: string;
+    surface?: 'default' | 'workspace';
 }
 
-export default function CrudSheet({ isOpen, onClose, title, children, panelClassName = '' }: CrudSheetProps) {
+export default function CrudSheet({ isOpen, onClose, title, children, panelClassName = '', surface = 'default' }: CrudSheetProps) {
     const panelRef = useRef<HTMLDivElement>(null);
     const titleId = React.useId();
     useOverlayDialog(isOpen, panelRef);
@@ -51,7 +52,7 @@ export default function CrudSheet({ isOpen, onClose, title, children, panelClass
 
             {/* Panel */}
             <div
-                className={`crud-sheet__panel ${panelClassName}`}
+                className={`crud-sheet__panel${surface === 'workspace' ? ' crud-sheet__panel--workspace' : ''} ${panelClassName}`}
                 ref={panelRef}
                 tabIndex={-1}
             >

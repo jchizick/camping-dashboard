@@ -68,7 +68,7 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
     const isEdit = !!initialItem;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Gear Item' : 'Add Gear Item'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Gear Item' : 'Add Gear Item'} surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__field">

@@ -66,7 +66,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
         <Card 
             title={labels.timeline} 
             icon={Clock} 
-            className="h-full flex flex-col max-h-[600px]"
+            className="timeline-card h-full flex flex-col max-h-[600px]"
             action={onAdd && (
                 <button
                     aria-label="Add timeline event"
@@ -112,7 +112,7 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                 );
             })()}
 
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="timeline-card__events flex-1 overflow-y-auto pr-2 custom-scrollbar">
                 {dayEvents.length === 0 ? (
                     <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50 relative z-10 bg-card-bg">
                         No events planned for this day yet

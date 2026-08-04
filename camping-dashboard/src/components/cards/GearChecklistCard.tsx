@@ -89,7 +89,7 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
         <Card 
             title={labels.gear} 
             icon={Tent} 
-            className="h-full max-h-[600px] flex flex-col"
+            className="gear-checklist-card h-full max-h-[600px] flex flex-col"
             action={onAdd && (
                 <button onClick={openAdd} className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors">
                     <Plus size={16} />
@@ -149,7 +149,7 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                 );
             })()}
 
-            <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1 min-h-0 pb-4">
+            <div className="gear-checklist-card__items space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1 min-h-0 pb-4">
                 {Object.entries(grouped)
                     .sort(([a], [b]) => {
                         const ai = CATEGORY_ORDER.indexOf(a);

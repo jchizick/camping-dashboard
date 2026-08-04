@@ -134,10 +134,13 @@ describe('trip section routes', () => {
 
   it.each(routes)('renders the canonical %s composition', (title, Page, modules) => {
     workspace.value = workspaceValue('owner');
-    render(<Page />);
+    const { container } = render(<Page />);
 
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
+    expect(container.querySelector('[data-trip-section]')).toBeTruthy();
+    expect(container.querySelector('.trip-section-header')).toBeTruthy();
     for (const moduleId of modules) expect(screen.getByTestId(moduleId)).toBeTruthy();
+    expect(container.querySelectorAll('.trip-section-surface')).toHaveLength(modules.length);
   });
 
   it.each(['owner', 'editor', 'viewer'] as const)(

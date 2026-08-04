@@ -72,7 +72,7 @@ export default function TimelineFormSheet({ isOpen, onClose, onSubmit, initialEv
     const isEdit = !!initialEvent;
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Event' : 'Add Event'}>
+        <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Event' : 'Add Event'} surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 <div className="crud-form__row">

@@ -50,4 +50,21 @@ describe('CrudSheet accessibility', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(document.activeElement).toBe(opener);
   });
+
+  it('applies the dense workspace treatment only when requested', () => {
+    const view = render(
+      <CrudSheet isOpen onClose={() => {}} title="Default editor">
+        Default
+      </CrudSheet>
+    );
+    expect(document.querySelector('.crud-sheet__panel--workspace')).toBeNull();
+
+    view.rerender(
+      <CrudSheet isOpen onClose={() => {}} title="Trip editor" surface="workspace">
+        Trip
+      </CrudSheet>
+    );
+    expect(document.querySelector('.crud-sheet__panel--workspace')).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Trip editor' })).toBeTruthy();
+  });
 });

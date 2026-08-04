@@ -112,7 +112,7 @@ export default function PrepFeedFormSheet({ isOpen, onClose, onSubmit, defaultUp
     }
 
     return (
-        <CrudSheet isOpen={isOpen} onClose={close} title="Log Field Asset">
+        <CrudSheet isOpen={isOpen} onClose={close} title="Log Field Asset" surface="workspace">
             <form className="crud-form" onSubmit={handleSubmit} noValidate>
 
                 {/* Drop zone */}
