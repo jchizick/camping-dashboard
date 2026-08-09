@@ -4,7 +4,11 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
+}
+
+/* These aliases intentionally remain inline so route-scoped semantic values
+   are resolved where each utility is used instead of at :root. */
+@theme inline {
   --color-app-bg: var(--app-bg);
   --color-card-bg: var(--card-bg);
   --color-card-hover: var(--card-hover);
@@ -298,6 +302,7 @@
   --workspace-text-secondary: #c5cec5;
   --workspace-accent-sage: #91c69b;
   --workspace-accent-amber: #dda04d;
+  --workspace-accent-info: #78a9b9;
   --workspace-warning-surface: #3c3021;
   --workspace-warning-border: #b57935;
   --workspace-warning-text: #f2c77f;
@@ -336,6 +341,7 @@
   --workspace-text-secondary: #b8c5bd;
   --workspace-accent-sage: #94cda0;
   --workspace-accent-amber: #e3a14b;
+  --workspace-accent-info: #82b6c7;
   --workspace-warning-surface: #33271a;
   --workspace-warning-border: #c17a31;
   --workspace-warning-text: #f3c37a;
@@ -373,6 +379,7 @@
   --workspace-text-secondary: #5b7068;
   --workspace-accent-sage: #4c8b61;
   --workspace-accent-amber: #b87324;
+  --workspace-accent-info: #4f7f91;
   --workspace-warning-surface: #fff4df;
   --workspace-warning-border: #c68538;
   --workspace-warning-text: #86510f;
@@ -410,6 +417,7 @@
   --workspace-text-secondary: #a9bab5;
   --workspace-accent-sage: #82bd91;
   --workspace-accent-amber: #daa15b;
+  --workspace-accent-info: #78a9b9;
   --workspace-warning-surface: #392c20;
   --workspace-warning-border: #bd8142;
   --workspace-warning-text: #edc58a;
@@ -989,8 +997,10 @@ body {
 }
 
 .trip-section-page {
+  --app-bg: color-mix(in srgb, var(--workspace-glass-dense) 78%, #000);
   --card-bg: var(--workspace-glass-dense);
   --card-hover: color-mix(in srgb, var(--workspace-accent-sage) 11%, var(--workspace-glass-dense));
+  --hover-bg: var(--card-hover);
   --border-subtle: var(--workspace-border-subtle);
   --surface-primary: var(--workspace-glass-dense);
   --surface-secondary: var(--workspace-glass-standard);
@@ -1000,6 +1010,9 @@ body {
   --text-primary: var(--workspace-text-primary);
   --text-secondary: var(--workspace-text-secondary);
   --accent-yellow: var(--workspace-accent-sage);
+  --accent-green: var(--workspace-accent-sage);
+  --accent-blue: var(--workspace-accent-info);
+  --accent-red: var(--workspace-danger-text);
   --focus-ring: var(--workspace-focus-ring);
   color: var(--workspace-text-primary);
 }
