@@ -22,9 +22,6 @@ describe('Home glass surface contracts', () => {
     expect(source('src/components/home/PriorityAlertCard.tsx')).toContain(
       'home-glass-surface--warning'
     );
-    expect(source('src/components/home/TripSectionLinks.tsx')).toContain(
-      'home-glass-surface--navigation'
-    );
   });
 
   it('keeps the shared Card default free of Home surface behavior', () => {
@@ -61,5 +58,67 @@ describe('Home glass surface contracts', () => {
     expect(wide).toContain('.home-weather');
     expect(wide).toContain('.home-priority');
     expect(wide).not.toMatch(/grid-template-rows:\s*\d/);
+  });
+
+  it('scopes the portrait-tablet proportional refinement without changing its topology', () => {
+    const portraitStart = css.indexOf(
+      '@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait)'
+    );
+    const portrait = css.slice(
+      portraitStart,
+      css.indexOf('@media (min-width: 1024px)', portraitStart)
+    );
+
+    expect(portraitStart).toBeGreaterThan(-1);
+    expect(portrait).toContain('padding-top: 2.625rem;');
+    expect(portrait).toMatch(/\.trip-situation-rail\s*\{[^}]*margin-top:\s*1.5rem;/);
+    expect(portrait).toContain('height: 21.875rem !important;');
+    expect(portrait).toContain('min-height: 6.5rem;');
+    expect(portrait).toContain('grid-template-columns: auto minmax(0, 1fr) auto;');
+    expect(portrait).not.toContain('.home-weather');
+    expect(portrait).not.toContain('.home-readiness');
+    expect(portrait).not.toContain('.home-today');
+  });
+
+  it('scopes the compact three-track Home composition to short landscape tablets', () => {
+    const compactStart = css.indexOf(
+      '@media (min-width: 1024px) and (max-width: 1279px) and (max-height: 800px)'
+    );
+    const compact = css.slice(
+      compactStart,
+      css.indexOf('@media (min-width: 1280px)', compactStart)
+    );
+
+    expect(compactStart).toBeGreaterThan(-1);
+    expect(compact).toContain('minmax(0, 1.52fr)');
+    expect(compact).toContain('minmax(18.75rem, 1fr)');
+    expect(compact).toContain('minmax(14.5rem, 0.82fr)');
+    expect(compact).toMatch(/\.home-map\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*1 \/ 3;/);
+    expect(compact).toMatch(/\.home-weather\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1 \/ 3;/);
+    expect(compact).toMatch(/\.home-readiness\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*1;/);
+    expect(compact).toMatch(/\.home-today\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*2;/);
+    expect(compact).toMatch(/\.home-priority\s*\{[^}]*height:\s*6rem;[^}]*grid-column:\s*1 \/ -1;/);
+    expect(compact).toContain('height: 19.6875rem !important;');
+    expect(compact).not.toMatch(/\.today-timeline__item p\s*\{[^}]*display:\s*none;/);
+    expect(compact).not.toMatch(/\.home-weather-forecast-day[^}]*display:\s*none/);
+  });
+
+  it('scopes the compact three-track Home composition to short wide desktops', () => {
+    const compactStart = css.indexOf(
+      '@media (min-width: 1280px) and (max-width: 1439px) and (max-height: 800px)'
+    );
+    const compact = css.slice(compactStart, css.indexOf('@media (min-width: 1440px)', compactStart));
+
+    expect(compactStart).toBeGreaterThan(-1);
+    expect(compact).toContain('minmax(0, 1.6fr)');
+    expect(compact).toContain('minmax(18rem, 1fr)');
+    expect(compact).toContain('minmax(14.5rem, 0.8fr)');
+    expect(compact).toMatch(/\.home-map\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*1 \/ 3;/);
+    expect(compact).toMatch(/\.home-weather\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1 \/ 3;/);
+    expect(compact).toMatch(/\.home-readiness\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*1;/);
+    expect(compact).toMatch(/\.home-today\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*2;/);
+    expect(compact).toMatch(/\.home-priority\s*\{[^}]*height:\s*6rem;[^}]*grid-column:\s*1 \/ -1;/);
+    expect(compact).toContain('height: 19.6875rem !important;');
+    expect(compact).not.toMatch(/\.today-timeline__item p\s*\{[^}]*display:\s*none;/);
   });
 });

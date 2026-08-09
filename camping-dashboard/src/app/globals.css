@@ -1782,78 +1782,6 @@ body {
   }
 }
 
-.home-workspaces {
-  margin-top: 1rem;
-}
-
-.home-workspace-section {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.workspace-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
-.workspace-summary-link {
-  min-width: 0;
-  border-color: var(--home-card-border, var(--border-subtle));
-  border-radius: 1.1rem;
-  background: var(--home-card-secondary, var(--surface-secondary));
-  box-shadow: var(--home-secondary-shadow, 0 7px 20px rgba(24, 45, 54, 0.07));
-  --workspace-accent: var(--status-info);
-}
-
-.workspace-summary-link--gear {
-  --workspace-accent: var(--status-ready);
-}
-
-.workspace-summary-link--crew {
-  --workspace-accent: var(--accent-blue);
-}
-
-.workspace-summary-link--guide {
-  --workspace-accent: var(--status-attention);
-}
-
-.workspace-summary-link--field-log {
-  --workspace-accent: var(--status-info);
-}
-
-.workspace-summary-link__icon {
-  color: var(--workspace-accent);
-  background: color-mix(in srgb, var(--workspace-accent) 22%, var(--home-card-surface));
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--workspace-accent) 24%, transparent),
-    0 4px 12px color-mix(in srgb, var(--workspace-accent) 12%, transparent);
-}
-
-.workspace-summary-link__metric {
-  color: var(--text-main);
-  font-size: 1.2rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.workspace-summary-link__support {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.workspace-summary-link:hover {
-  border-color: color-mix(in srgb, var(--accent-yellow) 40%, var(--border-subtle));
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-  transform: translateY(-2px);
-}
-
 .readiness-ring {
   display: grid;
   width: 5.25rem;
@@ -1952,24 +1880,10 @@ body {
   color: var(--status-ready);
 }
 
-.home-overview__footer {
-  padding-block: 1.25rem 0.75rem;
-}
-
-/* The immersive sidebar reduces Home's available inline space. Keep the
-   existing dense Home composition for viewports that still provide its
-   original content width; smaller wide screens retain the current fluid grid. */
+/* >=1440px owns Home's natural-height four-track layout. This block contributes
+   selected compact-density refinements from 1536px upward; >=1800px then adds
+   the approved very-large-desktop decompaction and 1600px Home cap. */
 @media (min-width: 1536px) {
-  .home-overview {
-    min-height: calc(100dvh - 2rem);
-    padding: 0 0 0.35rem;
-  }
-
-  .home-heading-region {
-    margin-bottom: 0;
-    padding: clamp(3.5rem, 5.5vw, 5.5rem) clamp(3rem, 4.25vw, 4rem) 1.25rem;
-  }
-
   .trip-hero__status {
     margin-bottom: 0.75rem;
   }
@@ -1988,7 +1902,6 @@ body {
   }
 
   .trip-situation-rail {
-    width: min(100%, 57rem);
     margin: 2rem 0 0;
     border-radius: 1rem;
   }
@@ -2008,44 +1921,8 @@ body {
     font-size: 1rem;
   }
 
-  .home-primary-grid {
-    position: relative;
-    z-index: 3;
-    width: calc(100% - (2 * clamp(3rem, 4.25vw, 4rem)));
-    margin: 1rem auto 0;
-    grid-template-columns:
-      repeat(5, minmax(0, 0.9fr))
-      repeat(3, minmax(0, 1fr))
-      repeat(4, minmax(0, 1.1fr));
-    grid-template-rows: 16rem 5.75rem;
-    gap: 0.875rem 1rem;
-  }
-
-  .home-map {
-    grid-column: 1 / 6;
-    grid-row: 1 / 3;
-  }
-
   .home-weather {
-    grid-column: 6 / 9;
-    grid-row: 1 / 3;
     grid-template-rows: minmax(0, 1fr);
-    overflow: hidden;
-  }
-
-  .home-readiness {
-    grid-column: 9 / 11;
-    grid-row: 1;
-  }
-
-  .home-today {
-    grid-column: 11 / 13;
-    grid-row: 1;
-  }
-
-  .home-priority {
-    grid-column: 9 / 13;
-    grid-row: 2;
   }
 
   .home-map-card > div:first-child,
@@ -2175,9 +2052,6 @@ body {
   }
 
   .home-map-card__canvas {
-    height: auto !important;
-    min-height: 0 !important;
-    flex: 1;
     border: 0;
     border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
   }
@@ -2418,68 +2292,9 @@ body {
     justify-self: end;
   }
 
-  .home-workspaces {
-    width: calc(100% - (2 * clamp(3rem, 4.25vw, 4rem)));
-    margin: 0.75rem auto 0;
-  }
-
-  .home-workspace-section {
-    gap: 0;
-  }
-
-  .home-workspace-section > div:first-child {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .workspace-summary-grid {
-    gap: 0.75rem;
-  }
-
-  .workspace-summary-link {
-    min-height: 8rem;
-    padding: 0.85rem;
-  }
-
-  .workspace-summary-link__icon {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .workspace-summary-link__content {
-    margin-top: 0.65rem;
-  }
-
-  .workspace-summary-link__metric {
-    font-size: 1rem;
-  }
-
-  .workspace-summary-link__support {
-    display: none;
-  }
-
-  .workspace-summary-link__support:last-child {
-    display: -webkit-box;
-    margin-top: 0.35rem;
-    white-space: nowrap;
-    -webkit-line-clamp: 1;
-  }
-
-  .home-overview__footer {
-    padding-block: 0.7rem 0.25rem;
-  }
 }
 
-@media (max-width: 1279px) {
-  .workspace-summary-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
+
 
 @media (min-width: 768px) {
   .trip-navigation-desktop {
@@ -2735,17 +2550,9 @@ body {
   .home-readiness {
     order: 5;
   }
-
-  .workspace-summary-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
-@media (min-width: 520px) and (max-width: 767px) {
-  .workspace-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+
 
 /* Base container for the background */
 .bg-topo-grid {
@@ -3378,8 +3185,7 @@ body {
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-forecast-day__temperature strong,
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card p:first-child,
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-today-card h3,
-[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card h3,
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__metric {
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card h3 {
   color: var(--color-text-primary);
 }
 
@@ -3398,8 +3204,7 @@ body {
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card p:not(:first-child),
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-readiness-card span,
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-today-card p,
-[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card p,
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__support {
+[data-trip-app-shell]:has(.home-overview) .home-overview .home-priority-card p {
   color: var(--color-text-secondary);
 }
 
@@ -3610,62 +3415,18 @@ body {
   color: var(--color-text-secondary);
 }
 
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link {
-  --workspace-accent: var(--color-category-plan);
-  border-color: color-mix(in srgb, var(--workspace-accent) 18%, var(--color-border-subtle));
-  background: color-mix(in srgb, var(--workspace-accent) 5%, var(--color-bg-subtle));
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--gear {
-  --workspace-accent: var(--color-category-gear);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--crew {
-  --workspace-accent: var(--color-category-crew);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--guide {
-  --workspace-accent: var(--color-category-guide);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--field-log {
-  --workspace-accent: var(--color-category-record);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link__icon {
-  color: var(--workspace-accent);
-  background: color-mix(in srgb, var(--workspace-accent) 12%, var(--color-bg-surface));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--workspace-accent) 22%, transparent);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link > div:first-child > svg {
-  color: var(--workspace-accent);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link:hover {
-  border-color: color-mix(in srgb, var(--workspace-accent) 42%, var(--color-border-subtle));
-  background: color-mix(in srgb, var(--workspace-accent) 9%, var(--color-bg-surface));
-  box-shadow: var(--home-card-shadow);
-}
-
-[data-trip-app-shell]:has(.home-overview) .workspace-summary-link--field-log:hover {
-  border-color: color-mix(in srgb, var(--color-category-map) 34%, var(--color-border-subtle));
-}
-
 /* ============================================================
    Home expedition glass surfaces — explicit, scoped variants.
    The shared Card primitive keeps its default appearance.
    ============================================================ */
 
-.home-glass-surface,
-.home-glass-surface--navigation {
+.home-glass-surface {
   color: var(--workspace-text-primary);
   border-color: var(--workspace-border-strong) !important;
   box-shadow: var(--workspace-elevation) !important;
 }
 
-.home-glass-surface--standard,
-.home-glass-surface--navigation {
+.home-glass-surface--standard {
   background: var(--workspace-glass-standard) !important;
 }
 
@@ -3715,8 +3476,7 @@ body {
   border-color: color-mix(in srgb, var(--workspace-accent-sage) 48%, transparent);
 }
 
-.home-glass-surface :is(a, button):focus-visible,
-.home-glass-surface--navigation:focus-visible {
+.home-glass-surface :is(a, button):focus-visible {
   outline: 2px solid var(--workspace-focus-ring);
   outline-offset: 2px;
 }
@@ -3756,8 +3516,7 @@ body {
     background: color-mix(in srgb, var(--workspace-warning-surface) 72%, transparent) !important;
   }
 
-  .home-glass-surface--standard,
-  .home-glass-surface--navigation {
+  .home-glass-surface--standard {
     background: var(--workspace-glass-standard-translucent) !important;
     -webkit-backdrop-filter: blur(14px) saturate(1.06);
     backdrop-filter: blur(14px) saturate(1.06);
@@ -3786,21 +3545,8 @@ body {
   white-space: normal;
 }
 
-.home-overview__footer {
-  width: max-content;
-  max-width: calc(100% - 2rem);
-  margin-inline: auto;
-  padding: 0.3rem 0.75rem;
-  border: 1px solid var(--workspace-border-subtle);
-  border-radius: 999px;
-  background: var(--workspace-glass-standard-translucent);
-  color: var(--workspace-text-secondary);
-  text-shadow: 0 1px 8px color-mix(in srgb, var(--workspace-glass-dense) 72%, transparent);
-}
-
 @media (prefers-reduced-transparency: reduce) {
-  .home-glass-surface--standard,
-  .home-glass-surface--navigation {
+  .home-glass-surface--standard {
     background: var(--workspace-glass-standard) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -3821,6 +3567,483 @@ body {
 
   [data-trip-app-shell]:has(.home-overview) .home-priority > .home-glass-surface--warning {
     background: var(--workspace-warning-surface) !important;
+  }
+}
+
+/* Portrait tablet Home: preserve the approved stacked operational sequence
+   while correcting the relative weight of the hero, Map, and final Priority. */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .home-heading-region {
+    padding-top: 2.625rem;
+  }
+
+  .trip-situation-rail {
+    margin-top: 1.5rem;
+  }
+
+  .home-map-card > div:first-child {
+    padding-block: 0.75rem;
+  }
+
+  .home-map-card__canvas {
+    height: 21.875rem !important;
+    min-height: 21.875rem !important;
+  }
+
+  .home-priority-card > div:last-child {
+    padding: 0.75rem;
+  }
+
+  .home-priority-card__notice {
+    min-height: 6.5rem;
+    padding: 0.75rem;
+  }
+
+  .home-priority-card__notice:not([data-tone="positive"]) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    justify-content: stretch;
+    gap: 0.25rem 0.875rem;
+  }
+
+  .home-priority-card__severity {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+
+  .home-priority-card__title {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+  }
+
+  .home-priority-card__summary {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    margin-top: 0.15rem;
+  }
+
+  .home-priority-card__updated {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    align-self: center;
+    margin: 0;
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+/* Landscape tablet / compact desktop Home: retain the top navigation while
+   giving the operational modules a deliberate short-height composition. */
+@media (min-width: 1024px) and (max-width: 1279px) and (max-height: 800px) {
+  .home-overview {
+    padding: 0.75rem 1.5rem 0.25rem;
+  }
+
+  .home-heading-region {
+    margin-bottom: 0;
+    padding: 2.5rem 2rem 0.75rem;
+  }
+
+  .trip-situation-rail {
+    margin-top: 1rem;
+  }
+
+  .home-primary-grid {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    margin-top: 0.5rem;
+    grid-template-columns:
+      minmax(0, 1.52fr)
+      minmax(18.75rem, 1fr)
+      minmax(14.5rem, 0.82fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .home-map {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .home-weather {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-content: start;
+    overflow: visible;
+  }
+
+  .home-readiness {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .home-today {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .home-priority {
+    height: 6rem;
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .home-map > .home-map-card,
+  .home-weather > .home-weather-card {
+    height: auto;
+  }
+
+  .home-map-card > div:first-child,
+  .home-readiness-card > div:first-child,
+  .home-today-card > div:first-child {
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .home-map-card > div:first-child button {
+    min-height: 2.5rem;
+  }
+
+  .home-readiness-card .home-readiness-header-action {
+    min-height: 2.25rem;
+  }
+
+  .home-map-card > div:last-child {
+    padding: 0.75rem;
+  }
+
+  .home-map-card__canvas {
+    height: 19.6875rem !important;
+    min-height: 19.6875rem !important;
+  }
+
+  .home-readiness-card > div:last-child,
+  .home-today-card > div:last-child {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .home-readiness-card > div:last-child > div:first-child {
+    gap: 0.625rem;
+  }
+
+  .readiness-ring {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child {
+    margin-top: 0.625rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div {
+    margin-top: 0.375rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div:first-child {
+    margin-top: 0;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div > div:first-child {
+    margin-bottom: 0.25rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div > div:last-child {
+    height: 0.375rem;
+  }
+
+  .home-today-card .today-timeline__item {
+    --today-timeline-axis-x: 4.025rem;
+    --today-timeline-marker-center-y: 0.705rem;
+    min-height: 2.5rem;
+    grid-template-columns: 3.35rem 0.65rem minmax(0, 1fr);
+    gap: 0.35rem;
+    padding-block: 0.15rem;
+  }
+
+  .home-today-card .today-timeline__time {
+    font-size: 0.65rem;
+  }
+
+  .home-priority-card > div:first-child {
+    display: none;
+  }
+
+  .home-priority-card > div:last-child {
+    padding: 0;
+  }
+
+  .home-priority-card [role="status"] {
+    display: grid;
+    height: 100%;
+    min-height: 100%;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    gap: 0 0.75rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: calc(var(--radius-card) - 1px);
+  }
+
+  .home-priority-card__severity {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+
+  .home-priority-card__severity svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .home-priority-card__title {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-priority-card__summary {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    margin-top: 0.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-priority-card__updated {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    margin: 0 0 0.15rem;
+    text-align: right;
+  }
+
+  .home-priority-card__inline-action {
+    display: inline-flex;
+    min-height: 2.5rem;
+    grid-column: 3;
+    grid-row: 2;
+    align-self: start;
+    justify-self: end;
+  }
+}
+
+/* Wide-but-short desktop Home: preserve the expedition narrative while
+   arranging the operational modules as a compact command surface. */
+@media (min-width: 1280px) and (max-width: 1439px) and (max-height: 800px) {
+  .home-overview {
+    padding: 0.75rem 1rem 0.125rem;
+  }
+
+  .home-heading-region {
+    margin-bottom: 0;
+    padding: 2.25rem 2.5rem 0.625rem;
+  }
+
+  .trip-situation-rail {
+    margin-top: 1rem;
+  }
+
+  .trip-situation-rail__item {
+    min-height: 4.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .home-primary-grid {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    margin-top: 0.5rem;
+    grid-template-columns:
+      minmax(0, 1.6fr)
+      minmax(18rem, 1fr)
+      minmax(14.5rem, 0.8fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .home-map {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .home-weather {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-content: start;
+    overflow: visible;
+  }
+
+  .home-readiness {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .home-today {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .home-priority {
+    height: 6rem;
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .home-map > .home-map-card,
+  .home-weather > .home-weather-card {
+    height: auto;
+  }
+
+  .home-map-card > div:first-child,
+  .home-readiness-card > div:first-child,
+  .home-today-card > div:first-child {
+    min-height: 2.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .home-map-card > div:first-child button,
+  .home-readiness-card .home-readiness-header-action {
+    min-height: 2.25rem;
+  }
+
+  .home-map-card > div:last-child {
+    padding: 0.75rem;
+  }
+
+  .home-map-card__canvas {
+    height: 19.6875rem !important;
+    min-height: 19.6875rem !important;
+  }
+
+  .home-readiness-card > div:last-child,
+  .home-today-card > div:last-child {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .home-readiness-card > div:last-child > div:first-child {
+    gap: 0.625rem;
+  }
+
+  .readiness-ring {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child {
+    margin-top: 0.625rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div {
+    margin-top: 0.375rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div:first-child {
+    margin-top: 0;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div > div:first-child {
+    margin-bottom: 0.25rem;
+  }
+
+  .home-readiness-card > div:last-child > div:last-child > div > div:last-child {
+    height: 0.375rem;
+  }
+
+  .home-today-card .today-timeline__item {
+    --today-timeline-axis-x: 3.825rem;
+    --today-timeline-marker-center-y: 0.655rem;
+    min-height: 2.4rem;
+    grid-template-columns: 3.15rem 0.65rem minmax(0, 1fr);
+    gap: 0.35rem;
+    padding-block: 0.15rem;
+  }
+
+  .home-today-card .today-timeline__time {
+    font-size: 0.62rem;
+  }
+
+  .home-today-card .today-timeline__time svg {
+    display: none;
+  }
+
+  .home-priority-card > div:first-child {
+    display: none;
+  }
+
+  .home-priority-card > div:last-child {
+    padding: 0;
+  }
+
+  .home-priority-card [role="status"] {
+    display: grid;
+    height: 100%;
+    min-height: 100%;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    gap: 0 0.75rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: calc(var(--radius-card) - 1px);
+  }
+
+  .home-priority-card__severity {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+
+  .home-priority-card__severity svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .home-priority-card__title {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-priority-card__summary {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    margin-top: 0.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-priority-card__updated {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: end;
+    margin: 0 0 0.15rem;
+    text-align: right;
+  }
+
+  .home-priority-card__inline-action {
+    display: inline-flex;
+    min-height: 2.25rem;
+    grid-column: 3;
+    grid-row: 2;
+    align-self: start;
+    justify-self: end;
   }
 }
 
@@ -3939,8 +4162,33 @@ body {
     -webkit-line-clamp: 2;
   }
 
-  .home-workspaces {
-    width: calc(100% - 2.5rem);
-    margin: 0.875rem auto 0;
+}
+
+@media (min-width: 1536px) and (max-width: 1799px) {
+  .home-overview {
+    padding-bottom: 2px;
+  }
+}
+
+@media (min-width: 1800px) {
+  .home-overview {
+    width: min(100%, 1600px);
+  }
+
+  .theme-expedition [data-trip-app-shell]:has(.home-overview) .readiness-ring {
+    width: 4.75rem;
+    height: 4.75rem;
+  }
+
+  .theme-expedition [data-trip-app-shell]:has(.home-overview) .readiness-ring span {
+    font-size: 1.375rem;
+  }
+
+  .theme-expedition [data-trip-app-shell]:has(.home-overview) .home-today-card .today-timeline__item h3 {
+    font-size: 0.8125rem;
+  }
+
+  .theme-expedition [data-trip-app-shell]:has(.home-overview) .home-map-card > div:first-child button {
+    min-height: 2.25rem;
   }
 }

@@ -5,10 +5,6 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
-  CrewMember,
-  GearItem,
-  OfflineStatus,
-  PrepFeedItem,
   TimelineEvent,
   WeatherForecast,
 } from '@/types';
@@ -147,6 +143,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -210,18 +207,12 @@ describe('HomeOverview', () => {
       expect(screen.queryByRole('heading', { name: legacyTitle })).toBeNull();
     }
 
+    expect(document.querySelector('.home-workspaces')).toBeNull();
+    expect(document.querySelector('.home-overview__footer')).toBeNull();
+    expect(screen.queryByText(/Workspace synced/)).toBeNull();
     for (const label of ['Plan', 'Gear', 'Crew', 'Field Guide', 'Field Log']) {
-      expect(screen.getAllByRole('link', { name: `Open ${label}` })).toHaveLength(1);
+      expect(screen.queryByRole('link', { name: `Open ${label}` })).toBeNull();
     }
-    expect(screen.getByRole('link', { name: 'Open Plan' }).getAttribute('href')).toBe(
-      '/trips/trip-1/plan'
-    );
-    expect(screen.getByRole('link', { name: 'Open Gear' }).getAttribute('href')).toBe(
-      '/trips/trip-1/gear'
-    );
-    expect(
-      screen.getByRole('link', { name: 'Open Field Guide' }).getAttribute('href')
-    ).toBe('/trips/trip-1/guide');
   });
 
   it('keeps viewer Home readable and the retained map read-only', () => {
@@ -229,11 +220,32 @@ describe('HomeOverview', () => {
     render(<HomeOverview />);
 
     expect(screen.getByTestId('map').getAttribute('data-editable')).toBe('false');
-    expect(screen.getByRole('link', { name: 'Open Gear' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'View gear' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /add|edit|delete/i })).toBeNull();
   });
 
-  it('renders hidden and empty summary combinations without losing navigation', () => {
+  it('uses the approved mobile operational order in the DOM', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(max-width: 767px)',
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
+
+    render(<HomeOverview />);
+
+    expect(
+      Array.from(document.querySelectorAll('[data-home-module]')).map((module) =>
+        module.getAttribute('data-home-module')
+      )
+    ).toEqual(['day-plan', 'priority-notice', 'map', 'weather', 'readiness']);
+  });
+
+  it('renders empty operational states without restoring removed workspace summaries', () => {
     const value = workspaceValue();
     value.data!.settings.show_meals = false;
     value.data!.settings.show_crew = false;
@@ -243,12 +255,9 @@ describe('HomeOverview', () => {
     workspace.value = value;
     render(<HomeOverview />);
 
-    expect(screen.getByText('0/0 packed')).toBeTruthy();
-    expect(screen.getByText('Hidden for this trip')).toBeTruthy();
-    expect(screen.getByText('No preparation photos yet')).toBeTruthy();
     expect(screen.getByText('No active notices')).toBeTruthy();
-    expect(screen.queryByText(/meals$/)).toBeNull();
-    expect(screen.getByRole('link', { name: 'Open Crew' })).toBeTruthy();
+    expect(document.querySelector('.home-workspaces')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Open Crew' })).toBeNull();
   });
 
   it('links an empty schedule to Plan and exposes complete readiness accessibly', () => {
@@ -268,7 +277,7 @@ describe('HomeOverview', () => {
     render(<HomeOverview />);
 
     expect(screen.getByText('No events are planned for this day yet.')).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: 'Open Plan' })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: 'Open Plan' })).toHaveLength(1);
     expect(
       screen.getByRole('progressbar', { name: 'Overall trip readiness' }).getAttribute(
         'aria-valuenow'
@@ -277,42 +286,17 @@ describe('HomeOverview', () => {
     expect(screen.getAllByText('Locked In')).toHaveLength(2);
   });
 
-  it('reflects canonical section state immediately without calling reload', () => {
+  it('reflects canonical operational state immediately without calling reload', () => {
     const value = workspaceValue();
     workspace.value = value;
     const view = render(<HomeOverview />);
 
-    value.gear = [
-      {
-        id: 'gear-1',
-        acquired: true,
-        packed: true,
-        priority: 'critical',
-      } as GearItem,
-    ];
     value.timeline = [
       timelineEvent({ id: 'event-2', title: 'Portage', event_time: '10:30' }),
-    ];
-    value.crew = [
-      { id: 'crew-1', name: 'Jordan', role: 'Paddler', load_weight_kg: 12.5 } as CrewMember,
     ];
     value.alerts = [
       activeAlert({ id: 'dismissed', severity: 'critical', dismissed_at: '2026-07-27T13:00:00Z' }),
       activeAlert({ id: 'watch', title: 'Rain watch', severity: 'watch' }),
-    ];
-    value.offlineStatus = {
-      trip_id: 'trip-1',
-      maps_cached: true,
-    } as OfflineStatus;
-    value.prepFeed = [
-      {
-        id: 'prep-1',
-        trip_id: 'trip-1',
-        category: 'Gear',
-        caption: 'Canoe packed',
-        uploaded_by: 'Jordan',
-        created_at: '2026-07-27T13:00:00Z',
-      } as PrepFeedItem,
     ];
     value.readiness = {
       ...value.readiness!,
@@ -324,13 +308,9 @@ describe('HomeOverview', () => {
 
     view.rerender(<HomeOverview />);
 
-    expect(screen.getByText('1/1 packed')).toBeTruthy();
     expect(screen.getAllByText('Portage')).toHaveLength(2);
-    expect(screen.getByText('1 member')).toBeTruthy();
     expect(screen.getByText('Rain watch')).toBeTruthy();
     expect(screen.queryByText('Wind advisory')).toBeNull();
-    expect(screen.getByText('Offline checklist started')).toBeTruthy();
-    expect(screen.getByText('Canoe packed')).toBeTruthy();
     expect(screen.getAllByText('88%').length).toBeGreaterThan(0);
     expect(value.reload).not.toHaveBeenCalled();
   });

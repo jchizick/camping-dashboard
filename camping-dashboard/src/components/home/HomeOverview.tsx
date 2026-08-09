@@ -9,30 +9,44 @@ import ReadinessSummaryCard from './ReadinessSummaryCard';
 import TodaySummaryCard from './TodaySummaryCard';
 import TripHero from './TripHero';
 import TripSituationRail from './TripSituationRail';
-import TripSectionLinks from './TripSectionLinks';
 import {
   getHomeScheduleSummary,
   getPriorityAlert,
   getVisibleAlerts,
 } from './homeSelectors';
 
+const mobileHomeOrderQuery = '(max-width: 767px)';
+
+function subscribeToMobileHomeOrder(onChange: () => void) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
+
+  const query = window.matchMedia(mobileHomeOrderQuery);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function getMobileHomeOrderSnapshot() {
+  return typeof window !== 'undefined' &&
+    Boolean(window.matchMedia) &&
+    window.matchMedia(mobileHomeOrderQuery).matches;
+}
+
 export default function HomeOverview() {
   const {
     data,
     trip,
-    gear,
-    meals,
     timeline,
-    crew,
     alerts,
-    offlineStatus,
-    parkIntel,
-    prepFeed,
     tripDays,
     countdown,
     readiness,
     editableActions,
   } = useTripWorkspace();
+  const usesMobileHomeOrder = React.useSyncExternalStore(
+    subscribeToMobileHomeOrder,
+    getMobileHomeOrderSnapshot,
+    () => false
+  );
 
   if (!data || !trip || !countdown || !readiness) return null;
 
@@ -44,6 +58,59 @@ export default function HomeOverview() {
   });
   const visibleAlerts = getVisibleAlerts(alerts);
   const priorityAlert = getPriorityAlert(visibleAlerts);
+
+  const modules = {
+    map: (
+      <div key="map" className="home-map" data-home-module="map">
+        <MapRouteCard
+          trip={trip}
+          onSaveLocation={editableActions?.saveCampsite}
+          variant="home"
+        />
+      </div>
+    ),
+    weather: (
+      <section
+        key="weather"
+        className="home-weather"
+        data-home-module="weather"
+        aria-label="Weather and forecast"
+      >
+        <WeatherCard
+          tripId={trip.id}
+          weather={data.currentWeather}
+          weatherRefresh={data.weatherRefresh}
+          astro={data.astro}
+          forecast={data.forecast}
+          variant="home"
+        />
+      </section>
+    ),
+    readiness: (
+      <div key="readiness" className="home-readiness" data-home-module="readiness">
+        <ReadinessSummaryCard
+          readiness={readiness}
+          href={`${base}/gear`}
+          showMeals={data.settings.show_meals}
+          showOffline={data.settings.show_offline}
+        />
+      </div>
+    ),
+    today: (
+      <div key="today" className="home-today" data-home-module="day-plan">
+        <TodaySummaryCard summary={schedule} href={`${base}/plan`} />
+      </div>
+    ),
+    priority: (
+      <div key="priority" className="home-priority" data-home-module="priority-notice">
+        <PriorityAlertCard alert={priorityAlert} href={`${base}/guide`} />
+      </div>
+    ),
+  };
+
+  const operationalModules = usesMobileHomeOrder
+    ? [modules.today, modules.priority, modules.map, modules.weather, modules.readiness]
+    : [modules.map, modules.weather, modules.readiness, modules.today, modules.priority];
 
   return (
     <div className="home-overview">
@@ -57,67 +124,8 @@ export default function HomeOverview() {
       </div>
 
       <div className="home-primary-grid" data-home-grid="operational">
-        <div className="home-map" data-home-module="map">
-          <MapRouteCard
-            trip={trip}
-            onSaveLocation={editableActions?.saveCampsite}
-            variant="home"
-          />
-        </div>
-
-        <section className="home-weather" data-home-module="weather" aria-label="Weather and forecast">
-          <WeatherCard
-            tripId={trip.id}
-            weather={data.currentWeather}
-            weatherRefresh={data.weatherRefresh}
-            astro={data.astro}
-            forecast={data.forecast}
-            variant="home"
-          />
-        </section>
-
-        <div className="home-readiness" data-home-module="readiness">
-          <ReadinessSummaryCard
-            readiness={readiness}
-            href={`${base}/gear`}
-            showMeals={data.settings.show_meals}
-            showOffline={data.settings.show_offline}
-          />
-        </div>
-
-        <div className="home-today" data-home-module="day-plan">
-          <TodaySummaryCard summary={schedule} href={`${base}/plan`} />
-        </div>
-
-        <div className="home-priority" data-home-module="priority-notice">
-          <PriorityAlertCard alert={priorityAlert} href={`${base}/guide`} />
-        </div>
+        {operationalModules}
       </div>
-
-      <div className="home-workspaces">
-        <TripSectionLinks
-          tripId={trip.id}
-          tripDays={tripDays}
-          timeline={timeline}
-          meals={meals}
-          gear={gear}
-          crew={crew}
-          alerts={visibleAlerts}
-          offlineStatus={offlineStatus}
-          parkIntel={parkIntel}
-          prepFeed={prepFeed}
-          schedule={schedule}
-          showMeals={data.settings.show_meals}
-          showCrew={data.settings.show_crew}
-          showOffline={data.settings.show_offline}
-          showAstro={data.settings.show_astro}
-          hasAstro={data.astro !== null}
-        />
-      </div>
-
-      <footer className="home-overview__footer text-center text-xs text-text-muted">
-        {trip.park_name} · Workspace synced
-      </footer>
     </div>
   );
 }
