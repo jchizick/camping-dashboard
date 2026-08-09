@@ -121,6 +121,21 @@ describe('TripAppShell', () => {
     expect(css).toMatch(/\.trip-navigation-desktop\s*\{\s*display:\s*none;/);
     expect(css).toMatch(/\.trip-navigation-mobile-more\s*\{\s*display:\s*block;/);
     expect(css).toMatch(/\.trip-navigation-mobile-bar\s*\{\s*display:\s*grid;/);
+    expect(css).toContain(
+      '.theme-expedition [data-trip-app-shell] .trip-mobile-nav,'
+    );
+    expect(css).toContain(
+      '.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link,'
+    );
+    expect(css).toContain(
+      '.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link--active,'
+    );
+    expect(css).toContain(
+      '--trip-mobile-nav-surface: var(--color-bg-surface, #17221c);'
+    );
+    expect(css).toContain(
+      'background: color-mix(in srgb, var(--trip-mobile-nav-surface) 96%, transparent);'
+    );
 
     const sharedHandoff = css.slice(
       css.indexOf('@media (min-width: 768px)'),

@@ -3192,6 +3192,51 @@ body {
   background: var(--color-action-primary);
 }
 
+/* Expedition navigation belongs to the shared trip shell, not the Home route. */
+.theme-expedition [data-trip-app-shell] .trip-mobile-nav,
+.theme-expedition [data-trip-app-shell]:has(.home-overview) .trip-mobile-nav {
+  --trip-mobile-nav-surface: var(--color-bg-surface, #17221c);
+  --trip-mobile-nav-border: #34453c;
+  --trip-mobile-nav-text: var(--color-text-primary, #f1f0e8);
+  --trip-mobile-nav-muted: var(--color-text-secondary, #b7bcaf);
+  --trip-mobile-nav-active: var(--color-action-primary, #8ebf9b);
+  border-color: var(--trip-mobile-nav-border);
+  background: color-mix(in srgb, var(--trip-mobile-nav-surface) 96%, transparent);
+  color: var(--trip-mobile-nav-text);
+}
+
+.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link,
+.theme-expedition [data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link {
+  color: var(--trip-mobile-nav-muted);
+}
+
+.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link:hover,
+.theme-expedition [data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link:hover {
+  background: color-mix(
+    in srgb,
+    var(--trip-mobile-nav-active) 10%,
+    var(--trip-mobile-nav-surface)
+  );
+  color: var(--trip-mobile-nav-active);
+}
+
+.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link--active,
+.theme-expedition [data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link--active {
+  background: color-mix(
+    in srgb,
+    var(--trip-mobile-nav-active) 14%,
+    var(--trip-mobile-nav-surface)
+  );
+  color: var(--trip-mobile-nav-active);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--trip-mobile-nav-active) 16%, transparent);
+}
+
+.theme-expedition [data-trip-app-shell] .trip-mobile-nav__link--active::after,
+.theme-expedition [data-trip-app-shell]:has(.home-overview) .trip-mobile-nav__link--active::after {
+  background: var(--trip-mobile-nav-active);
+}
+
 [data-trip-app-shell]:has(.home-overview) .home-overview,
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-temperature,
 [data-trip-app-shell]:has(.home-overview) .home-overview .home-weather-stat__value,
