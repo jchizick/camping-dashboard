@@ -4250,3 +4250,16 @@ body {
     min-height: 2.25rem;
   }
 }
+
+@media (max-width: 767px) {
+  .trips-utility { row-gap: 0.5rem; }
+  .trips-expeditions { margin-top: 1.5rem; }
+}
+
+@media (min-width: 1280px) and (max-height: 900px) {
+  .trips-landing__canvas { padding-top: 1.5rem; padding-bottom: 2rem; }
+  .trips-welcome { margin-bottom: 1.25rem; }
+  .trips-feature__content { margin-top: 2.25rem; }
+  .trips-feature__meta { margin-top: 1rem; margin-bottom: 1.25rem; }
+  .trips-expeditions { margin-top: 1.25rem; }
+}
