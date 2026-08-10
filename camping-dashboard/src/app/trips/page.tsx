@@ -63,9 +63,9 @@ export default function TripsPage() {
 
 function BrandMark() {
   return (
-    <Link href="/trips" className="trips-brand" aria-label="The Tent and Lantern — Trips">
+    <Link href="/trips" className="trips-brand" aria-label="Field Protocol — Trips">
       <span className="trips-brand__crest" aria-hidden="true"><Mountain size={20} /></span>
-      <span className="trips-brand__name">The Tent &amp; Lantern</span>
+      <span className="trips-brand__name">Field Protocol</span>
     </Link>
   );
 }
