@@ -7,6 +7,7 @@ import { getAuthErrorMessage } from '@/lib/authRedirect';
 import { fetchUserTrips, type UserTrip } from '@/lib/fetchDashboard';
 import { ThemeProvider } from '@/lib/themeContext';
 import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
+import { SignedOutLanding } from '@/components/trips/SignedOutLanding';
 import {
   canDeleteTrip,
   formatTripDates,
@@ -26,7 +27,6 @@ import {
   CircleHelp,
   Compass,
   Ellipsis,
-  LogIn,
   LogOut,
   Map,
   MapPin,
@@ -263,37 +263,7 @@ function TripsContent() {
   }
 
   if (!authLoading && !user) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-app-bg font-sans">
-        <div className="text-center max-w-[420px] px-8 py-12">
-          <div className="text-5xl mb-4">🏕️</div>
-          <h1 className="text-text-main text-3xl font-bold mb-2 tracking-tight">
-            Camping Dashboard
-          </h1>
-          <p className="text-text-muted text-base mb-8 leading-relaxed">
-            Plan, pack, and prepare for your next outdoor adventure.
-          </p>
-          {(callbackError || signInError) && (
-            <p
-              role="alert"
-              className="mb-5 rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-sm text-accent-red"
-            >
-              {signInError ?? callbackError}
-            </p>
-          )}
-          <button
-            onClick={handleSignIn}
-            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
-            style={{
-              background: 'var(--accent-yellow)',
-              color: 'white',
-            }}
-          >
-            <LogIn size={18} /> Sign in with Google
-          </button>
-        </div>
-      </main>
-    );
+    return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
   }
 
   if (isLoading || authLoading) {
