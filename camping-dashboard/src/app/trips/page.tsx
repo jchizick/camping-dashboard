@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { getAuthErrorMessage } from '@/lib/authRedirect';
@@ -64,7 +65,9 @@ export default function TripsPage() {
 function BrandMark() {
   return (
     <Link href="/trips" className="trips-brand" aria-label="Field Protocol — Trips">
-      <span className="trips-brand__crest" aria-hidden="true"><Mountain size={20} /></span>
+      <span className="trips-brand__crest" aria-hidden="true">
+        <Image src="/logo.svg" alt="" width={67} height={83} />
+      </span>
       <span className="trips-brand__name">Field Protocol</span>
     </Link>
   );
