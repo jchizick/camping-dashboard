@@ -73,6 +73,8 @@ export function ExpeditionRouteMap() {
         <g className="signed-out-map__compass" transform="translate(480 75)">
           <circle r="30" fill="rgba(7, 27, 20, .82)" stroke="#9f8b50" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           <circle r="21" fill="none" stroke="#6f754d" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+          <line className="signed-out-map__compass-tick" x1="-30" x2="-24" stroke="#9f8b50" strokeLinecap="round" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <line className="signed-out-map__compass-tick" x1="30" x2="24" stroke="#9f8b50" strokeLinecap="round" strokeWidth="1" vectorEffect="non-scaling-stroke" />
           <path d="M0-18 5 2 0 8-5 2Z" fill="#e7b54b" />
           <path d="M0 18 4-2 0-8-4-2Z" fill="#77935a" />
           <text y="-37" fill="#e6bd66" fontSize="10" textAnchor="middle">N</text>

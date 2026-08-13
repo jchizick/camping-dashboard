@@ -59,6 +59,12 @@ describe('SignedOutLanding', () => {
     expect(map?.querySelector('path[d="M158 505l7-12 7 12h-5v12h-4v-12Z"]')).toBeNull();
     expect(map?.querySelector('path[d="M190 420l7-12 7 12h-5v12h-4v-12Z"]')).toBeNull();
     expect(map?.querySelector('path[d="M302 257l7-12 7 12h-5v12h-4v-12Z"]')).toBeNull();
+    const compassTicks = map?.querySelectorAll('.signed-out-map__compass-tick');
+    expect(compassTicks?.length).toBe(2);
+    expect(compassTicks?.[0].getAttribute('x1')).toBe('-30');
+    expect(compassTicks?.[0].getAttribute('x2')).toBe('-24');
+    expect(compassTicks?.[1].getAttribute('x1')).toBe('30');
+    expect(compassTicks?.[1].getAttribute('x2')).toBe('24');
     expect(map?.textContent).toContain('Access Point');
     expect(map?.textContent).toContain('Taylor Lake');
     expect(map?.textContent).toContain('Little John Lake');
