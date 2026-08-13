@@ -32,15 +32,6 @@ export function getTripLocation(trip: UserTrip): string {
   return campsite || trip.park_name || 'Location to be confirmed';
 }
 
-export function getTripDuration(startDate: string, endDate: string): string | null {
-  const start = new Date(`${startDate}T00:00:00`);
-  const end = new Date(`${endDate}T00:00:00`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return null;
-  const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
-  const nights = Math.max(0, days - 1);
-  return `${days} day${days === 1 ? '' : 's'} · ${nights} night${nights === 1 ? '' : 's'}`;
-}
-
 export function getTripStatus(startDate: string, endDate: string, today = new Date()): {
   label: string;
   tone: 'current' | 'upcoming' | 'complete';

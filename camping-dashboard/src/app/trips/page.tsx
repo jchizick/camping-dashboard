@@ -12,7 +12,6 @@ import { SignedOutLanding } from '@/components/trips/SignedOutLanding';
 import {
   canDeleteTrip,
   formatTripDates,
-  getTripDuration,
   getTripHref,
   getTripLocation,
   getTripStatus,
@@ -20,6 +19,7 @@ import {
   NEW_TRIP_HREF,
   selectFeaturedTrip,
 } from '@/lib/tripsLanding';
+import { formatTripDuration, getTripDuration } from '@/lib/tripDuration';
 import {
   ArrowRight,
   Backpack,
@@ -146,6 +146,7 @@ function TripOverflow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
 function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
   const background = resolveTripWorkspaceBackground(trip);
   const duration = getTripDuration(trip.start_date, trip.end_date);
+  const durationLabel = duration ? formatTripDuration(duration) : null;
   const status = getTripStatus(trip.start_date, trip.end_date);
   return (
     <section className="trips-feature" aria-labelledby="featured-trip-title" style={background ? { backgroundImage: `url(${background})` } : undefined}>
@@ -162,7 +163,7 @@ function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
         <p className="trips-feature__location"><MapPin size={18} aria-hidden="true" /> {getTripLocation(trip)}</p>
         <div className="trips-feature__meta">
           <span><CalendarDays size={17} aria-hidden="true" /> {formatTripDates(trip.start_date, trip.end_date)}</span>
-          {duration ? <span><Route size={17} aria-hidden="true" /> {duration}</span> : null}
+          {durationLabel ? <span><Route size={17} aria-hidden="true" /> {durationLabel}</span> : null}
         </div>
         <Link href={getTripHref(trip.id)} className="trips-primary-action">
           Continue Expedition <ArrowRight size={20} aria-hidden="true" />
@@ -196,6 +197,7 @@ function ExpeditionRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting:
   const background = resolveTripWorkspaceBackground(trip);
   const status = getTripStatus(trip.start_date, trip.end_date);
   const duration = getTripDuration(trip.start_date, trip.end_date);
+  const durationLabel = duration ? formatTripDuration(duration) : null;
   return (
     <article className="trips-expedition-row">
       <div className="trips-expedition-row__image" style={background ? { backgroundImage: `url(${background})` } : undefined} aria-hidden="true" />
@@ -204,7 +206,7 @@ function ExpeditionRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting:
         <p><MapPin size={14} aria-hidden="true" /> {getTripLocation(trip)}</p>
       </div>
       <div className="trips-expedition-row__dates">
-        <small>Dates</small><strong>{formatTripDates(trip.start_date, trip.end_date)}</strong>{duration ? <span>{duration}</span> : null}
+        <small>Dates</small><strong>{formatTripDates(trip.start_date, trip.end_date)}</strong>{durationLabel ? <span>{durationLabel}</span> : null}
       </div>
       <div className="trips-expedition-row__role">
         <small>Access</small><strong>{trip.role}</strong>

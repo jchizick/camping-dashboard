@@ -20,7 +20,7 @@ afterEach(cleanup);
 
 describe('TripHero', () => {
   it('uses the display type only on the canonical Home h1', () => {
-    render(<TripHero trip={trip} tripDays={3} now={new Date(2026, 6, 28, 12)} />);
+    render(<TripHero trip={trip} now={new Date(2026, 6, 28, 12)} />);
 
     const title = screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' });
     expect(title.classList.contains('trip-hero__title')).toBe(true);
@@ -37,13 +37,13 @@ describe('TripHero', () => {
     ['Trip is underway', 'active', new Date(2026, 6, 28, 12)],
     ['Trip complete', 'positive', new Date(2026, 6, 30, 12)],
   ])('exposes the %s semantic tone', (label, tone, now) => {
-    render(<TripHero trip={trip} tripDays={3} now={now} />);
+    render(<TripHero trip={trip} now={now} />);
 
     expect(screen.getByText(label).getAttribute('data-tone')).toBe(tone);
   });
 
   it('is a semantic text-only header with no scene ownership', () => {
-    const { container } = render(<TripHero trip={trip} tripDays={3} />);
+    const { container } = render(<TripHero trip={trip} />);
 
     expect(container.querySelector('img')).toBeNull();
     expect(container.querySelector('.trip-hero__media')).toBeNull();
@@ -57,8 +57,9 @@ describe('TripHero', () => {
       name: 'A deliberately long Algonquin backcountry expedition name that must wrap naturally',
       lake_name: 'A very long lake identity for a remote northern access point',
       site_name: 'Site 4 with an extended campsite designation',
+      end_date: '2026-08-07',
     } as TripDashboard;
-    render(<TripHero trip={longTrip} tripDays={12} />);
+    render(<TripHero trip={longTrip} />);
 
     const title = screen.getByRole('heading', { level: 1, name: longTrip.name });
     expect(title.classList.contains('trip-hero__title')).toBe(true);
@@ -66,7 +67,7 @@ describe('TripHero', () => {
     expect(screen.getByText('12 days · 11 nights')).toBeTruthy();
   });
 
-  it('preserves missing identity, date, and one-day fallbacks', () => {
+  it('preserves missing identity and invalid-date fallbacks', () => {
     const incompleteTrip = {
       ...trip,
       park_name: null,
@@ -75,10 +76,10 @@ describe('TripHero', () => {
       start_date: 'TBD',
       end_date: 'Later',
     } as unknown as TripDashboard;
-    render(<TripHero trip={incompleteTrip} tripDays={1} />);
+    render(<TripHero trip={incompleteTrip} />);
 
     expect(screen.getByText('Campsite unavailable')).toBeTruthy();
     expect(screen.getByText('TBD – Later')).toBeTruthy();
-    expect(screen.getByText('1 day · 0 nights')).toBeTruthy();
+    expect(screen.queryByText(/days? ·/)).toBeNull();
   });
 });

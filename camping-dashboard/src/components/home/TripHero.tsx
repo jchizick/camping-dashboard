@@ -1,4 +1,5 @@
 import type { TripDashboard } from '@/types';
+import { formatTripDuration, getTripDuration } from '@/lib/tripDuration';
 import { CalendarDays, MapPin, MoonStar, Route } from 'lucide-react';
 
 function dateOrdinal(value: string) {
@@ -48,15 +49,13 @@ function tripStatus(trip: TripDashboard, now: Date) {
 
 export default function TripHero({
   trip,
-  tripDays,
   now = new Date(),
 }: {
   trip: TripDashboard;
-  tripDays: number;
   now?: Date;
 }) {
   const campsite = [trip.lake_name, trip.site_name].filter(Boolean).join(' · ');
-  const nights = Math.max(tripDays - 1, 0);
+  const duration = getTripDuration(trip.start_date, trip.end_date);
   const status = tripStatus(trip, now);
 
   return (
@@ -78,11 +77,12 @@ export default function TripHero({
             <CalendarDays size={16} aria-hidden="true" />
             {formatTripDates(trip.start_date, trip.end_date)}
           </span>
-          <span>
-            <MoonStar size={16} aria-hidden="true" />
-            {tripDays} day{tripDays === 1 ? '' : 's'} · {nights} night
-            {nights === 1 ? '' : 's'}
-          </span>
+          {duration ? (
+            <span>
+              <MoonStar size={16} aria-hidden="true" />
+              {formatTripDuration(duration)}
+            </span>
+          ) : null}
         </div>
       </div>
     </section>

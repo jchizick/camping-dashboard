@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  calculateMealCompleteness,
   calculateOfflineReadiness,
+  calculateTimelineCompleteness,
   calculateWeatherPreparedness,
   getSkyQuality,
 } from './helpers';
-import type { AstroData } from '@/types';
+import type { AstroData, Meal, TimelineEvent } from '@/types';
 
 const astro: AstroData = {
   trip_id: 'trip-test',
@@ -23,5 +25,25 @@ describe('blank dashboard calculations', () => {
     expect(calculateOfflineReadiness(null)).toBe(0);
     expect(calculateWeatherPreparedness(null, [])).toBe(0);
     expect(getSkyQuality(null, astro)).toBe('Unavailable');
+  });
+});
+
+describe('trip-length-dependent readiness calculations', () => {
+  it('uses all five inclusive trip days for meal completeness', () => {
+    const meals = [
+      { meal_type: 'breakfast' },
+      { meal_type: 'lunch' },
+      { meal_type: 'dinner' },
+    ] as unknown as Meal[];
+
+    expect(calculateMealCompleteness(meals, 5)).toBe(20);
+  });
+
+  it('uses all five inclusive trip days for timeline completeness', () => {
+    const events = Array.from({ length: 4 }, (_, index) => ({
+      id: `event-${index}`,
+    })) as unknown as TimelineEvent[];
+
+    expect(calculateTimelineCompleteness(events, 5)).toBe(20);
   });
 });

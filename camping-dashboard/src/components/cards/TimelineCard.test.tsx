@@ -74,6 +74,19 @@ describe('TimelineCard', () => {
         expect(screen.queryByText('Day one launch')).toBeNull();
     });
 
+    it('exposes every inclusive trip day without remapping stored events', () => {
+        render(
+            <TimelineCard
+                events={[event({ id: 'final-day', day_number: 5, title: 'Pack out' })]}
+                tripDays={5}
+            />
+        );
+
+        expect(screen.getAllByRole('button', { name: /Day [1-5]/ })).toHaveLength(5);
+        fireEvent.click(screen.getByRole('button', { name: 'Day 5' }));
+        expect(screen.getByText('Pack out')).toBeTruthy();
+    });
+
     it('renders a newly created trip with no timeline events', () => {
         render(<TimelineCard events={[]} tripDays={1} />);
 

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { UserTrip } from '@/lib/fetchDashboard';
 import {
   canDeleteTrip,
-  getTripDuration,
   getTripHref,
   getTripLocation,
   getTripStatus,
@@ -16,12 +15,6 @@ describe('Trips landing page helpers', () => {
     expect(getUserFirstName({ user_metadata: { full_name: 'Jordan Camper' } })).toBe('Jordan');
     expect(getUserFirstName({ email: 'alex.smith@example.com' })).toBe('Alex');
     expect(getUserFirstName(null)).toBe('Explorer');
-  });
-
-  it('derives display-only trip duration without changing persisted data', () => {
-    expect(getTripDuration('2026-07-05', '2026-07-09')).toBe('5 days · 4 nights');
-    expect(getTripDuration('2026-07-05', '2026-07-05')).toBe('1 day · 0 nights');
-    expect(getTripDuration('2026-07-09', '2026-07-05')).toBeNull();
   });
 
   it('uses campsite detail before falling back to park name', () => {

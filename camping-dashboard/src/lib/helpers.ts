@@ -185,12 +185,6 @@ export function formatTripDates(startDate: string, endDate: string): string {
     return `${start} – ${end}`;
 }
 
-export function getTripDays(startDate: string, endDate: string): number {
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-    return Math.ceil((end - start) / 86400000);
-}
-
 export function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<string, T[]> {
     return items.reduce<Record<string, T[]>>((acc, item) => {
         const key = keyFn(item);

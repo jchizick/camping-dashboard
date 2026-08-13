@@ -187,6 +187,7 @@ function WorkspaceProbe() {
       <span data-testid="loading">{String(workspace.isLoading)}</span>
       <span data-testid="name">{workspace.trip?.name ?? ''}</span>
       <span data-testid="gear-count">{workspace.gear.length}</span>
+      <span data-testid="trip-days">{workspace.tripDays}</span>
       <span data-testid="gear-readiness">
         {workspace.readinessCategories.gear}
       </span>
@@ -400,6 +401,7 @@ describe('TripWorkspaceProvider loading and state', () => {
       expect(screen.getByTestId('gear-readiness').textContent).toContain('100')
     );
     expect(screen.getByTestId('gear-count').textContent).toContain('1');
+    expect(screen.getByTestId('trip-days').textContent).toBe('3');
     expect(Number(screen.getByTestId('overall').textContent)).toBeGreaterThan(0);
   });
 

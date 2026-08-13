@@ -115,7 +115,7 @@ export default function HomeOverview() {
   return (
     <div className="home-overview">
       <div className="home-heading-region">
-        <TripHero trip={trip} tripDays={tripDays} />
+        <TripHero trip={trip} />
         <TripSituationRail
           weather={data.currentWeather}
           readiness={readiness}

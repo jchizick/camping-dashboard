@@ -18,13 +18,21 @@ vi.mock('./TripWorkspaceProvider', () => ({
 }));
 
 vi.mock('@/components/cards/TimelineCard', () => ({
-  default: ({ onAdd }: { onAdd?: unknown }) => (
-    <div data-testid="timeline" data-editable={String(Boolean(onAdd))} />
+  default: ({ onAdd, tripDays }: { onAdd?: unknown; tripDays: number }) => (
+    <div
+      data-testid="timeline"
+      data-editable={String(Boolean(onAdd))}
+      data-days={tripDays}
+    />
   ),
 }));
 vi.mock('@/components/cards/MealPlannerCard', () => ({
-  default: ({ onAdd }: { onAdd?: unknown }) => (
-    <div data-testid="meals" data-editable={String(Boolean(onAdd))} />
+  default: ({ onAdd, totalDays }: { onAdd?: unknown; totalDays: number }) => (
+    <div
+      data-testid="meals"
+      data-editable={String(Boolean(onAdd))}
+      data-days={totalDays}
+    />
   ),
 }));
 vi.mock('@/components/cards/GearChecklistCard', () => ({
@@ -184,5 +192,14 @@ describe('trip section routes', () => {
     expect(screen.getByTestId('alerts')).toBeTruthy();
     expect(screen.queryByTestId('offline')).toBeNull();
     expect(screen.queryByTestId('astro')).toBeNull();
+  });
+
+  it('passes every inclusive trip day to the timeline and meal planner', () => {
+    workspace.value = { ...workspaceValue('owner'), tripDays: 5 };
+
+    render(<TripPlanPage />);
+
+    expect(screen.getByTestId('timeline').getAttribute('data-days')).toBe('5');
+    expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
   });
 });

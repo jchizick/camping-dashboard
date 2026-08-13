@@ -48,8 +48,8 @@ import {
   calculateTimelineCompleteness,
   calculateWeatherPreparedness,
   getTripCountdown,
-  getTripDays,
 } from '@/lib/helpers';
+import { getTripDuration } from '@/lib/tripDuration';
 import {
   createAlert,
   createCrewMember,
@@ -294,7 +294,10 @@ export function TripWorkspaceProvider({
   }, [loadWorkspace, requestAction, roleError, roleLoading]);
 
   const tripDays = useMemo(
-    () => (trip ? getTripDays(trip.start_date, trip.end_date) : 0),
+    () =>
+      trip
+        ? (getTripDuration(trip.start_date, trip.end_date)?.days ?? 0)
+        : 0,
     [trip]
   );
   const countdown = useMemo(
