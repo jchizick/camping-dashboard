@@ -1079,6 +1079,7 @@ body {
     min-height: 0;
     flex: 1;
     align-items: start;
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-section-surface--primary {
@@ -1100,6 +1101,27 @@ body {
     height: auto;
   }
 
+  .trip-section-page[data-trip-section="plan"] .trip-section-surface--secondary {
+    display: flex;
+    min-height: 0;
+    align-items: flex-start;
+    align-self: stretch;
+  }
+
+  .trip-section-page[data-trip-section="plan"] .meal-planner-card {
+    width: 100%;
+    height: fit-content;
+    max-height: 100%;
+    min-height: 0;
+  }
+
+  .trip-section-page[data-trip-section="plan"] .meal-planner-card__entries {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
   .trip-section-page .timeline-card__events,
   .trip-section-page .gear-checklist-card__items {
     min-height: 0;
@@ -1112,6 +1134,54 @@ body {
 @media (min-width: 1280px) and (min-height: 700px) {
   .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) {
     height: calc(100dvh - 2rem);
+  }
+}
+
+/* Common laptop-height desktops keep the standard two-person Crew composition
+   in the first viewport through a coherent compact vertical rhythm. Larger or
+   genuinely longer rosters continue to extend the document naturally. */
+@media (min-width: 1280px) and (min-height: 700px) and (max-height: 900px) {
+  .trip-section-page[data-trip-section="crew"] .crew-roster-grid {
+    margin-top: 0.75rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-workspace {
+    gap: 16px;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-member-card > :first-child,
+  .trip-section-page[data-trip-section="crew"] .crew-load-card > :first-child {
+    padding-block: 0.75rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-member-card > :nth-child(2),
+  .trip-section-page[data-trip-section="crew"] .crew-load-card > :nth-child(2) {
+    padding-block: 1rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-load-card > :nth-child(2) {
+    padding-block: 0.75rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-member-card__notes,
+  .trip-section-page[data-trip-section="crew"] .crew-member-card__systems {
+    margin-top: 0.75rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-member-card__metrics {
+    margin-top: 1rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-load-card__rows {
+    margin-top: 1rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-load-card__rows > :not(:first-child) {
+    margin-top: 0.5rem;
+  }
+
+  .trip-section-page[data-trip-section="crew"] .crew-load-distribution {
+    margin-top: 0.75rem;
   }
 }
 

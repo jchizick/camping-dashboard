@@ -69,7 +69,7 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
                 </button>
             )}
         >
-            <div className="flex gap-2 mb-6 overflow-x-auto custom-scrollbar pb-2 shrink-0">
+            <div className="meal-planner-card__days flex gap-2 mb-6 overflow-x-auto custom-scrollbar pb-2 shrink-0">
                 {Array.from({ length: totalDays }, (_, i) => i + 1).map((day) => (
                     <button
                         key={day}
@@ -100,7 +100,12 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
                 );
             })()}
 
-            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-[250px]">
+            <div
+                className="meal-planner-card__entries space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-[250px]"
+                role="region"
+                aria-label={`Meals for Day ${selectedDay}`}
+                tabIndex={0}
+            >
                 {ordered.length === 0 ? (
                     <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50">
                         No meals planned to eat for Day {selectedDay} yet
@@ -148,7 +153,7 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
             </div>
 
             {totalCalories > 0 && (
-                <div className="mt-6 pt-4 border-t border-border-subtle flex justify-between items-center shrink-0">
+                <div className="meal-planner-card__footer mt-6 pt-4 border-t border-border-subtle flex justify-between items-center shrink-0">
                     <span className="text-sm text-text-muted">Day Total</span>
                     <span className="text-lg font-mono font-bold text-accent-yellow">{totalCalories} kcal</span>
                 </div>

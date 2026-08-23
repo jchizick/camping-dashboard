@@ -83,7 +83,7 @@ describe('trip workspace visual tokens', () => {
     expect(css).not.toMatch(/\.bg-card-bg\s*\{[^}]*workspace-glass/);
   });
 
-  it('preserves natural route scrolling and reduced-motion state treatment', () => {
+  it('uses bounded desktop operational workspaces with natural-scroll fallbacks', () => {
     expect(css).toMatch(/\.trip-section-page \.timeline-card\s*\{\s*max-height:\s*none;/);
     expect(css).toMatch(/\.trip-section-page \.gear-checklist-card\s*\{\s*max-height:\s*none;/);
     expect(css).toContain('.trip-section-page .park-intel-scroll');
@@ -98,10 +98,26 @@ describe('trip workspace visual tokens', () => {
     expect(operationalWorkspace).toContain('height: calc(100dvh - 5rem)');
     expect(operationalWorkspace).toContain('.trip-section-surface--primary');
     expect(operationalWorkspace).toContain('.trip-section-surface--secondary');
+    expect(operationalWorkspace).toContain('grid-template-rows: minmax(0, 1fr)');
+    expect(operationalWorkspace).toContain('.meal-planner-card');
+    expect(operationalWorkspace).toContain('max-height: 100%');
+    expect(operationalWorkspace).toContain('.meal-planner-card__entries');
     expect(operationalWorkspace).toContain('overflow-y: auto');
     expect(operationalWorkspace).toContain('overscroll-behavior: contain');
     expect(operationalWorkspace).toContain('scrollbar-gutter: stable');
+    expect(operationalWorkspace).not.toContain('[data-trip-section="crew"]');
     expect(wideWorkspace).toContain('height: calc(100dvh - 2rem)');
+
+    const compactCrewStart = css.indexOf('@media (min-width: 1280px) and (min-height: 700px) and (max-height: 900px)');
+    const compactCrew = css.slice(compactCrewStart, css.indexOf('.trip-section-empty-state', compactCrewStart));
+    expect(compactCrewStart).toBeGreaterThan(0);
+    expect(compactCrew).toContain('[data-trip-section="crew"]');
+    expect(compactCrew).toContain('.crew-workspace');
+    expect(compactCrew).toContain('gap: 16px');
+    expect(compactCrew).toContain('.crew-member-card__notes');
+    expect(compactCrew).toContain('.crew-load-card__rows');
+    expect(compactCrew).toContain('.crew-load-distribution');
+    expect(compactCrew).not.toContain('overflow-y');
 
     const reducedMotion = css.slice(
       css.indexOf('@media (prefers-reduced-motion: reduce)'),

@@ -203,7 +203,7 @@ describe('trip section routes', () => {
     expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
   });
 
-  it('marks Plan and Gear primary and secondary operational surfaces', () => {
+  it('marks only Plan and Gear as operational workspaces', () => {
     workspace.value = workspaceValue('owner');
 
     const plan = render(<TripPlanPage />);
@@ -216,5 +216,11 @@ describe('trip section routes', () => {
     expect(gear.container.querySelector('.trip-operational-grid')).toBeTruthy();
     expect(gear.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
     expect(gear.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
+    gear.unmount();
+
+    const crew = render(<TripCrewPage />);
+    expect(crew.container.querySelector('.trip-operational-grid')).toBeNull();
+    expect(crew.container.querySelector('.trip-section-surface--primary')).toBeNull();
+    expect(crew.container.querySelector('.trip-section-surface--secondary')).toBeNull();
   });
 });

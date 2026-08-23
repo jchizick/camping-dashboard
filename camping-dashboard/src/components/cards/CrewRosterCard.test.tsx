@@ -110,5 +110,9 @@ describe('CrewRosterCard', () => {
         expect(screen.getByText('1 member assigned')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Add crew member' })).toBeTruthy();
         expect(container.querySelector('.crew-roster-section')?.className).toContain('space-y-4');
+        expect(container.querySelector('.crew-workspace')?.className).toContain('flex flex-col gap-6');
+        expect(container.querySelector('.crew-member-card__notes')).toBeTruthy();
+        expect(container.querySelector('.crew-member-card__systems')).toBeTruthy();
+        expect(container.querySelector('.crew-member-card__metrics')).toBeTruthy();
     });
 });

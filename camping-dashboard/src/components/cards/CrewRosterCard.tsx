@@ -89,9 +89,9 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
     }
 
     return (
-        <div className="crew-workspace space-y-6">
+        <div className="crew-workspace flex flex-col gap-6">
             <section className="crew-roster-section space-y-4" aria-labelledby="crew-roster-heading">
-                <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="crew-roster-heading-row flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h2 id="crew-roster-heading" className="text-xs font-semibold uppercase tracking-wider text-text-muted">{labels.crew}</h2>
                         <p className="mt-1 text-sm text-text-main">
@@ -155,7 +155,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                                 </div>
                             )}
                         >
-                            <div className="flex items-start gap-4">
+                            <div className="crew-member-card__identity flex items-start gap-4">
                                 <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-border-subtle font-mono text-base font-bold text-text-main" role="img" aria-label={`${member.name} avatar`}>
                                     <span>{member.name.charAt(0).toUpperCase()}</span>
                                 </div>
@@ -165,9 +165,9 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                                 </div>
                             </div>
 
-                            {member.notes && <p className="mt-5 border-l-2 border-border-subtle pl-3 text-xs italic leading-relaxed text-text-muted">{member.notes}</p>}
+                            {member.notes && <p className="crew-member-card__notes mt-5 border-l-2 border-border-subtle pl-3 text-xs italic leading-relaxed text-text-muted">{member.notes}</p>}
 
-                            <div className="mt-5">
+                            <div className="crew-member-card__systems mt-5">
                                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">Assigned systems</p>
                                 {member.load_item.includes('+') ? (
                                     <div className="flex flex-wrap gap-2">
@@ -182,7 +182,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
                                 )}
                             </div>
 
-                            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border-subtle pt-4">
+                            <div className="crew-member-card__metrics mt-6 grid grid-cols-2 gap-4 border-t border-border-subtle pt-4">
                                 <div>
                                     <p className="text-[10px] uppercase tracking-wider text-text-muted">Carried load</p>
                                     <p className="mt-1 font-mono text-lg font-bold text-text-main">{loadRow?.weight ?? 0} kg</p>
@@ -199,7 +199,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
             </section>
 
             <Card title="Expedition Load" icon={Scale} className="crew-load-card">
-                <div className="flex flex-wrap items-end justify-between gap-4">
+                <div className="crew-load-card__summary flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="text-xs text-text-muted">Total carried load</p>
                         <p className="mt-1 font-mono text-2xl font-bold text-text-main">{Math.round(totalLoad)} kg</p>
@@ -212,7 +212,7 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
 
                 {loadRows.length > 0 ? (
                     <>
-                        <div className="mt-6 space-y-3">
+                        <div className="crew-load-card__rows mt-6 space-y-3">
                             {loadRows.map(({ member, weight, displayPercentage }, index) => (
                                 <div key={member.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm">
                                     <div className="flex min-w-0 items-center gap-2">
