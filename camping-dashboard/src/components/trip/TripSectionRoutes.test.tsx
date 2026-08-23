@@ -202,4 +202,19 @@ describe('trip section routes', () => {
     expect(screen.getByTestId('timeline').getAttribute('data-days')).toBe('5');
     expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
   });
+
+  it('marks Plan and Gear primary and secondary operational surfaces', () => {
+    workspace.value = workspaceValue('owner');
+
+    const plan = render(<TripPlanPage />);
+    expect(plan.container.querySelector('.trip-operational-grid')).toBeTruthy();
+    expect(plan.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
+    expect(plan.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
+    plan.unmount();
+
+    const gear = render(<TripGearPage />);
+    expect(gear.container.querySelector('.trip-operational-grid')).toBeTruthy();
+    expect(gear.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
+    expect(gear.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
+  });
 });

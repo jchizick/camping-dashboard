@@ -89,10 +89,10 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
         <Card 
             title={labels.gear} 
             icon={Tent} 
-            className="gear-checklist-card h-full max-h-[600px] flex flex-col"
+            className="gear-checklist-card h-full min-h-0 flex flex-col"
             action={onAdd && (
-                <button onClick={openAdd} className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors">
-                    <Plus size={16} />
+                <button type="button" aria-label="Add gear item" onClick={openAdd} className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60">
+                    <Plus size={16} aria-hidden="true" />
                 </button>
             )}
         >
@@ -104,7 +104,7 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                 </div>
                 <div className="text-right w-1/2">
                     <div className="text-xs font-mono text-text-muted mb-1 flex justify-between">
-                        <span>Readiness</span>
+                        <span>Gear readiness</span>
                         <span className="text-text-main">{readiness}%</span>
                     </div>
                     <ProgressBar value={readiness} colorClass={readinessColor} />
@@ -114,7 +114,7 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
             <div className="flex gap-2 mb-6 border-b border-border-subtle pb-4 shrink-0">
                 {(['all', 'needed', 'critical'] as FilterMode[]).map((f) => {
                     const isActive = filter === f;
-                    const labels = {
+                    const filterLabels = {
                         all: 'All',
                         needed: <><div className="w-2 h-2 rounded-full bg-accent-yellow" /> Needed</>,
                         critical: <><div className="w-2 h-2 rounded-full bg-accent-red" /> Critical</>
@@ -123,14 +123,16 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                     return (
                         <button
                             key={f}
-                            className={`px-4 py-1.5 rounded-full text-xs font-mono border transition-colors flex items-center gap-2 ${
+                            type="button"
+                            aria-pressed={isActive}
+                            className={`flex min-h-10 items-center gap-2 rounded-full border px-4 text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
                                 isActive 
                                     ? 'bg-border-subtle text-text-main border-border-subtle' 
                                     : 'bg-card-bg text-text-muted border-border-subtle hover:bg-card-hover'
                             }`}
                             onClick={() => setFilter(f)}
                         >
-                            {labels[f]}
+                            {filterLabels[f]}
                         </button>
                     );
                 })}
@@ -142,14 +144,19 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                     <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red p-3 mb-4 rounded-xl flex items-center justify-between text-sm shrink-0">
                         <span>Remove <strong>{item?.name ?? 'this item'}</strong>?</span>
                         <div className="flex gap-2">
-                            <button className="px-3 py-1 bg-card-bg rounded border border-border-subtle hover:bg-card-hover text-text-muted text-xs" onClick={() => setPendingDeleteId(null)}>Cancel</button>
-                            <button className="px-3 py-1 bg-accent-red text-bg-main rounded hover:bg-accent-red/80 font-bold text-xs" onClick={confirmDelete}>Remove</button>
+                            <button type="button" className="min-h-10 rounded border border-border-subtle bg-card-bg px-3 text-xs text-text-muted hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60" onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                            <button type="button" className="min-h-10 rounded bg-accent-red px-3 text-xs font-bold text-bg-main hover:bg-accent-red/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60" onClick={confirmDelete}>Remove</button>
                         </div>
                     </div>
                 );
             })()}
 
-            <div className="gear-checklist-card__items space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1 min-h-0 pb-4">
+            <div
+                className="gear-checklist-card__items space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1 min-h-0 pb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring"
+                role="region"
+                aria-label="Gear checklist categories and items"
+                tabIndex={0}
+            >
                 {Object.entries(grouped)
                     .sort(([a], [b]) => {
                         const ai = CATEGORY_ORDER.indexOf(a);
@@ -160,20 +167,23 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                     })
                     .map(([category, items]) => (
                     <div key={category}>
-                        <div 
-                            className="flex justify-between items-center mb-3 cursor-pointer group"
+                        <button
+                            type="button"
+                            className="group mb-3 flex min-h-10 w-full items-center justify-between rounded-lg px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60"
                             onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                            aria-expanded={expandedCategory === category || expandedCategory === null}
+                            aria-controls={`gear-category-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                         >
-                            <h3 className="text-xs font-bold tracking-widest text-text-muted uppercase transition-colors group-hover:text-text-main">
+                            <span className="text-xs font-bold tracking-widest text-text-muted uppercase transition-colors group-hover:text-text-main">
                                 {category}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs font-mono text-text-muted transition-colors group-hover:text-text-main">
+                            </span>
+                            <span className="flex items-center gap-2 text-xs font-mono text-text-muted transition-colors group-hover:text-text-main">
                                 {items.filter((i) => i.packed).length}/{items.length} 
-                                <ChevronDown size={14} className={`transform transition-transform ${expandedCategory === category || expandedCategory === null ? 'rotate-180' : ''}`} />
-                            </div>
-                        </div>
+                                <ChevronDown aria-hidden="true" size={14} className={`transform transition-transform ${expandedCategory === category || expandedCategory === null ? 'rotate-180' : ''}`} />
+                            </span>
+                        </button>
                         {(expandedCategory === category || expandedCategory === null) && (
-                            <div className="space-y-1">
+                            <div id={`gear-category-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="space-y-1">
                                 {items.map((item) => (
                                     <ChecklistItem
                                         key={item.id}

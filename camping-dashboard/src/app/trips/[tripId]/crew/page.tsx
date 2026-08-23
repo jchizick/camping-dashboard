@@ -15,7 +15,7 @@ export default function TripCrewPage() {
     <TripSectionPage route="crew">
       <TripPageHeader title="Crew" description="Roster and load balance" />
       {data.settings.show_crew ? (
-        <div className="trip-section-surface max-w-5xl">
+        <div className="trip-section-surface">
           <CrewRosterCard
             crew={crew}
             onAdd={editableActions?.addCrewMember}

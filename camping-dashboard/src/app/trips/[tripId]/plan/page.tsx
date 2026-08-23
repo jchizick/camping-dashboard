@@ -12,8 +12,8 @@ export default function TripPlanPage() {
   return (
     <TripSectionPage route="plan">
       <TripPageHeader title="Plan" description="Schedule and meals" />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className={`trip-section-surface ${data.settings.show_meals ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+      <div className="trip-operational-grid grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        <div className={`trip-section-surface trip-section-surface--primary min-h-0 ${data.settings.show_meals ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
           <TimelineCard
             events={timeline}
             tripDays={tripDays}
@@ -23,7 +23,7 @@ export default function TripPlanPage() {
           />
         </div>
         {data.settings.show_meals && (
-          <div className="trip-section-surface lg:col-span-4">
+          <div className="trip-section-surface trip-section-surface--secondary lg:col-span-4">
             <MealPlannerCard
               meals={meals}
               totalDays={tripDays}

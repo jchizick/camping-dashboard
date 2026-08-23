@@ -89,6 +89,20 @@ describe('trip workspace visual tokens', () => {
     expect(css).toContain('.trip-section-page .park-intel-scroll');
     expect(css).toContain('.trip-section-page .prep-feed-scroll');
 
+    const operationalWorkspaceStart = css.indexOf('@media (min-width: 1024px) and (min-height: 700px)');
+    const wideWorkspaceStart = css.indexOf('@media (min-width: 1280px) and (min-height: 700px)');
+    const operationalWorkspace = css.slice(operationalWorkspaceStart, wideWorkspaceStart);
+    const wideWorkspace = css.slice(wideWorkspaceStart, css.indexOf('}', css.indexOf('height:', wideWorkspaceStart)) + 1);
+
+    expect(operationalWorkspaceStart).toBeGreaterThan(0);
+    expect(operationalWorkspace).toContain('height: calc(100dvh - 5rem)');
+    expect(operationalWorkspace).toContain('.trip-section-surface--primary');
+    expect(operationalWorkspace).toContain('.trip-section-surface--secondary');
+    expect(operationalWorkspace).toContain('overflow-y: auto');
+    expect(operationalWorkspace).toContain('overscroll-behavior: contain');
+    expect(operationalWorkspace).toContain('scrollbar-gutter: stable');
+    expect(wideWorkspace).toContain('height: calc(100dvh - 2rem)');
+
     const reducedMotion = css.slice(
       css.indexOf('@media (prefers-reduced-motion: reduce)'),
       css.indexOf('Trip navigation uses one explicit 768px handoff')

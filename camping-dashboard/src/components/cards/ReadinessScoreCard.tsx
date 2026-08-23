@@ -67,7 +67,7 @@ export default function ReadinessScoreCard({ readiness, unavailable = {} }: Read
 
 
     return (
-        <Card title={labels.readiness} icon={Activity} className="h-full">
+        <Card title={labels.readiness} icon={Activity} className="readiness-score-card">
             <div className="flex items-center gap-6 mb-8">
                 <div ref={ringRef} className="relative w-24 h-24 flex items-center justify-center">
                     <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -89,7 +89,7 @@ export default function ReadinessScoreCard({ readiness, unavailable = {} }: Read
                 </div>
                 <div>
                     <div className="text-lg font-medium text-text-main mb-1">{readiness.label}</div>
-                    <div className="text-sm text-text-muted">Overall {labels.readiness.toLowerCase()}</div>
+                    <div className="text-sm text-text-muted">Overall trip readiness</div>
                 </div>
             </div>
 

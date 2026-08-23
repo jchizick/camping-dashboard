@@ -66,14 +66,15 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
         <Card 
             title={labels.timeline} 
             icon={Clock} 
-            className="timeline-card h-full flex flex-col max-h-[600px]"
+            className="timeline-card h-full min-h-0 flex flex-col"
             action={onAdd && (
                 <button
+                    type="button"
                     aria-label="Add timeline event"
                     onClick={openAdd}
-                    className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors"
+                    className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60"
                 >
-                    <Plus size={16} />
+                    <Plus size={16} aria-hidden="true" />
                 </button>
             )}
         >
@@ -83,8 +84,10 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                 {Array.from({ length: tripDays }, (_, i) => i + 1).map((day) => (
                     <button
                         key={day}
+                        type="button"
                         onClick={() => setSelectedDay(day)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-mono border whitespace-nowrap transition-colors ${
+                        aria-pressed={selectedDay === day}
+                        className={`min-h-10 rounded-full border px-4 text-xs font-mono whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
                             selectedDay === day 
                                 ? 'bg-border-subtle text-text-main border-border-subtle' 
                                 : 'bg-transparent text-text-muted border-border-subtle hover:bg-card-hover'
@@ -105,14 +108,19 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                     <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red p-3 mb-4 rounded-xl flex items-center justify-between text-sm shrink-0">
                         <span>Remove <strong>{event?.title ?? 'this event'}</strong>?</span>
                         <div className="flex gap-2">
-                            <button className="px-3 py-1 bg-card-bg rounded border border-border-subtle hover:bg-card-hover text-text-muted text-xs" onClick={() => setPendingDeleteId(null)}>Cancel</button>
-                            <button className="px-3 py-1 bg-accent-red text-bg-main rounded hover:bg-accent-red/80 font-bold text-xs" onClick={confirmDelete}>Remove</button>
+                            <button type="button" className="min-h-10 rounded border border-border-subtle bg-card-bg px-3 text-xs text-text-muted hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60" onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                            <button type="button" className="min-h-10 rounded bg-accent-red px-3 text-xs font-bold text-bg-main hover:bg-accent-red/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60" onClick={confirmDelete}>Remove</button>
                         </div>
                     </div>
                 );
             })()}
 
-            <div className="timeline-card__events flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div
+                className="timeline-card__events flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus-ring"
+                role="region"
+                aria-label={`Day ${selectedDay} timeline events`}
+                tabIndex={0}
+            >
                 {dayEvents.length === 0 ? (
                     <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50 relative z-10 bg-card-bg">
                         No events planned for this day yet
@@ -145,23 +153,25 @@ export default function TimelineCard({ events, tripDays, onAdd, onUpdate, onDele
                                     
                                     {/* Timeline Event Actions */}
                                     {(onUpdate || onDelete) && (
-                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity mt-3">
+                                        <div className="mt-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                                             {onUpdate && (
                                                 <button 
+                                                    type="button"
                                                     aria-label={`Edit ${event.title}`}
-                                                    className="p-1 text-text-muted hover:text-accent-yellow rounded hover:bg-border-subtle transition-colors"
+                                                    className="flex size-10 items-center justify-center rounded text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60"
                                                     onClick={() => openEdit(event)}
                                                 >
-                                                    <Pencil size={12} />
+                                                    <Pencil size={14} aria-hidden="true" />
                                                 </button>
                                             )}
                                             {onDelete && (
                                                 <button 
+                                                    type="button"
                                                     aria-label={`Remove ${event.title}`}
-                                                    className="p-1 text-text-muted hover:text-accent-red rounded hover:bg-border-subtle transition-colors"
+                                                    className="flex size-10 items-center justify-center rounded text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60"
                                                     onClick={() => setPendingDeleteId(event.id)}
                                                 >
-                                                    <Trash2 size={12} />
+                                                    <Trash2 size={14} aria-hidden="true" />
                                                 </button>
                                             )}
                                         </div>

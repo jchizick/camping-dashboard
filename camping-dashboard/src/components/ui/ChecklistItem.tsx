@@ -2,7 +2,6 @@
 
 import React from 'react';
 import type { GearItem } from '@/types';
-import { Badge } from '@/components/ui/Primitives';
 import { CheckCircle2, Circle, Pencil, Trash2 } from 'lucide-react';
 
 interface ChecklistItemProps {
@@ -15,14 +14,14 @@ interface ChecklistItemProps {
 
 export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, onDelete }: ChecklistItemProps) {
     return (
-        <div className="flex items-center justify-between p-2 hover:bg-card-hover rounded-lg group transition-colors">
-            <div 
-                className="flex items-center gap-3 cursor-pointer flex-1"
-                role="button"
-                tabIndex={0}
+        <div className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-card-hover focus-within:bg-card-hover/50">
+            <button
+                type="button"
+                className="flex min-h-10 flex-1 cursor-pointer items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 disabled:cursor-default"
                 onClick={() => onToggle?.(item.id)}
-                onKeyDown={(e) => e.key === 'Enter' && onToggle?.(item.id)}
+                disabled={!onToggle}
                 aria-label={`${item.name} — ${item.acquired ? 'acquired' : 'not acquired'}`}
+                aria-pressed={item.acquired}
             >
                 {item.acquired ? (
                     <CheckCircle2 size={16} className="text-accent-green shrink-0" />
@@ -48,17 +47,17 @@ export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, 
                         <span className="text-[10px] font-mono text-text-muted">{item.weight_kg}kg</span>
                     )}
                 </div>
-            </div>
+            </button>
 
             {/* Packed indicator — independent from left readiness circle */}
             <button
-                className={`shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-sm transition-all ${
+                type="button"
+                className={`flex size-10 shrink-0 items-center justify-center rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
                     item.packed
                         ? 'opacity-90 hover:opacity-100'
                         : 'opacity-30 hover:opacity-60'
                 } ${onTogglePacked ? 'cursor-pointer hover:bg-card-hover' : 'cursor-default'}`}
                 onClick={(e) => { e.stopPropagation(); onTogglePacked?.(item.id); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onTogglePacked?.(item.id); } }}
                 disabled={!onTogglePacked}
                 aria-label={item.packed ? 'Packed' : 'Mark as packed'}
                 title={item.packed ? 'Packed' : 'Mark as packed'}
@@ -68,25 +67,27 @@ export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, 
 
             {/* Action zone — edit / delete */}
             {(onEdit || onDelete) && (
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                <div className="ml-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     {onEdit && (
                         <button
-                            className="p-1 hover:bg-border-subtle rounded text-text-muted hover:text-accent-yellow transition-colors"
+                            type="button"
+                            className="flex size-10 items-center justify-center rounded text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60"
                             onClick={(e) => { e.stopPropagation(); onEdit(item); }}
                             aria-label={`Edit ${item.name}`}
                             title="Edit item"
                         >
-                            <Pencil size={14} />
+                            <Pencil size={14} aria-hidden="true" />
                         </button>
                     )}
                     {onDelete && (
                         <button
-                            className="p-1 hover:bg-border-subtle rounded text-text-muted hover:text-accent-red transition-colors"
+                            type="button"
+                            className="flex size-10 items-center justify-center rounded text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60"
                             onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
                             aria-label={`Delete ${item.name}`}
                             title="Delete item"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} aria-hidden="true" />
                         </button>
                     )}
                 </div>

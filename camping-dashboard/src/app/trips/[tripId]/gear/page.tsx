@@ -18,8 +18,8 @@ export default function TripGearPage() {
   return (
     <TripSectionPage route="gear">
       <TripPageHeader title="Gear" description="Checklist and readiness" />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="trip-section-surface lg:order-2 lg:col-span-4">
+      <div className="trip-operational-grid grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        <div className="trip-section-surface trip-section-surface--secondary lg:order-2 lg:col-span-4">
           <ReadinessScoreCard
             readiness={readiness}
             unavailable={{
@@ -28,7 +28,7 @@ export default function TripGearPage() {
             }}
           />
         </div>
-        <div className="trip-section-surface lg:order-1 lg:col-span-8">
+        <div className="trip-section-surface trip-section-surface--primary min-h-0 lg:order-1 lg:col-span-8">
           <GearChecklistCard
             gear={gear}
             onToggle={editableActions?.toggleGearAcquired}

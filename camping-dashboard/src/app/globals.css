@@ -1064,6 +1064,57 @@ body {
   overflow: visible;
 }
 
+/* Plan and Gear become bounded operational workspaces only when two columns
+   and a useful vertical working area are both available. Smaller and shorter
+   viewports retain the natural document-scrolling model above. */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) {
+    display: flex;
+    height: calc(100dvh - 5rem);
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-operational-grid {
+    min-height: 0;
+    flex: 1;
+    align-items: start;
+  }
+
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-section-surface--primary {
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-section-surface--primary > :first-child {
+    height: 100%;
+    max-height: none;
+  }
+
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-section-surface--secondary {
+    align-self: start;
+  }
+
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) .trip-section-surface--secondary > :first-child {
+    height: auto;
+  }
+
+  .trip-section-page .timeline-card__events,
+  .trip-section-page .gear-checklist-card__items {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 700px) {
+  .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) {
+    height: calc(100dvh - 2rem);
+  }
+}
+
 .trip-section-empty-state {
   color: var(--workspace-text-secondary);
   background: var(--workspace-glass-dense);

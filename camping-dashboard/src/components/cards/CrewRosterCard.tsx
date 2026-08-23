@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import type { CrewMember } from '@/types';
-import { Card, Badge } from '@/components/ui/Primitives';
+import { Badge, Card } from '@/components/ui/Primitives';
 import { useTheme } from '@/lib/themeContext';
 import CrewFormSheet from '@/components/cards/CrewFormSheet';
-import { User, Plus, Tent, Scale, Pencil, Trash2, Weight, Info } from 'lucide-react';
+import { Pencil, Plus, Scale, Trash2, User } from 'lucide-react';
 
 interface CrewRosterCardProps {
     crew: CrewMember[];
@@ -14,39 +14,57 @@ interface CrewRosterCardProps {
     onDelete?: (id: string) => Promise<void>;
 }
 
-const canoeColors = ['bg-accent-yellow', 'bg-accent-green', 'bg-accent-blue', 'bg-text-main'];
-const canoeBorderColors = ['border-accent-yellow', 'border-accent-green', 'border-accent-blue', 'border-text-main'];
+const loadToneClasses = [
+    'bg-accent-green',
+    'bg-text-muted/75',
+    'bg-accent-green/55',
+    'bg-text-main/55',
+];
+
+export function splitResponsibilities(loadItem: string) {
+    return loadItem.split(/\s*\+\s*/).map((item) => item.trim()).filter(Boolean);
+}
+
+function formatResponsibility(value: string) {
+    if (value !== value.toUpperCase()) return value;
+    return value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+export function getCrewLoadRows(crew: CrewMember[]) {
+    const totalLoad = crew.reduce((total, member) => total + (member.load_weight_kg || 0), 0);
+    return {
+        totalLoad,
+        rows: crew.map((member) => {
+            const weight = member.load_weight_kg || 0;
+            const rawPercentage = totalLoad > 0 ? (weight / totalLoad) * 100 : 0;
+            return { member, weight, rawPercentage, displayPercentage: Math.round(rawPercentage) };
+        }),
+    };
+}
 
 export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: CrewRosterCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<CrewMember | undefined>(undefined);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+    const { labels } = useTheme();
+    const { totalLoad, rows: loadRows } = getCrewLoadRows(crew);
 
-    const canoeGroups = crew.reduce<Record<number, CrewMember[]>>((acc, m) => {
-        if (!acc[m.canoe_number]) acc[m.canoe_number] = [];
-        acc[m.canoe_number].push(m);
-        return acc;
-    }, {});
-
-    const totalLoad = crew.reduce((acc, m) => acc + (m.load_weight_kg || 0), 0);
-    const splitPercentages = crew.map(m => totalLoad > 0 ? Math.round(((m.load_weight_kg || 0) / totalLoad) * 100) : 0);
-    const splitText = splitPercentages.length > 0 ? splitPercentages.join('% / ') + '%' : 'N/A';
-    
-    const maxDeviationPercent = totalLoad > 0 
-        ? Math.max(...splitPercentages.map(p => Math.abs(p - (100 / crew.length))))
+    const equalShare = crew.length > 0 ? 100 / crew.length : 0;
+    const maxDeviationPercent = totalLoad > 0
+        ? Math.max(...loadRows.map(({ rawPercentage }) => Math.abs(rawPercentage - equalShare)))
         : 0;
-        
-    let balanceStatus = "Optimal Balance";
-    let statusColor = "text-accent-green";
+
+    let balanceStatus = 'Optimal Balance';
+    let statusColor = 'text-accent-green';
     if (totalLoad === 0) {
-        balanceStatus = "No Load Data";
-        statusColor = "text-text-muted";
+        balanceStatus = 'No Load Data';
+        statusColor = 'text-text-muted';
     } else if (maxDeviationPercent >= 20) {
-        balanceStatus = "Major Imbalance";
-        statusColor = "text-accent-red";
+        balanceStatus = 'Major Imbalance';
+        statusColor = 'text-accent-red';
     } else if (maxDeviationPercent >= 10) {
-        balanceStatus = "Slight Imbalance";
-        statusColor = "text-accent-yellow";
+        balanceStatus = 'Slight Imbalance';
+        statusColor = 'text-accent-yellow';
     }
 
     function openAdd() {
@@ -60,11 +78,8 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
     }
 
     async function handleFormSubmit(data: Omit<CrewMember, 'id' | 'trip_id'>) {
-        if (editingMember) {
-            await onUpdate?.(editingMember.id, data);
-        } else {
-            await onAdd?.(data);
-        }
+        if (editingMember) await onUpdate?.(editingMember.id, data);
+        else await onAdd?.(data);
     }
 
     async function confirmDelete() {
@@ -73,138 +88,162 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
         setPendingDeleteId(null);
     }
 
-    const { labels } = useTheme();
-
     return (
-        <Card 
-            title={labels.crew} 
-            icon={User} 
-            className="h-full flex flex-col"
-            action={onAdd && (
-                <button onClick={openAdd} className="p-1 hover:bg-card-hover rounded text-text-muted transition-colors">
-                    <Plus size={16} />
-                </button>
-            )}
-        >
-            <div className="text-sm text-text-muted mb-6">{crew.length}-Person {labels.crew.split(' ').pop()}</div>
-
-            {pendingDeleteId && (() => {
-                const member = crew.find(m => m.id === pendingDeleteId);
-                return (
-                    <div className="bg-accent-red/10 border border-accent-red/20 text-accent-red p-3 mb-4 rounded-xl flex items-center justify-between text-sm shrink-0">
-                        <span>Remove <strong>{member?.name ?? 'this member'}</strong>?</span>
-                        <div className="flex gap-2">
-                            <button className="px-3 py-1 bg-card-bg rounded border border-border-subtle hover:bg-card-hover text-text-muted text-xs" onClick={() => setPendingDeleteId(null)}>Cancel</button>
-                            <button className="px-3 py-1 bg-accent-red text-bg-main rounded hover:bg-accent-red/80 font-bold text-xs" onClick={confirmDelete}>Remove</button>
-                        </div>
+        <div className="crew-workspace space-y-6">
+            <section className="crew-roster-section space-y-4" aria-labelledby="crew-roster-heading">
+                <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 id="crew-roster-heading" className="text-xs font-semibold uppercase tracking-wider text-text-muted">{labels.crew}</h2>
+                        <p className="mt-1 text-sm text-text-main">
+                            {crew.length} {crew.length === 1 ? 'member' : 'members'} assigned
+                        </p>
                     </div>
-                );
-            })()}
+                    {onAdd && (
+                        <button
+                            type="button"
+                            onClick={openAdd}
+                            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-border-subtle bg-card-bg px-4 text-sm font-semibold text-text-main transition-colors hover:border-accent-yellow/40 hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60"
+                        >
+                            <Plus size={16} aria-hidden="true" /> Add crew member
+                        </button>
+                    )}
+                </div>
 
-            <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-[250px]">
-                {crew.length === 0 ? (
-                    <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50">
-                        No team members added yet
-                    </div>
-                ) : (
-                    Object.entries(canoeGroups).map(([canoeNum, members], idx) => {
-                        const styleIdx = (parseInt(canoeNum) - 1) % canoeColors.length;
-                        return (
-                            <div key={canoeNum} className="space-y-4 relative">
-                                <div className={`flex items-center gap-2 text-xs font-bold tracking-widest text-text-muted uppercase mb-4 border-b pb-2 ${canoeBorderColors[styleIdx]}`}>
-                                    <Tent size={14} className={canoeBorderColors[styleIdx].replace('border', 'text')} /> Shelter System (Shared)
-                                </div>
-                                
-                                {members.map((member) => (
-                                    <div key={member.id} className="group relative flex gap-4 p-2 -mx-2 rounded hover:bg-card-hover/30 transition-colors">
-                                        <div className="w-10 h-10 rounded-full bg-border-subtle flex items-center justify-center font-mono font-bold text-text-main shrink-0 border border-border-subtle overflow-hidden relative">
-                                            <span className="absolute z-0">{member.name.charAt(0).toUpperCase()}</span>
-                                            <img
-                                                src={`/avatars/${member.name.charAt(0).toUpperCase()}.png`}
-                                                alt={member.name}
-                                                className="absolute inset-0 w-full h-full object-cover z-10"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div>
-                                                    <div className="text-sm font-bold text-text-main">{member.name}</div>
-                                                    <div className="text-xs text-text-muted">{member.role}</div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-[10px] text-text-muted uppercase pr-[2px]">{member.load_item}</div>
-                                                    <div className="text-sm font-mono text-accent-yellow font-bold mt-1 opacity-100 group-hover:opacity-0 transition-opacity">
-                                                        {member.load_weight_kg || 0} kg
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {member.notes && <p className="text-xs text-text-muted italic mt-2 leading-relaxed">{member.notes}</p>}
-                                        </div>
-                                        
-                                        {(onUpdate || onDelete) && (
-                                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 bg-card-bg/80 backdrop-blur rounded pl-2">
-                                                {onUpdate && (
-                                                    <button className="p-1.5 text-text-muted hover:text-accent-yellow hover:bg-border-subtle rounded transition-colors shadow-lg" onClick={() => openEdit(member)}>
-                                                        <Pencil size={14} />
-                                                    </button>
-                                                )}
-                                                {onDelete && (
-                                                    <button className="p-1.5 text-text-muted hover:text-accent-red hover:bg-border-subtle rounded transition-colors shadow-lg" onClick={() => setPendingDeleteId(member.id)}>
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                {pendingDeleteId && (() => {
+                    const member = crew.find((candidate) => candidate.id === pendingDeleteId);
+                    return (
+                        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent-red/20 bg-accent-red/10 p-3 text-sm text-accent-red">
+                            <span>Remove <strong>{member?.name ?? 'this member'}</strong>?</span>
+                            <div className="flex gap-2">
+                                <button type="button" className="min-h-10 rounded-lg border border-border-subtle bg-card-bg px-3 text-xs text-text-muted hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60" onClick={() => setPendingDeleteId(null)}>Cancel</button>
+                                <button type="button" className="min-h-10 rounded-lg bg-accent-red px-3 text-xs font-bold text-bg-main hover:bg-accent-red/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60" onClick={confirmDelete}>Remove</button>
                             </div>
-                        );
-                    })
-                )}
-            </div>
+                        </div>
+                    );
+                })()}
 
-            {crew.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-border-subtle shrink-0">
-                    <div className="flex items-center gap-2 text-sm font-bold text-text-main mb-4">
-                        Load Balance <Scale size={16} className={statusColor} />
-                    </div>
-                    <div className="flex justify-between items-end mb-4">
-                        <div>
-                            <div className="text-xs text-text-muted mb-1">Total Load</div>
-                            <div className="text-xl font-mono text-text-main font-bold">{Math.round(totalLoad)} kg</div>
+                <div className="crew-roster-grid grid grid-cols-1 gap-6 md:grid-cols-2">
+                {crew.length === 0 ? (
+                    <Card title="Crew roster" icon={User} className="md:col-span-2">
+                        <div className="flex min-h-40 flex-col items-center justify-center text-center">
+                            <User size={28} className="mb-3 text-text-muted" aria-hidden="true" />
+                            <p className="text-sm font-semibold text-text-main">No crew members yet</p>
+                            <p className="mt-1 max-w-sm text-xs leading-relaxed text-text-muted">Add the first member to assign field responsibilities and track carried load.</p>
                         </div>
-                        <div className="text-right">
-                            <div className="text-xs text-text-muted mb-1">Distribution</div>
-                            <div className="text-xl font-mono text-text-main font-bold">{splitText}</div>
-                        </div>
+                    </Card>
+                ) : crew.map((member) => {
+                    const responsibilities = splitResponsibilities(member.load_item);
+                    const loadRow = loadRows.find((row) => row.member.id === member.id);
+                    return (
+                        <Card
+                            key={member.id}
+                            title={member.name}
+                            icon={User}
+                            className="crew-member-card group"
+                            action={(onUpdate || onDelete) && (
+                                <div className="flex gap-1 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                                    {onUpdate && (
+                                        <button type="button" className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60" onClick={() => openEdit(member)} aria-label={`Edit ${member.name}`}>
+                                            <Pencil size={15} aria-hidden="true" />
+                                        </button>
+                                    )}
+                                    {onDelete && (
+                                        <button type="button" className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-border-subtle hover:text-accent-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60" onClick={() => setPendingDeleteId(member.id)} aria-label={`Remove ${member.name}`}>
+                                            <Trash2 size={15} aria-hidden="true" />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-border-subtle font-mono text-base font-bold text-text-main" role="img" aria-label={`${member.name} avatar`}>
+                                    <span>{member.name.charAt(0).toUpperCase()}</span>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-text-main">{member.role}</p>
+                                    <div className="mt-2"><Badge>Canoe {member.canoe_number}</Badge></div>
+                                </div>
+                            </div>
+
+                            {member.notes && <p className="mt-5 border-l-2 border-border-subtle pl-3 text-xs italic leading-relaxed text-text-muted">{member.notes}</p>}
+
+                            <div className="mt-5">
+                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-text-muted">Assigned systems</p>
+                                {member.load_item.includes('+') ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {responsibilities.map((responsibility) => (
+                                            <Badge key={responsibility} variant="warning">{formatResponsibility(responsibility)}</Badge>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs leading-relaxed text-text-main">
+                                        {member.load_item ? formatResponsibility(member.load_item) : 'No system assigned'}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border-subtle pt-4">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-wider text-text-muted">Carried load</p>
+                                    <p className="mt-1 font-mono text-lg font-bold text-text-main">{loadRow?.weight ?? 0} kg</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] uppercase tracking-wider text-text-muted">Group load</p>
+                                    <p className="mt-1 font-mono text-lg font-bold text-accent-yellow">{loadRow?.displayPercentage ?? 0}%</p>
+                                </div>
+                            </div>
+                        </Card>
+                    );
+                })}
+                </div>
+            </section>
+
+            <Card title="Expedition Load" icon={Scale} className="crew-load-card">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="text-xs text-text-muted">Total carried load</p>
+                        <p className="mt-1 font-mono text-2xl font-bold text-text-main">{Math.round(totalLoad)} kg</p>
                     </div>
-                    
-                    <div className="flex justify-between items-center text-sm mb-2">
-                        <span className="text-text-muted">Status:</span>
-                        <span className={`${statusColor} font-medium`}>{balanceStatus}</span>
-                    </div>
-                    
-                    <div className="flex h-2.5 rounded-full overflow-hidden bg-border-subtle/50">
-                        {splitPercentages.map((pct, i) => (
-                            <div 
-                                key={i} 
-                                style={{ width: `${pct}%` }} 
-                                className={`${canoeColors[i % canoeColors.length]} opacity-85 hover:opacity-100 transition-opacity`}
-                            />
-                        ))}
+                    <div className="text-left sm:text-right">
+                        <p className="text-xs text-text-muted">Balance status</p>
+                        <p className={`mt-1 text-sm font-semibold ${statusColor}`}>{balanceStatus}</p>
                     </div>
                 </div>
-            )}
 
-            <CrewFormSheet
-                isOpen={sheetOpen}
-                onClose={() => setSheetOpen(false)}
-                onSubmit={handleFormSubmit}
-                initialMember={editingMember}
-            />
-        </Card>
+                {loadRows.length > 0 ? (
+                    <>
+                        <div className="mt-6 space-y-3">
+                            {loadRows.map(({ member, weight, displayPercentage }, index) => (
+                                <div key={member.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span className={`crew-load-swatch size-2.5 shrink-0 rounded-sm ${loadToneClasses[index % loadToneClasses.length]}`} aria-hidden="true" />
+                                        <span className="truncate font-medium text-text-main">{member.name}</span>
+                                    </div>
+                                    <span className="font-mono text-text-muted">{weight} kg</span>
+                                    <span className="w-11 text-right font-mono font-bold text-text-main">{displayPercentage}%</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="crew-load-distribution mt-5 flex h-4 overflow-hidden rounded-full border border-border-subtle bg-border-subtle/50" role="img" aria-label={`Load distribution: ${loadRows.map(({ member, displayPercentage }) => `${member.name} ${displayPercentage}%`).join(', ')}`}>
+                            {loadRows.map(({ member, rawPercentage }, index) => (
+                                <div
+                                    key={member.id}
+                                    style={{ width: `${rawPercentage}%` }}
+                                    className={`crew-load-segment ${loadToneClasses[index % loadToneClasses.length]} ${index > 0 ? 'border-l-2 border-card-bg' : ''}`}
+                                    aria-hidden="true"
+                                />
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div className="mt-6 flex min-h-24 items-center justify-center rounded-xl border border-dashed border-border-subtle text-center">
+                        <p className="max-w-md text-xs leading-relaxed text-text-muted">Load distribution will appear after crew members are added.</p>
+                    </div>
+                )}
+            </Card>
+
+            <CrewFormSheet isOpen={sheetOpen} onClose={() => setSheetOpen(false)} onSubmit={handleFormSubmit} initialMember={editingMember} />
+        </div>
     );
 }
