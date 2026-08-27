@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { useTrip } from '@/lib/tripContext';
 import MissionBriefModal from '@/components/ui/MissionBriefModal';
 import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
+import TripAppearanceDialog from './TripAppearanceDialog';
 import TripMobileNav from './TripMobileNav';
 import TripMoreMenu from './TripMoreMenu';
 import TripPrimaryNav from './TripPrimaryNav';
@@ -16,7 +17,7 @@ import { useTripWorkspace } from './TripWorkspaceProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
 
-type AppInfoDialogName = 'mission-brief' | 'about';
+type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
   name: AppInfoDialogName;
   pathname: string;
@@ -74,9 +75,22 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     isLoading: roleLoading,
     error: roleError,
   } = useTrip();
-  const { data, trip, error, isLoading, isReloading, reload } = useTripWorkspace();
+  const {
+    data,
+    trip,
+    editableActions,
+    error,
+    isLoading,
+    isReloading,
+    reload,
+    source,
+    connectivity,
+    navigationPath,
+    lastOnlineVerifiedAt,
+  } = useTripWorkspace();
   const [openedInfoDialog, setOpenedInfoDialog] = useState<ActiveAppInfoDialog | null>(null);
-  const pathname = usePathname();
+  const routePathname = usePathname();
+  const pathname = navigationPath ?? routePathname;
   const activeInfoDialog =
     openedInfoDialog?.pathname === pathname ? openedInfoDialog.name : null;
   const mainRef = useRef<HTMLElement>(null);
@@ -90,7 +104,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
         : pathname.endsWith('/crew')
           ? 'Crew'
           : pathname.endsWith('/guide')
-            ? 'Field Guide'
+            ? 'Field'
             : pathname.endsWith('/field-log')
               ? 'Field Log'
               : 'Trip Home';
@@ -186,6 +200,11 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
           setOpenedInfoDialog({ name: 'mission-brief', pathname })
         }
         onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+        onAppearance={
+          editableActions
+            ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
+            : undefined
+        }
         onSignOut={handleSignOut}
       />
 
@@ -230,6 +249,11 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
                 setOpenedInfoDialog({ name: 'mission-brief', pathname })
               }
               onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+              onAppearance={
+                editableActions
+                  ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
+                  : undefined
+              }
               onSignOut={handleSignOut}
             />
           </div>
@@ -245,12 +269,59 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
                 setOpenedInfoDialog({ name: 'mission-brief', pathname })
               }
               onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+              onAppearance={
+                editableActions
+                  ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
+                  : undefined
+              }
               onSignOut={handleSignOut}
               mobile
             />
           </div>
         </div>
       </header>
+
+      {source === 'cache' || connectivity === 'checking' ? (
+        <section
+          className="trip-source-status relative z-[var(--layer-navigation)] border-b px-3 py-2 md:px-6"
+          aria-label="Workspace connection status"
+          role="status"
+          aria-live="polite"
+          data-workspace-source={source}
+        >
+          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold">
+                {connectivity === 'checking'
+                  ? 'Checking connection…'
+                  : connectivity === 'offline'
+                    ? 'Offline · Read-only'
+                    : 'Saved trip · Read-only'}
+              </p>
+              <p className="mt-0.5 text-[11px] text-text-muted">
+                {connectivity === 'checking'
+                  ? 'Editing stays unavailable until access is verified.'
+                  : 'Reconnect to make changes.'}
+                {lastOnlineVerifiedAt ? (
+                  <span className="sr-only">
+                    {' '}Last verified online {new Date(lastOnlineVerifiedAt).toLocaleString()}.
+                  </span>
+                ) : null}
+              </p>
+            </div>
+            {connectivity !== 'checking' ? (
+              <button
+                type="button"
+                onClick={() => void reload()}
+                disabled={isReloading}
+                className="min-h-11 rounded-lg border border-border-subtle px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-60"
+              >
+                {isReloading ? 'Checking…' : 'Try again'}
+              </button>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       <main
         ref={mainRef}
@@ -292,6 +363,14 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
         isOpen={activeInfoDialog === 'about'}
         onClose={() => setOpenedInfoDialog(null)}
       />
+      {activeInfoDialog === 'appearance' && editableActions ? (
+        <TripAppearanceDialog
+          isOpen
+          currentTheme={data.settings.theme_variant}
+          onSelect={editableActions.updateThemeVariant}
+          onClose={() => setOpenedInfoDialog(null)}
+        />
+      ) : null}
     </div>
   );
 }

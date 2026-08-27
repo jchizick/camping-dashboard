@@ -3,6 +3,8 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GearItem } from '@/types';
+import { evaluateReadiness } from '@/lib/readiness';
 import ReadinessScoreCard from './ReadinessScoreCard';
 
 vi.mock('@/lib/themeContext', () => ({
@@ -23,11 +25,27 @@ describe('ReadinessScoreCard', () => {
     });
 
     it('labels the aggregate metric as overall trip readiness', () => {
+        const readiness = evaluateReadiness({
+            tripId: 'trip-1',
+            tripDays: 1,
+            gear: [{
+                id: 'gear-1',
+                name: 'Tent',
+                priority: 'critical',
+                acquired: true,
+                packed: true,
+            } as GearItem],
+            meals: [],
+            timeline: [],
+            currentWeather: null,
+            forecast: [],
+            offlineStatus: null,
+            modules: { mealsEnabled: false, offlineEnabled: false },
+        });
         render(
-            <ReadinessScoreCard
-                readiness={{ overall: 84, label: 'Field Ready', gear: 90, meals: 80, weather: 75, offline: 85, timeline: 90 }}
-            />
+            <ReadinessScoreCard readiness={readiness} />
         );
         expect(screen.getByText('Overall trip readiness')).toBeTruthy();
+        expect(screen.getByText('Locked In')).toBeTruthy();
     });
 });

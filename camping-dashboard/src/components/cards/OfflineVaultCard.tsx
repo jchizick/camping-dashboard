@@ -2,27 +2,21 @@
 
 import React from 'react';
 import type { OfflineStatus } from '@/types';
-import { calculateOfflineReadiness } from '@/lib/helpers';
+import { evaluateOfflineCategory } from '@/lib/readiness';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
-import { useTheme } from '@/lib/themeContext';
-import { ShieldAlert, Map, CheckCircle2, Navigation, Radio, AlertTriangle, Circle, FolderCode, Car } from 'lucide-react';
+import { FIELD_PREP_CHECKS } from '@/components/field/fieldPrepChecklist';
+import { ShieldAlert, CheckCircle2, Radio, Circle, FolderCode } from 'lucide-react';
 
 interface OfflineVaultCardProps {
     status: OfflineStatus | null;
     onToggle?: (key: keyof OfflineStatus) => void;
+    onInitialize?: () => Promise<void>;
     onOpenIntel?: () => void;
 }
 
-const checks = [
-    { key: 'maps_cached' as const, label: 'Maps Cached', icon: Map },
-    { key: 'permit_saved' as const, label: 'Permit Saved', icon: CheckCircle2 },
-    { key: 'daily_vehicle_permit_saved' as const, label: 'Daily Vehicle Permit', icon: Car },
-    { key: 'route_downloaded' as const, label: 'Route Downloaded', icon: Navigation },
-    { key: 'satellite_device_connected' as const, label: 'Satellite Device', icon: Radio },
-    { key: 'emergency_contact_ready' as const, label: 'Emergency Contact', icon: AlertTriangle },
-];
-
-export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: OfflineVaultCardProps) {
+export default function OfflineVaultCard({ status, onToggle, onInitialize, onOpenIntel }: OfflineVaultCardProps) {
+    const [initializing, setInitializing] = React.useState(false);
+    const [initializationError, setInitializationError] = React.useState<string | null>(null);
     const displayStatus: OfflineStatus = status ?? {
         trip_id: '',
         maps_cached: false,
@@ -34,28 +28,54 @@ export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: Offl
         emergency_contact_ready: false,
         updated_at: '',
     };
-    const readiness = calculateOfflineReadiness(displayStatus);
+    const readiness = evaluateOfflineCategory(displayStatus, true).score ?? 0;
     const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 60 ? 'bg-accent-yellow' : 'bg-accent-red';
-    const { labels } = useTheme();
 
     return (
-        <Card title={labels.offline} icon={ShieldAlert} className="h-full flex flex-col">
+        <Card title="Field Prep" icon={ShieldAlert} className="h-full flex flex-col">
             {status ? (
                 <>
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs text-text-muted">Safety Readiness</span>
+                        <span className="text-xs text-text-muted">Field Prep completion</span>
                         <span className="text-sm font-mono text-text-main">{readiness}%</span>
                     </div>
                     <ProgressBar value={readiness} colorClass={readinessColor} className="mb-6 shrink-0" />
                 </>
             ) : (
-                <p className="mb-4 text-sm text-text-muted">
-                    Offline readiness has not been configured yet. Select an item to begin.
-                </p>
+                <div className="flex flex-1 flex-col justify-center rounded-xl border border-border-subtle bg-app-bg/50 p-4">
+                    <h3 className="text-sm font-semibold text-text-main">Field Prep hasn’t been set up yet</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-text-muted">
+                        {onInitialize
+                            ? 'Set up the manual checklist when you are ready to confirm field preparations.'
+                            : 'This saved trip is read-only. Field Prep can be set up when editing is available.'}
+                    </p>
+                    {onInitialize ? (
+                        <button
+                            type="button"
+                            disabled={initializing}
+                            onClick={async () => {
+                                if (initializing) return;
+                                setInitializing(true);
+                                setInitializationError(null);
+                                try {
+                                    await onInitialize();
+                                } catch (error) {
+                                    setInitializationError(error instanceof Error ? error.message : 'Field Prep could not be set up.');
+                                } finally {
+                                    setInitializing(false);
+                                }
+                            }}
+                            className="mt-4 min-h-11 rounded-lg border border-border-subtle bg-card-hover px-4 text-sm font-semibold text-text-main"
+                        >
+                            {initializing ? 'Setting up…' : 'Set up Field Prep'}
+                        </button>
+                    ) : null}
+                    {initializationError ? <p className="mt-2 text-xs text-accent-red" role="alert">{initializationError}</p> : null}
+                </div>
             )}
 
-            <div className="space-y-2 flex-1">
-                {checks.map(({ key, label, icon: Icon }) => {
+            {status ? <div className="space-y-2 flex-1">
+                {FIELD_PREP_CHECKS.map(({ key, label, icon: Icon }) => {
                     const done = displayStatus[key];
                     return (
                         <div 
@@ -85,7 +105,7 @@ export default function OfflineVaultCard({ status, onToggle, onOpenIntel }: Offl
                         </div>
                     );
                 })}
-            </div>
+            </div> : null}
 
             {displayStatus.satellite_device_connected && displayStatus.satellite_device_name && (
                 <div className="mt-4 flex justify-between items-center px-4 py-2 border border-border-subtle rounded-xl bg-card-hover/50 text-xs font-mono shrink-0">

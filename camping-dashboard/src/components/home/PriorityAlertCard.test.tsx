@@ -30,7 +30,7 @@ function alert(overrides: Partial<Alert> = {}): Alert {
 afterEach(cleanup);
 
 describe('PriorityAlertCard', () => {
-  it('shows one priority notice with a presentation-limited summary and Guide link', () => {
+  it('shows one trip notice with a presentation-limited summary and Field link', () => {
     render(
       <PriorityAlertCard
         alert={alert()}
@@ -47,7 +47,12 @@ describe('PriorityAlertCard', () => {
       )
     ).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: 'View all field guide notices' }).getAttribute(
+      screen.getByRole('link', { name: 'View all trip notices in Field' }).getAttribute(
+        'href'
+      )
+    ).toBe('/trips/trip-1/guide');
+    expect(
+      screen.getByRole('link', { name: 'View trip notice in Field' }).getAttribute(
         'href'
       )
     ).toBe('/trips/trip-1/guide');
@@ -84,7 +89,7 @@ describe('PriorityAlertCard', () => {
     expect(screen.queryByText(canonicalBody)).toBeNull();
     expect(
       screen.getByRole('status', {
-        name: 'critical priority notice: Highway 60 Campground Assistance',
+        name: 'critical trip notice: Highway 60 Campground Assistance',
       })
     ).toBeTruthy();
     expect(canonical.title).toBe(canonicalTitle);
@@ -103,6 +108,7 @@ describe('PriorityAlertCard', () => {
   it('preserves the no-notice state', () => {
     render(<PriorityAlertCard alert={null} href="/trips/trip-1/guide" />);
 
+    expect(screen.getByText('Trip notice')).toBeTruthy();
     expect(screen.getByText('No active notices')).toBeTruthy();
     expect(screen.queryByRole('link')).toBeNull();
     expect(screen.getByRole('status').getAttribute('data-tone')).toBe('positive');

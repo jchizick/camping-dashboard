@@ -12,7 +12,12 @@ function copyResponseCookies(source: NextResponse, destination: NextResponse) {
 }
 
 export async function updateSupabaseSession(request: NextRequest) {
-  if (request.nextUrl.pathname === '/auth/callback') {
+  if (
+    request.nextUrl.pathname === '/auth/callback' ||
+    request.nextUrl.pathname === '/offline' ||
+    request.nextUrl.pathname === '/sw.js' ||
+    request.nextUrl.pathname === '/manifest.webmanifest'
+  ) {
     return NextResponse.next({ request });
   }
 

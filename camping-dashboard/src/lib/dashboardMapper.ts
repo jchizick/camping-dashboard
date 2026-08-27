@@ -103,7 +103,7 @@ export function toWeatherRefreshState(row: WeatherRefreshStateRow): WeatherRefre
 
 export function toGearItem(row: GearItemRow): GearItem {
   requireColumns(row, 'gear_items', [
-    'category', 'notes', 'owner', 'packed', 'priority', 'trip_id', 'weight_kg',
+    'category', 'notes', 'packed', 'priority', 'trip_id', 'weight_kg',
   ]);
   return {
     ...row,
@@ -142,7 +142,7 @@ export function toTimelineEvents(rows: TimelineEventRow[]): TimelineEvent[] {
 
 export function toMeal(row: MealRow): Meal {
   requireColumns(row, 'meals', [
-    'assigned_to', 'calories', 'day_number', 'meal_type', 'notes', 'prep_type', 'title', 'trip_id',
+    'calories', 'day_number', 'meal_type', 'notes', 'prep_type', 'title', 'trip_id',
   ]);
   return {
     ...row,

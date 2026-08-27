@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import type { TripDashboard, WeatherCurrent, ReadinessScore, CountdownResult, ThemeMode } from '@/types';
+import type { TripDashboard, WeatherCurrent, CountdownResult, ThemeMode } from '@/types';
+import type { ReadinessResult } from '@/lib/readiness';
 import { padTwo } from '@/lib/helpers';
 import { useAuth } from '@/lib/authContext';
 import { useTrip } from '@/lib/tripContext';
@@ -11,7 +12,7 @@ import { Activity, User as UserIcon, Star, Wind, Sunset, Radio } from 'lucide-re
 interface HeroHeaderProps {
     trip: TripDashboard;
     weather: WeatherCurrent | null;
-    readiness: ReadinessScore;
+    readiness: ReadinessResult;
     countdown: CountdownResult;
     themeMode: ThemeMode;
     onMissionBrief?: () => void;

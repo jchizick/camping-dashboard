@@ -21,6 +21,7 @@ const workspaceTokens = [
   'text-secondary',
   'accent-sage',
   'accent-amber',
+  'accent-info',
   'warning-surface',
   'warning-border',
   'warning-text',
@@ -31,6 +32,23 @@ const workspaceTokens = [
 ] as const;
 
 describe('trip workspace visual tokens', () => {
+  it('keeps variable-backed Tailwind utilities runtime scoped', () => {
+    const inlineThemeStart = css.indexOf('@theme inline');
+    const inlineTheme = css.slice(inlineThemeStart, css.indexOf('}', inlineThemeStart));
+
+    expect(inlineThemeStart).toBeGreaterThan(0);
+    for (const alias of [
+      '--color-card-bg: var(--card-bg)',
+      '--color-border-subtle: var(--border-subtle)',
+      '--color-text-main: var(--text-main)',
+      '--color-text-muted: var(--text-muted)',
+      '--color-accent-yellow: var(--accent-yellow)',
+      '--shadow-card: var(--card-shadow)',
+    ]) {
+      expect(inlineTheme).toContain(alias);
+    }
+  });
+
   it('defines every token for all four theme and mode combinations', () => {
     for (const token of workspaceTokens) {
       const definitions = css.match(
@@ -38,6 +56,50 @@ describe('trip workspace visual tokens', () => {
       );
       expect(definitions, token).toHaveLength(4);
     }
+  });
+
+  it('keeps navigation glass lighter than dense data surfaces in every theme', () => {
+    const alphaValues = (token: string) =>
+      [...css.matchAll(
+        new RegExp(`--workspace-${token}:\\s*rgba\\([^)]*,\\s*([0-9.]+)\\);`, 'g')
+      )].map((match) => Number(match[1]));
+
+    const sidebar = alphaValues('glass-sidebar-translucent');
+    const standard = alphaValues('glass-standard-translucent');
+    const dense = alphaValues('glass-dense-translucent');
+
+    expect(sidebar).toHaveLength(4);
+    expect(standard).toHaveLength(4);
+    expect(dense).toHaveLength(4);
+    for (let index = 0; index < dense.length; index += 1) {
+      expect(dense[index]).toBeGreaterThan(sidebar[index]);
+      expect(dense[index]).toBeGreaterThan(standard[index]);
+    }
+    expect(Math.max(...sidebar)).toBeLessThanOrEqual(0.68);
+    expect(Math.max(...standard)).toBeLessThanOrEqual(0.63);
+    expect(Math.min(...dense)).toBeGreaterThanOrEqual(0.72);
+  });
+
+  it('hides the workspace scene overlay in both Clean modes', () => {
+    const foundation = css.indexOf('Immersive trip workspace foundation');
+    const cleanDayStart = css.indexOf('.theme-clean {', foundation);
+    const cleanDay = css.slice(cleanDayStart, css.indexOf('.theme-clean.dark', cleanDayStart));
+    const cleanNightStart = css.indexOf('.theme-clean.dark', cleanDayStart);
+    const cleanNight = css.slice(cleanNightStart, css.indexOf('}', cleanNightStart));
+
+    expect(cleanDay).toContain('--workspace-scene-overlay: none;');
+    expect(cleanNight).toContain('--workspace-scene-overlay: none;');
+  });
+
+  it('hides the Home heading readability overlay', () => {
+    expect(css).toMatch(/\.home-heading-region::before\s*\{\s*content:\s*none;/);
+  });
+
+  it('hides the Trip hero text shadow only in Clean mode', () => {
+    expect(css).toMatch(/\.trip-hero__content\s*\{[^}]*text-shadow:\s*0 2px 18px/);
+    expect(css).toMatch(
+      /\.theme-clean \.trip-hero__content\s*\{[^}]*color:\s*#fff;[^}]*text-shadow:\s*none;/
+    );
   });
 
   it('activates the scene, shell, and integrated Home header groups in Phase 3', () => {
@@ -81,6 +143,55 @@ describe('trip workspace visual tokens', () => {
     expect(reducedTransparency).toContain('.trip-section-surface > :first-child');
     expect(reducedTransparency).toContain('backdrop-filter: none');
     expect(css).not.toMatch(/\.bg-card-bg\s*\{[^}]*workspace-glass/);
+  });
+
+  it('maps the complete semantic utility palette inside routes and sheets', () => {
+    for (const selector of ['.trip-section-page {', '.crud-sheet__panel--workspace {']) {
+      const start = css.indexOf(selector);
+      const block = css.slice(start, css.indexOf('}', start));
+
+      expect(start).toBeGreaterThan(0);
+      for (const mapping of [
+        '--text-main: var(--workspace-text-primary)',
+        '--text-muted: var(--workspace-text-secondary)',
+        '--accent-green: var(--workspace-accent-sage)',
+        '--accent-blue: var(--workspace-accent-info)',
+        '--accent-red: var(--workspace-danger-text)',
+        '--status-attention: var(--workspace-accent-amber)',
+        '--status-info: var(--workspace-accent-info)',
+        '--focus-ring: var(--workspace-focus-ring)',
+        '--card-shadow: var(--workspace-elevation)',
+      ]) {
+        expect(block).toContain(mapping);
+      }
+    }
+  });
+
+  it('keeps readiness SVG colors on runtime semantic variables', () => {
+    const readiness = readFileSync(
+      resolve(process.cwd(), 'src/components/cards/ReadinessScoreCard.tsx'),
+      'utf8'
+    );
+
+    expect(readiness).toContain("'var(--accent-green)'");
+    expect(readiness).toContain('stroke="var(--border-subtle)"');
+    expect(readiness).not.toMatch(/var\(--color-(?:accent|border)/);
+  });
+
+  it('does not expose clean-light Home acrylic tokens to other theme contracts', () => {
+    const cleanAcrylicTokenDefinitions = [
+      ...css.matchAll(/--clean-home-glass-[\w-]+\s*:/g),
+    ];
+
+    expect(cleanAcrylicTokenDefinitions.length).toBeGreaterThan(0);
+    for (const definition of cleanAcrylicTokenDefinitions) {
+      const precedingRuleStart = css.lastIndexOf('}', definition.index) + 1;
+      const selector = css.slice(precedingRuleStart, css.indexOf('{', precedingRuleStart));
+      expect(selector).toContain('.theme-clean:not(.dark)');
+      expect(selector).toContain('[data-trip-app-shell]:has(.home-overview)');
+      expect(selector).not.toContain('.theme-clean.dark');
+      expect(selector).not.toContain('.theme-expedition');
+    }
   });
 
   it('uses bounded desktop operational workspaces with natural-scroll fallbacks', () => {

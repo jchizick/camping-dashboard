@@ -61,6 +61,14 @@ export interface TripFormValues {
   endDate: string;
 }
 
+export interface TripDetailsUpdate {
+  park_name: string | null;
+  lake_name: string | null;
+  site_name: string | null;
+  start_date: string;
+  end_date: string;
+}
+
 export interface CreateTripRequest {
   name: string;
   park_name?: string;
@@ -89,19 +97,22 @@ export type WeatherRefreshState = WeatherRefreshStateRow & {
 };
 export type GearItem = PresentColumns<
   GearItemRow,
-  Exclude<keyof GearItemRow, 'id' | 'name' | 'acquired'>
+  Exclude<keyof GearItemRow, 'id' | 'name' | 'acquired' | 'owner' | 'responsible_crew_member_id'>
 > & { priority: Priority };
 export type TimelineEvent = PresentColumns<
   TimelineEventRow,
   Exclude<keyof TimelineEventRow, 'id' | 'phase'>
 > & { phase: TimelinePhase | null };
-export type Meal = PresentColumns<MealRow, Exclude<keyof MealRow, 'id'>> & {
+export type Meal = PresentColumns<
+  MealRow,
+  Exclude<keyof MealRow, 'id' | 'assigned_to' | 'prep_crew_member_id'>
+> & {
   meal_type: MealType;
   prep_type: PrepType;
 };
 export type CrewMember = PresentColumns<
   CrewMemberRow,
-  Exclude<keyof CrewMemberRow, 'id' | 'name'>
+  Exclude<keyof CrewMemberRow, 'id' | 'name' | 'trip_member_id'>
 >;
 export type ParkIntel = PresentColumns<ParkIntelRow, Exclude<keyof ParkIntelRow, 'trip_id'>>;
 export type OfflineStatus = PresentColumns<
@@ -136,16 +147,6 @@ export interface CountdownResult {
   seconds: number;
   totalSeconds: number;
   isPast: boolean;
-}
-
-export interface ReadinessScore {
-  overall: number;
-  label: string;
-  gear: number;
-  meals: number;
-  weather: number;
-  offline: number;
-  timeline: number;
 }
 
 export interface TripDashboardData {

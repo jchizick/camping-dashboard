@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Meal, MealType, PrepType } from '@/types';
+import type { CrewMember, Meal, MealType, PrepType } from '@/types';
+import { getCrewSelectOptions } from '@/lib/crewResponsibility';
 import CrudSheet from '@/components/ui/CrudSheet';
 import {
     draftValuesEqual,
@@ -16,21 +17,25 @@ interface MealFormSheetProps {
     initialMeal?: Meal;
     defaultDay?: number;
     totalDays: number;
+    crew?: CrewMember[];
 }
 
-export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, defaultDay = 1, totalDays }: MealFormSheetProps) {
+type MealFormData = Omit<Meal, 'id' | 'trip_id'>;
+
+export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, defaultDay = 1, totalDays, crew = [] }: MealFormSheetProps) {
     const draftId = React.useId();
-    const defaultForm = {
+    const defaultForm: MealFormData = {
         day_number: defaultDay,
         meal_type: 'breakfast' as MealType,
         title: '',
         prep_type: 'fresh' as PrepType,
         calories: 0,
-        assigned_to: '',
+        assigned_to: null,
+        prep_crew_member_id: null,
         notes: '',
     };
 
-    const [form, setForm] = useState(initialMeal ?? defaultForm);
+    const [form, setForm] = useState<MealFormData>(initialMeal ?? defaultForm);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +65,10 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
         if (!form.title.trim()) { setError('Meal title is required'); return; }
         setSaving(true);
         try {
-            await onSubmit(form);
+            await onSubmit({
+                ...form,
+                assigned_to: form.prep_crew_member_id ? null : form.assigned_to,
+            });
             saved();
             onClose();
         } catch {
@@ -71,6 +79,7 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
     }
 
     const isEdit = !!initialMeal;
+    const crewOptions = getCrewSelectOptions(crew);
 
     return (
         <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Meal' : 'Add Meal'} surface="workspace">
@@ -162,15 +171,27 @@ export default function MealFormSheet({ isOpen, onClose, onSubmit, initialMeal, 
                 </div>
 
                 <div className="crud-form__field">
-                    <label className="crud-form__label" htmlFor="meal-assigned">Assigned To</label>
-                    <input
-                        id="meal-assigned"
-                        className="crud-form__input"
-                        type="text"
-                        value={form.assigned_to}
-                        onChange={(e) => set('assigned_to', e.target.value)}
-                        placeholder="e.g. Jordan"
-                    />
+                    <label className="crud-form__label" htmlFor="meal-prep-lead">Prep lead</label>
+                    <select
+                        id="meal-prep-lead"
+                        className="crud-form__select"
+                        value={form.prep_crew_member_id ?? ''}
+                        onChange={(e) => setForm((current) => ({
+                            ...current,
+                            prep_crew_member_id: e.target.value || null,
+                            assigned_to: null,
+                        }))}
+                    >
+                        <option value="">Unassigned</option>
+                        {crewOptions.map((option) => (
+                            <option key={option.id} value={option.id}>{option.label}</option>
+                        ))}
+                    </select>
+                    {form.prep_crew_member_id === null && form.assigned_to?.trim() ? (
+                        <small className="gear-required-control__note">
+                            Legacy assignment: {form.assigned_to.trim()}. Choose Crew to resolve it.
+                        </small>
+                    ) : null}
                 </div>
 
                 <div className="crud-form__field">

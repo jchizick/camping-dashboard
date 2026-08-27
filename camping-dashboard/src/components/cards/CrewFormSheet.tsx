@@ -19,6 +19,7 @@ const defaultForm = {
     load_weight_kg: 0,
     canoe_number: 1,
     notes: '',
+    trip_member_id: null,
 };
 
 export default function CrewFormSheet({ isOpen, onClose, onSubmit, initialMember }: CrewFormSheetProps) {

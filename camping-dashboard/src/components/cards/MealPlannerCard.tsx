@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Meal } from '@/types';
+import type { CrewMember, Meal } from '@/types';
 import { groupBy } from '@/lib/helpers';
 import { useTheme } from '@/lib/themeContext';
 import { Card } from '@/components/ui/Primitives';
@@ -14,11 +14,12 @@ interface MealPlannerCardProps {
     onAdd?: (meal: Omit<Meal, 'id' | 'trip_id'>) => Promise<void>;
     onUpdate?: (id: string, patch: Partial<Omit<Meal, 'id' | 'trip_id'>>) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    crew?: CrewMember[];
 }
 
 const mealOrder = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
-export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onDelete }: MealPlannerCardProps) {
+export default function MealPlannerCard({ meals, crew = [], totalDays, onAdd, onUpdate, onDelete }: MealPlannerCardProps) {
     const [selectedDay, setSelectedDay] = useState<number>(1);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
@@ -166,6 +167,7 @@ export default function MealPlannerCard({ meals, totalDays, onAdd, onUpdate, onD
                 initialMeal={editingMeal}
                 defaultDay={selectedDay}
                 totalDays={totalDays}
+                crew={crew}
             />
         </Card>
     );

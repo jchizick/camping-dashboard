@@ -88,7 +88,7 @@ export default function CampsiteLocationSheet({
                         className="h-[430px] min-h-[320px]"
                     />
 
-                    <div className="mt-4 rounded-lg border border-border-subtle bg-app-bg/50 p-3 font-mono text-xs text-text-muted" aria-live="polite">
+                    <div className="type-technical mt-4 rounded-lg border border-border-subtle bg-app-bg/50 p-3 text-xs text-text-muted" aria-live="polite">
                         {selection ? (
                             <>
                                 Latitude <span className="text-text-main">{selection.latitude.toFixed(6)}</span>

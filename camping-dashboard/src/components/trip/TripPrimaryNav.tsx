@@ -7,9 +7,12 @@ import {
   TRIP_PRIMARY_DESTINATIONS,
   tripDestinationHref,
 } from './tripNavigation';
+import { useOptionalTripWorkspaceStatus } from './TripWorkspaceStatus';
 
 export default function TripPrimaryNav({ tripId }: { tripId: string }) {
   const pathname = usePathname();
+  const workspace = useOptionalTripWorkspaceStatus();
+  const navigationPath = workspace?.navigationPath ?? pathname;
 
   return (
     <nav
@@ -18,7 +21,7 @@ export default function TripPrimaryNav({ tripId }: { tripId: string }) {
       data-testid="desktop-trip-navigation"
     >
       {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {
-        const active = isTripDestinationActive(pathname, tripId, segment);
+        const active = isTripDestinationActive(navigationPath, tripId, segment);
 
         return (
           <GuardedTripLink

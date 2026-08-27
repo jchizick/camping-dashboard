@@ -4,6 +4,7 @@ import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TripMemberRole } from '@/types';
+import { evaluateReadiness } from '@/lib/readiness';
 import type {
   TripWorkspaceEditableActions,
   TripWorkspaceValue,
@@ -11,6 +12,17 @@ import type {
 
 const workspace = vi.hoisted(() => ({
   value: null as TripWorkspaceValue | null,
+}));
+
+const navigation = vi.hoisted(() => ({
+  replace: vi.fn(),
+  searchParams: { get: vi.fn(() => null) },
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: navigation.replace }),
+  usePathname: () => '/trips/trip-1/gear',
+  useSearchParams: () => navigation.searchParams,
 }));
 
 vi.mock('./TripWorkspaceProvider', () => ({
@@ -34,6 +46,12 @@ vi.mock('@/components/cards/MealPlannerCard', () => ({
       data-days={totalDays}
     />
   ),
+}));
+vi.mock('@/components/plan/MobilePlanOverview', () => ({
+  default: () => <div data-testid="mobile-plan" data-plan-composition="mobile" />,
+}));
+vi.mock('@/components/field/MobileFieldOverview', () => ({
+  default: () => <div data-testid="mobile-field" data-field-composition="mobile" />,
 }));
 vi.mock('@/components/cards/GearChecklistCard', () => ({
   default: ({ onAdd }: { onAdd?: unknown }) => (
@@ -106,7 +124,15 @@ function workspaceValue(
         ...settings,
       },
     },
-    trip: { id: 'trip-1' },
+    trip: {
+      id: 'trip-1',
+      name: 'Test trip',
+      park_name: 'Algonquin Park',
+      lake_name: 'Maple Lake',
+      site_name: 'Site 4',
+      start_date: '2026-08-01',
+      end_date: '2026-08-03',
+    },
     gear: [],
     meals: [],
     timeline: [],
@@ -116,7 +142,17 @@ function workspaceValue(
     parkIntel: null,
     prepFeed: [],
     tripDays: 3,
-    readiness: { overall: 0 },
+    readiness: evaluateReadiness({
+      tripId: 'trip-1',
+      tripDays: 3,
+      gear: [],
+      meals: [],
+      timeline: [],
+      currentWeather: null,
+      forecast: [],
+      offlineStatus: null,
+      modules: { mealsEnabled: false, offlineEnabled: false },
+    }),
     permissions: {
       role,
       canEdit,
@@ -129,14 +165,17 @@ function workspaceValue(
   } as unknown as TripWorkspaceValue;
 }
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('trip section routes', () => {
   const routes = [
     ['Plan', TripPlanPage, ['timeline', 'meals']],
     ['Gear', TripGearPage, ['readiness', 'gear']],
     ['Crew', TripCrewPage, ['crew']],
-    ['Field Guide', TripGuidePage, ['park', 'alerts', 'offline', 'astro']],
+    ['Field', TripGuidePage, ['park', 'alerts', 'offline', 'astro']],
     ['Field Log', TripFieldLogPage, ['field-log']],
   ] as const;
 
@@ -201,6 +240,50 @@ describe('trip section routes', () => {
 
     expect(screen.getByTestId('timeline').getAttribute('data-days')).toBe('5');
     expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
+  });
+
+  it('mounts only the consolidated Plan composition below 768px', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(max-width: 767px)',
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
+    workspace.value = workspaceValue('owner');
+
+    render(<TripPlanPage />);
+
+    expect(screen.getByTestId('mobile-plan')).toBeTruthy();
+    expect(screen.queryByTestId('timeline')).toBeNull();
+    expect(screen.queryByTestId('meals')).toBeNull();
+    expect(screen.getByText('Trip details, schedule and meals')).toBeTruthy();
+  });
+
+  it('mounts only the field-briefing composition below 768px', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(max-width: 767px)',
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
+    workspace.value = workspaceValue('owner');
+
+    render(<TripGuidePage />);
+
+    expect(screen.getByTestId('mobile-field')).toBeTruthy();
+    expect(screen.queryByTestId('park')).toBeNull();
+    expect(screen.queryByTestId('alerts')).toBeNull();
+    expect(screen.queryByTestId('offline')).toBeNull();
+    expect(screen.queryByTestId('astro')).toBeNull();
+    expect(screen.getByText('Conditions, notices and field essentials')).toBeTruthy();
   });
 
   it('marks only Plan and Gear as operational workspaces', () => {

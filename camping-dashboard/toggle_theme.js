@@ -17,20 +17,17 @@ async function run() {
     process.exit(1);
   }
 
-  const variant = mode;
-  const override = mode === 'clean' ? 'day' : 'night';
-
   const { data, error } = await supabase
     .from('settings')
-    .update({ theme_variant: variant, manual_theme_override: override })
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // update all
+    .update({ theme_variant: mode })
+    .not('trip_id', 'is', null); // update all singleton settings rows
 
   if (error) {
     console.error("Error updating settings:", error);
     process.exit(1);
   }
 
-  console.log(`Updated theme to ${variant} (${override})`);
+  console.log(`Updated theme to ${mode}; preserved each trip's day/night mode`);
 }
 
 run();

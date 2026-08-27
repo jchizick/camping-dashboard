@@ -5,10 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { getAuthErrorMessage } from '@/lib/authRedirect';
-import { fetchUserTrips, type UserTrip } from '@/lib/fetchDashboard';
+import {
+  fetchUserTrips,
+  UserTripsFetchError,
+  type UserTrip,
+} from '@/lib/fetchDashboard';
 import { ThemeProvider } from '@/lib/themeContext';
+import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
 import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
 import { SignedOutLanding } from '@/components/trips/SignedOutLanding';
+import { EmptyTripsState, TripsWelcome } from '@/components/trips/TripsLandingOnboarding';
 import {
   canDeleteTrip,
   formatTripDates,
@@ -35,27 +41,18 @@ import {
   Mountain,
   Plus,
   Route,
+  RefreshCw,
   Trash2,
+  TriangleAlert,
   UserRound,
   X,
   Loader2,
 } from 'lucide-react';
 
-const TRIPS_LANDING_SETTINGS = {
-  trip_id: '',
-  manual_theme_override: 'day' as const,
-  preferred_units: 'metric' as const,
-  show_astro: false,
-  show_meals: false,
-  show_offline: false,
-  show_crew: false,
-  theme_variant: 'expedition' as const,
-};
-
 export default function TripsPage() {
   return (
     <AuthProvider>
-      <ThemeProvider settings={TRIPS_LANDING_SETTINGS}>
+      <ThemeProvider settings={APP_SHELL_SETTINGS}>
         <TripsContent />
       </ThemeProvider>
     </AuthProvider>
@@ -152,21 +149,21 @@ function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
     <section className="trips-feature" aria-labelledby="featured-trip-title" style={background ? { backgroundImage: `url(${background})` } : undefined}>
       <div className="trips-feature__shade" aria-hidden="true" />
       <div className="trips-feature__topline">
-        <span className="trips-feature__status"><Compass size={14} aria-hidden="true" /> {status.label} expedition</span>
+        <span className="trips-feature__status"><Compass size={14} aria-hidden="true" /> {status.label} trip</span>
         <div className="trips-feature__actions">
           <span className="trips-role"><UserRound size={15} aria-hidden="true" /> {trip.role}</span>
           <TripOverflow trip={trip} deleting={deleting} onDelete={onDelete} />
         </div>
       </div>
       <div className="trips-feature__content">
-        <h2 id="featured-trip-title">{trip.name}</h2>
+        <h2 id="featured-trip-title" data-mobile-type-role="trip-title">{trip.name}</h2>
         <p className="trips-feature__location"><MapPin size={18} aria-hidden="true" /> {getTripLocation(trip)}</p>
         <div className="trips-feature__meta">
           <span><CalendarDays size={17} aria-hidden="true" /> {formatTripDates(trip.start_date, trip.end_date)}</span>
           {durationLabel ? <span><Route size={17} aria-hidden="true" /> {durationLabel}</span> : null}
         </div>
         <Link href={getTripHref(trip.id)} className="trips-primary-action">
-          Continue Expedition <ArrowRight size={20} aria-hidden="true" />
+          Continue Trip <ArrowRight size={20} aria-hidden="true" />
         </Link>
       </div>
     </section>
@@ -174,16 +171,16 @@ function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
 }
 
 const utilityCards = [
-  { title: 'Gear Closet', copy: 'Your equipment, essentials and saved gear.', icon: Backpack },
-  { title: 'Camper Guide', copy: 'Getting started, camping basics and practical guides.', icon: BookOpen },
-  { title: 'Field Resources', copy: 'Park information, safety references and useful tools.', icon: Map },
+  { title: 'Gear Closet', copy: 'Your equipment, essentials and saved gear.', icon: Backpack, artwork: 'gear' },
+  { title: 'Camper Guide', copy: 'Getting started, camping basics and practical guides.', icon: BookOpen, artwork: 'guide' },
+  { title: 'Field Resources', copy: 'Park information, safety references and useful tools.', icon: Map, artwork: 'resources' },
 ] as const;
 
 function UtilityCards() {
   return (
     <section className="trips-utilities" aria-label="Camping resources">
-      {utilityCards.map(({ title, copy, icon: Icon }) => (
-        <div className="trips-utility" key={title}>
+      {utilityCards.map(({ title, copy, icon: Icon, artwork }) => (
+        <div className={`trips-utility trips-utility--${artwork}`} key={title}>
           <span className="trips-utility__icon" aria-hidden="true"><Icon size={27} /></span>
           <span className="trips-utility__copy"><strong>{title}</strong><small>{copy}</small></span>
           <span className="trips-utility__soon">Coming soon</span>
@@ -193,7 +190,7 @@ function UtilityCards() {
   );
 }
 
-function ExpeditionRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
+function TripRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
   const background = resolveTripWorkspaceBackground(trip);
   const status = getTripStatus(trip.start_date, trip.end_date);
   const duration = getTripDuration(trip.start_date, trip.end_date);
@@ -219,9 +216,36 @@ function ExpeditionRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting:
   );
 }
 
-function TripsContent() {
+function TripsUnavailable({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section
+      className="trips-empty trips-empty--unavailable"
+      data-trip-list-state="unavailable"
+      role="alert"
+      aria-labelledby="trips-unavailable-heading"
+    >
+      <span className="trips-empty__icon" aria-hidden="true">
+        <TriangleAlert size={32} />
+      </span>
+      <h2 id="trips-unavailable-heading">Trips unavailable</h2>
+      <p>We couldn’t load your trips. Your account is still signed in. Check your connection and try again.</p>
+      <button type="button" className="trips-primary-action" onClick={onRetry}>
+        <RefreshCw size={18} aria-hidden="true" /> Retry loading trips
+      </button>
+    </section>
+  );
+}
+
+type TripsLoadState = {
+  userId: string | null;
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  trips: UserTrip[];
+};
+
+export function TripsContent() {
   const { user, isLoading: authLoading, signIn, signOut } = useAuth();
-  const [tripsState, setTripsState] = useState<{ userId: string | null; trips: UserTrip[] }>({ userId: null, trips: [] });
+  const [tripsState, setTripsState] = useState<TripsLoadState>({ userId: null, status: 'idle', trips: [] });
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [signInError, setSignInError] = useState<string | null>(null);
@@ -235,14 +259,25 @@ function TripsContent() {
     if (authLoading || !user) return;
     let cancelled = false;
     fetchUserTrips()
-      .then((data) => { if (!cancelled) setTripsState({ userId: user.id, trips: data }); })
-      .catch(() => { if (!cancelled) setTripsState({ userId: user.id, trips: [] }); });
+      .then((data) => {
+        if (!cancelled) setTripsState({ userId: user.id, status: 'ready', trips: data });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        if (error instanceof UserTripsFetchError && error.kind === 'unauthenticated') {
+          void signOut();
+          return;
+        }
+        setTripsState({ userId: user.id, status: 'error', trips: [] });
+      });
     return () => { cancelled = true; };
-  }, [user, authLoading]);
+  }, [user, authLoading, loadAttempt, signOut]);
 
   const trips = tripsState.userId === user?.id ? tripsState.trips : [];
+  const tripListStatus = tripsState.userId === user?.id ? tripsState.status : 'idle';
   const featuredTrip = selectFeaturedTrip(trips);
-  const isLoading = authLoading || Boolean(user && tripsState.userId !== user.id);
+  const isLoading = authLoading || Boolean(user && (tripListStatus === 'idle' || tripListStatus === 'loading'));
+  const tripListFailed = tripListStatus === 'error';
   const firstName = getUserFirstName(user);
 
   async function handleDeleteTrip(trip: UserTrip) {
@@ -267,50 +302,47 @@ function TripsContent() {
     try { await signIn(); } catch { setSignInError('Google sign-in could not be started. Please try again.'); }
   }
 
+  function retryTripList() {
+    if (!user) return;
+    setTripsState({ userId: user.id, status: 'loading', trips: [] });
+    setLoadAttempt((attempt) => attempt + 1);
+  }
+
   if (!authLoading && !user) {
     return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
   }
 
-  if (isLoading || authLoading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="flex items-center gap-3 text-text-muted text-sm">
-          <Loader2 size={18} className="animate-spin" />
-          Loading trips...
-        </div>
-      </main>
-    );
+  if (isLoading) {
+    return <main className="trips-auth-state"><div className="trips-loading"><Loader2 size={20} className="animate-spin" /> Preparing base camp…</div></main>;
   }
 
   return (
-    <main className="trips-landing">
+    <main className="trips-landing" data-entry-flow="trips-library">
       <GlobalSidebar firstName={firstName} email={user?.email} onSignOut={signOut} />
       <MobileHeader />
       <div className="trips-landing__main">
         <div className="trips-landing__canvas">
-          <header className="trips-welcome">
-            <div><h1>Welcome back, {firstName}</h1><p>Your next adventure is ready when you are. Continue your current trip, check your essentials, or start planning somewhere new.</p></div>
-            <Link href={NEW_TRIP_HREF} className="trips-primary-action"><Plus size={19} aria-hidden="true" /> Plan a New Trip</Link>
-          </header>
-
-          {deleteError ? <p role="alert" className="trips-error">{deleteError}</p> : null}
-
-          {featuredTrip ? (
-            <>
-              <FeaturedTrip trip={featuredTrip} deleting={deletingTripId === featuredTrip.id} onDelete={handleDeleteTrip} />
-              <UtilityCards />
-              <section className="trips-expeditions" aria-labelledby="expeditions-heading">
-                <div className="trips-section-heading"><div><h2 id="expeditions-heading">Your Expeditions</h2><p>{trips.length} trip{trips.length === 1 ? '' : 's'} in your library</p></div></div>
-                <div className="trips-expeditions__list">{trips.map((trip) => <ExpeditionRow key={trip.id} trip={trip} deleting={deletingTripId === trip.id} onDelete={handleDeleteTrip} />)}</div>
-              </section>
-            </>
+          {tripListFailed ? (
+            <TripsUnavailable onRetry={retryTripList} />
           ) : (
-            <section className="trips-empty" aria-labelledby="expeditions-heading">
-              <span className="trips-empty__icon" aria-hidden="true"><Compass size={34} /></span>
-              <h2 id="expeditions-heading">Your Expeditions</h2>
-              <p>Every great trip starts with a place and a date.</p>
-              <Link href={NEW_TRIP_HREF} className="trips-primary-action"><Plus size={19} aria-hidden="true" /> Plan Your First Trip</Link>
-            </section>
+            <>
+              <TripsWelcome firstName={firstName} hasTrips={Boolean(featuredTrip)} />
+
+              {deleteError ? <p role="alert" className="trips-error">{deleteError}</p> : null}
+
+              {featuredTrip ? (
+                <>
+                  <FeaturedTrip trip={featuredTrip} deleting={deletingTripId === featuredTrip.id} onDelete={handleDeleteTrip} />
+                  <UtilityCards />
+                  <section className="trips-expeditions" aria-labelledby="trips-heading">
+                    <div className="trips-section-heading"><div><h2 id="trips-heading">Your Trips</h2><p>{trips.length} trip{trips.length === 1 ? '' : 's'} in your library</p></div></div>
+                    <div className="trips-expeditions__list">{trips.map((trip) => <TripRow key={trip.id} trip={trip} deleting={deletingTripId === trip.id} onDelete={handleDeleteTrip} />)}</div>
+                  </section>
+                </>
+              ) : (
+                <EmptyTripsState />
+              )}
+            </>
           )}
         </div>
       </div>

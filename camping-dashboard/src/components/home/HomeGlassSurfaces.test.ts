@@ -51,8 +51,74 @@ describe('Home glass surface contracts', () => {
     expect(reducedCss).toContain('var(--workspace-glass-dense)');
   });
 
+  it('uses stronger frost while preserving explicit Expedition text contrast', () => {
+    const phase4Marker = css.indexOf('Home expedition glass surfaces');
+    const supports = css.slice(
+      css.indexOf('@supports ((backdrop-filter', phase4Marker),
+      css.indexOf('.home-overview .home-weather-condition', phase4Marker)
+    );
+
+    expect(supports).toContain('blur(20px) saturate(1.1)');
+    expect(css).toContain('.home-priority-card__inline-action {');
+    expect(css).toContain('color: var(--color-text-primary);');
+  });
+
+  it('keeps the clean-light acrylic recipe scoped to the Home dashboard', () => {
+    const marker = css.indexOf('Clean light Home acrylic material');
+    const cleanAcrylicCss = css.slice(marker);
+
+    expect(marker).toBeGreaterThan(-1);
+    expect(cleanAcrylicCss).toContain(
+      '.theme-clean:not(.dark) [data-trip-app-shell]:has(.home-overview) {'
+    );
+    expect(cleanAcrylicCss).toContain('--clean-home-glass-standard:');
+    expect(cleanAcrylicCss).toContain('--clean-home-glass-dense:');
+    expect(cleanAcrylicCss).toContain('--clean-home-glass-warning:');
+    expect(cleanAcrylicCss).not.toContain(
+      '.theme-clean.dark [data-trip-app-shell]:has(.home-overview) {'
+    );
+  });
+
+  it('gives clean-light Home surfaces distinct standard, dense, and warning recipes', () => {
+    const marker = css.indexOf('Clean light Home acrylic material');
+    const cleanAcrylicCss = css.slice(marker);
+
+    expect(cleanAcrylicCss).toContain('blur(20px) saturate(1.1)');
+    expect(cleanAcrylicCss).toContain('blur(24px) saturate(1.1)');
+    expect(cleanAcrylicCss).toContain('blur(22px) saturate(1.08)');
+    expect(cleanAcrylicCss).toContain('var(--clean-home-glass-shadow-raised)');
+    expect(cleanAcrylicCss).toContain('repeating-linear-gradient');
+  });
+
+  it('does not stack backdrop blur on clean-light card headers', () => {
+    expect(css).toMatch(
+      /\.theme-clean:not\(\.dark\) \[data-trip-app-shell\]:has\(\.home-overview\) \.home-glass-surface > div:first-child\s*\{[^}]*backdrop-filter:\s*none;/
+    );
+  });
+
+  it('provides clean-light opaque and reduced-transparency fallbacks', () => {
+    const fallbackMarker = css.indexOf('Opaque clean-light Home fallbacks');
+    const supports = css.indexOf('@supports ((backdrop-filter', fallbackMarker);
+    const reduced = css.indexOf('@media (prefers-reduced-transparency: reduce)', supports);
+    const fallbackCss = css.slice(fallbackMarker, supports);
+    const reducedCss = css.slice(reduced, css.indexOf('@media (min-width: 1440px)', reduced));
+
+    expect(fallbackCss).toContain('var(--clean-home-glass-solid-standard)');
+    expect(fallbackCss).toContain('var(--clean-home-glass-solid-dense)');
+    expect(fallbackCss).toContain('var(--clean-home-glass-solid-warning)');
+    expect(reducedCss).toContain('var(--clean-home-glass-solid-standard)');
+    expect(reducedCss).toContain('var(--clean-home-glass-solid-dense)');
+    expect(reducedCss).toContain('var(--clean-home-glass-solid-warning)');
+  });
+
   it('uses a natural-height wide composition without fixed grid rows', () => {
-    const wide = css.slice(css.lastIndexOf('@media (min-width: 1440px)'));
+    const homeMarker = css.indexOf('Home expedition glass surfaces');
+    const signedOutMarker = css.indexOf('Signed-out Field Protocol landing', homeMarker);
+    const homeCss = css.slice(homeMarker, signedOutMarker);
+    const wide = homeCss.slice(homeCss.indexOf('@media (min-width: 1440px)'));
+
+    expect(homeMarker).toBeGreaterThan(-1);
+    expect(signedOutMarker).toBeGreaterThan(homeMarker);
     expect(wide).toContain('grid-template-rows: auto auto');
     expect(wide).toContain('.home-map');
     expect(wide).toContain('.home-weather');

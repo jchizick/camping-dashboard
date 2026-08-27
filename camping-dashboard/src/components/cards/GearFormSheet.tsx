@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { GearItem, Priority } from '@/types';
+import type { CrewMember, GearItem, Priority } from '@/types';
+import { getCrewSelectOptions } from '@/lib/crewResponsibility';
 import CrudSheet from '@/components/ui/CrudSheet';
 import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
@@ -10,22 +11,41 @@ interface GearFormSheetProps {
     onClose: () => void;
     onSubmit: (data: Omit<GearItem, 'id' | 'trip_id'>) => Promise<void>;
     initialItem?: GearItem;
+    crew?: CrewMember[];
+    defaultRequired?: boolean;
 }
 
-const defaultForm = {
+type GearFormData = Omit<GearItem, 'id' | 'trip_id'>;
+
+const defaultForm: GearFormData = {
     name: '',
     category: '',
     priority: 'high' as Priority,
-    owner: '',
+    owner: null,
+    responsible_crew_member_id: null,
     weight_kg: 0,
     notes: '',
     acquired: false,
     packed: false,
 };
 
-export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }: GearFormSheetProps) {
+function createDefaultForm(defaultRequired: boolean): GearFormData {
+    return {
+        ...defaultForm,
+        priority: defaultRequired ? 'critical' : 'high',
+    };
+}
+
+export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem, crew = [], defaultRequired = false }: GearFormSheetProps) {
     const draftId = React.useId();
-    const [form, setForm] = useState(initialItem ?? defaultForm);
+    const blankForm = React.useMemo(
+        () => createDefaultForm(defaultRequired),
+        [defaultRequired]
+    );
+    const [form, setForm] = useState<GearFormData>(initialItem ?? blankForm);
+    const [nonRequiredPriority, setNonRequiredPriority] = useState<'high' | 'low'>(
+        initialItem?.priority === 'low' ? 'low' : 'high'
+    );
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -36,12 +56,13 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
     // Reset form when sheet opens with new item
     React.useEffect(() => {
         if (isOpen) {
-            setForm(initialItem ?? defaultForm);
+            setForm(initialItem ?? createDefaultForm(defaultRequired));
+            setNonRequiredPriority(initialItem?.priority === 'low' ? 'low' : 'high');
             setError(null);
         }
-    }, [isOpen, initialItem]);
+    }, [defaultRequired, isOpen, initialItem]);
 
-    const initialForm = initialItem ?? defaultForm;
+    const initialForm = initialItem ?? blankForm;
     const { close, saved } = useTripDraftForm({
         id: `gear-${draftId}`,
         isOpen,
@@ -55,7 +76,10 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
         if (!form.name.trim()) { setError('Name is required'); return; }
         setSaving(true);
         try {
-            await onSubmit(form);
+            await onSubmit({
+                ...form,
+                owner: form.responsible_crew_member_id ? null : form.owner,
+            });
             saved();
             onClose();
         } catch {
@@ -66,6 +90,17 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
     }
 
     const isEdit = !!initialItem;
+    const isRequired = form.priority === 'critical';
+    const crewOptions = getCrewSelectOptions(crew);
+
+    function setRequired(required: boolean) {
+        set('priority', required ? 'critical' : nonRequiredPriority);
+    }
+
+    function setPackingPriority(priority: 'high' | 'low') {
+        setNonRequiredPriority(priority);
+        set('priority', priority);
+    }
 
     return (
         <CrudSheet isOpen={isOpen} onClose={close} title={isEdit ? 'Edit Gear Item' : 'Add Gear Item'} surface="workspace">
@@ -98,31 +133,63 @@ export default function GearFormSheet({ isOpen, onClose, onSubmit, initialItem }
                     />
                 </div>
 
+                <div className="crud-form__field crud-form__field--checkbox gear-required-control">
+                    <input
+                        id="gear-required"
+                        className="crud-form__checkbox"
+                        type="checkbox"
+                        checked={isRequired}
+                        onChange={(e) => setRequired(e.target.checked)}
+                    />
+                    <label className="gear-required-control__label" htmlFor="gear-required">
+                        <span className="crud-form__label">Required for this trip</span>
+                        <small>Required items determine Gear readiness.</small>
+                    </label>
+                </div>
+
                 <div className="crud-form__row">
                     <div className="crud-form__field">
-                        <label className="crud-form__label" htmlFor="gear-priority">Priority</label>
+                        <label className="crud-form__label" htmlFor="gear-priority">Packing priority</label>
                         <select
                             id="gear-priority"
                             className="crud-form__select"
-                            value={form.priority}
-                            onChange={(e) => set('priority', e.target.value as Priority)}
+                            value={nonRequiredPriority}
+                            onChange={(e) => setPackingPriority(e.target.value as 'high' | 'low')}
+                            disabled={isRequired}
+                            aria-describedby={isRequired ? 'gear-priority-required-note' : undefined}
                         >
-                            <option value="critical">🔴 Critical</option>
-                            <option value="high">🟡 High</option>
-                            <option value="low">🟢 Low</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
                         </select>
+                        {isRequired ? (
+                            <small id="gear-priority-required-note" className="gear-required-control__note">
+                                Required items take precedence over packing priority.
+                            </small>
+                        ) : null}
                     </div>
 
                     <div className="crud-form__field">
-                        <label className="crud-form__label" htmlFor="gear-owner">Owner</label>
-                        <input
-                            id="gear-owner"
-                            className="crud-form__input"
-                            type="text"
-                            value={form.owner}
-                            onChange={(e) => set('owner', e.target.value)}
-                            placeholder="e.g. Jordan"
-                        />
+                        <label className="crud-form__label" htmlFor="gear-responsible">Responsible</label>
+                        <select
+                            id="gear-responsible"
+                            className="crud-form__select"
+                            value={form.responsible_crew_member_id ?? ''}
+                            onChange={(e) => setForm((current) => ({
+                                ...current,
+                                responsible_crew_member_id: e.target.value || null,
+                                owner: null,
+                            }))}
+                        >
+                            <option value="">Unassigned</option>
+                            {crewOptions.map((option) => (
+                                <option key={option.id} value={option.id}>{option.label}</option>
+                            ))}
+                        </select>
+                        {form.responsible_crew_member_id === null && form.owner?.trim() ? (
+                            <small className="gear-required-control__note">
+                                Legacy assignment: {form.owner.trim()}. Choose Crew to resolve it.
+                            </small>
+                        ) : null}
                     </div>
                 </div>
 

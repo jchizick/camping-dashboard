@@ -132,11 +132,13 @@ describe('CampsiteMapSelector failure handling', () => {
 
     it('shows an actionable missing-public-key state without constructing a map', () => {
         delete process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+        const onManualEntry = vi.fn();
 
-        render(<CampsiteMapSelector value={null} onChange={vi.fn()} className="h-[430px]" />);
+        render(<CampsiteMapSelector value={null} onChange={vi.fn()} onManualEntry={onManualEntry} className="h-[430px]" />);
 
-        expect(screen.getByText('The campsite map is not configured.')).toBeTruthy();
-        expect(screen.getByText(/NEXT_PUBLIC_MAPTILER_API_KEY/)).toBeTruthy();
+        expect(screen.getByText('Map unavailable')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Enter coordinates manually' }));
+        expect(onManualEntry).toHaveBeenCalledTimes(1);
         expect(mapMocks.mapConstructor).not.toHaveBeenCalled();
     });
 
@@ -147,7 +149,7 @@ describe('CampsiteMapSelector failure handling', () => {
 
         render(<CampsiteMapSelector value={null} onChange={vi.fn()} className="h-[430px]" />);
 
-        expect(await screen.findByText('The campsite map could not load.')).toBeTruthy();
+        expect(await screen.findByText('Map unavailable')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Retry map' })).toBeTruthy();
     });
 
@@ -171,8 +173,8 @@ describe('CampsiteMapSelector failure handling', () => {
 
         act(() => mapMocks.state.mapHandlers.error({ error: new Error('tile request failed') }));
 
-        expect(await screen.findByText('The campsite map could not load.')).toBeTruthy();
-        expect(screen.getByText('Check the MapTiler network connection and try again.')).toBeTruthy();
+        expect(await screen.findByText('Map unavailable')).toBeTruthy();
+        expect(screen.getByText(/enter the campsite coordinates manually/i)).toBeTruthy();
     });
 
     it('keeps click placement usable when geocoder construction fails', async () => {
@@ -234,6 +236,6 @@ describe('CampsiteMapSelector failure handling', () => {
 
         act(() => mapMocks.state.mapHandlers.load());
         expect(screen.queryByText('Loading campsite map…')).toBeNull();
-        expect(screen.queryByText('The campsite map could not load.')).toBeNull();
+        expect(screen.queryByText('Map unavailable')).toBeNull();
     });
 });

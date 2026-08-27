@@ -1,24 +1,34 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { GearItem } from '@/types';
-import { calculateGearReadiness, groupBy } from '@/lib/helpers';
+import type { CrewMember, GearItem } from '@/types';
+import { resolveCrewResponsibility } from '@/lib/crewResponsibility';
+import {
+    calculateEstimatedGearWeight,
+    formatEstimatedGearWeight,
+    groupBy,
+} from '@/lib/helpers';
+import type { ReadinessCategoryResult } from '@/lib/readiness';
 import { useTheme } from '@/lib/themeContext';
 import { Card, ProgressBar } from '@/components/ui/Primitives';
 import ChecklistItem from '@/components/ui/ChecklistItem';
 import GearFormSheet from '@/components/cards/GearFormSheet';
-import { Tent, Plus, ChevronDown } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronDown, Plus, ShieldCheck, Tent, Weight } from 'lucide-react';
 
 interface GearChecklistCardProps {
     gear: GearItem[];
+    categoryReadiness: ReadinessCategoryResult;
     onToggle?: (id: string) => void;
     onTogglePacked?: (id: string) => void;
     onAdd?: (item: Omit<GearItem, 'id' | 'trip_id'>) => Promise<void>;
     onUpdate?: (id: string, patch: Partial<Omit<GearItem, 'id' | 'trip_id'>>) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    crew?: CrewMember[];
+    addIntent?: 'required' | null;
+    onAddIntentConsumed?: () => void;
 }
 
-type FilterMode = 'all' | 'needed' | 'critical';
+type FilterMode = 'all' | 'to-pack' | 'required';
 
 const CATEGORY_ORDER = [
     'Shelter',
@@ -32,18 +42,80 @@ const CATEGORY_ORDER = [
     'Extras',
 ];
 
-export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAdd, onUpdate, onDelete }: GearChecklistCardProps) {
+interface RequiredGearBrief {
+    tone: 'coverage' | 'blocker' | 'warning' | 'ready';
+    title: string;
+    detail: string;
+}
+
+function itemCount(count: number, noun: string) {
+    return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+function requiredGearBrief(category: ReadinessCategoryResult): RequiredGearBrief {
+    if (category.availability !== 'scored') {
+        return {
+            tone: 'coverage',
+            title: 'Required gear not identified',
+            detail: 'Mark the gear you must have so Field Protocol can assess readiness.',
+        };
+    }
+
+    const blockerCount = category.issues.filter((issue) => issue.severity === 'blocker').length;
+    const warningCount = category.issues.filter((issue) => issue.severity === 'warning').length;
+
+    if (blockerCount > 0) {
+        return {
+            tone: 'blocker',
+            title: `${itemCount(blockerCount, 'required item')} missing`,
+            detail: warningCount > 0
+                ? `${itemCount(warningCount, 'acquired required item')} still ${warningCount === 1 ? 'needs' : 'need'} packing.`
+                : 'Acquire or replace the missing gear before departure.',
+        };
+    }
+
+    if (warningCount > 0) {
+        return {
+            tone: 'warning',
+            title: `${itemCount(warningCount, 'required item')} still ${warningCount === 1 ? 'needs' : 'need'} packing`,
+            detail: 'These items are on hand but are not physically packed yet.',
+        };
+    }
+
+    return {
+        tone: 'ready',
+        title: 'Required gear ready',
+        detail: 'Every identified Required item is packed.',
+    };
+}
+
+export default function GearChecklistCard({ gear, crew = [], categoryReadiness, onToggle, onTogglePacked, onAdd, onUpdate, onDelete, addIntent = null, onAddIntentConsumed }: GearChecklistCardProps) {
     const [filter, setFilter] = useState<FilterMode>('all');
     const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<GearItem | undefined>(undefined);
+    const [createAsRequired, setCreateAsRequired] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+    const consumedAddIntentRef = React.useRef(false);
 
-    const readiness = useMemo(() => calculateGearReadiness(gear), [gear]);
+    React.useEffect(() => {
+        if (addIntent !== 'required' || consumedAddIntentRef.current) return;
+        consumedAddIntentRef.current = true;
+        onAddIntentConsumed?.();
+        if (!onAdd) return;
+        setEditingItem(undefined);
+        setCreateAsRequired(true);
+        setSheetOpen(true);
+    }, [addIntent, onAdd, onAddIntentConsumed]);
+
+    const estimatedGearWeight = useMemo(
+        () => formatEstimatedGearWeight(calculateEstimatedGearWeight(gear)),
+        [gear]
+    );
 
     const filtered = useMemo(() => {
-        if (filter === 'needed') return gear.filter((g) => !g.packed);
-        if (filter === 'critical') return gear.filter((g) => g.priority === 'critical');
+        if (filter === 'to-pack') return gear.filter((g) => !g.packed);
+        if (filter === 'required') return gear.filter((g) => g.priority === 'critical');
         return gear;
     }, [gear, filter]);
 
@@ -57,14 +129,24 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
     }, [filtered]);
 
     const packedCount = gear.filter((g) => g.packed).length;
+    const packingPercent = gear.length === 0 ? 0 : Math.round((packedCount / gear.length) * 100);
+    const readiness = categoryReadiness.score;
+    const requiredBrief = requiredGearBrief(categoryReadiness);
+    const emptyFilterMessage = filter === 'all'
+        ? 'No gear added yet.'
+        : filter === 'to-pack'
+          ? 'Everything on this list is packed.'
+          : 'No Required gear identified.';
 
-    function openAdd() {
+    function openAdd(required = false) {
         setEditingItem(undefined);
+        setCreateAsRequired(required);
         setSheetOpen(true);
     }
 
     function openEdit(item: GearItem) {
         setEditingItem(item);
+        setCreateAsRequired(false);
         setSheetOpen(true);
     }
 
@@ -82,7 +164,11 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
         setPendingDeleteId(null);
     }
 
-    const readinessColor = readiness >= 80 ? 'bg-accent-green' : readiness >= 50 ? 'bg-accent-yellow' : 'bg-accent-red';
+    const readinessColor = readiness !== null && readiness >= 80
+        ? 'bg-accent-green'
+        : readiness !== null && readiness >= 50
+          ? 'bg-accent-yellow'
+          : 'bg-accent-red';
     const { labels } = useTheme();
 
     return (
@@ -91,51 +177,118 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
             icon={Tent} 
             className="gear-checklist-card h-full min-h-0 flex flex-col"
             action={onAdd && (
-                <button type="button" aria-label="Add gear item" onClick={openAdd} className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60">
+                <button type="button" aria-label="Add gear item" onClick={() => openAdd(false)} className="flex size-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60">
                     <Plus size={16} aria-hidden="true" />
                 </button>
             )}
         >
-            <div className="flex justify-between items-end mb-6 shrink-0">
+            <section className="gear-mobile-brief shrink-0 md:hidden" aria-label="Packing and Required gear status">
+                <div className="gear-mobile-brief__metrics">
+                    <div className="gear-mobile-brief__packing">
+                        <span className="gear-mobile-brief__label">Packing progress</span>
+                        <strong data-mobile-type-role="packing-metric">
+                            {packedCount} <span>/ {gear.length}</span>
+                        </strong>
+                        <span className="gear-mobile-brief__caption">planned items packed</span>
+                    </div>
+                    <div className="gear-mobile-brief__weight">
+                        <Weight size={16} aria-hidden="true" />
+                        <span className="gear-mobile-brief__label">Estimated weight</span>
+                        <strong data-mobile-type-role="secondary-metric">{estimatedGearWeight}</strong>
+                    </div>
+                </div>
+                <div
+                    className="gear-mobile-brief__packing-progress"
+                    role="progressbar"
+                    aria-label="Overall packing progress"
+                    aria-valuemin={0}
+                    aria-valuemax={gear.length}
+                    aria-valuenow={packedCount}
+                    aria-valuetext={`${packedCount} of ${gear.length} planned items packed`}
+                >
+                    <span style={{ width: `${packingPercent}%` }} />
+                </div>
+                <div className="gear-mobile-brief__required" data-tone={requiredBrief.tone}>
+                    {requiredBrief.tone === 'ready' ? (
+                        <CheckCircle2 size={19} aria-hidden="true" />
+                    ) : requiredBrief.tone === 'coverage' ? (
+                        <ShieldCheck size={19} aria-hidden="true" />
+                    ) : (
+                        <AlertTriangle size={19} aria-hidden="true" />
+                    )}
+                    <div>
+                        <span className="gear-mobile-brief__label">Required readiness</span>
+                        <h2>{requiredBrief.title}</h2>
+                        <p>{requiredBrief.detail}</p>
+                    </div>
+                    {requiredBrief.tone === 'blocker' || requiredBrief.tone === 'warning' ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setFilter('required');
+                                setExpandedCategory(null);
+                            }}
+                        >
+                            Show required
+                        </button>
+                    ) : requiredBrief.tone === 'coverage' && onAdd ? (
+                        <button type="button" onClick={() => openAdd(true)}>Add required gear</button>
+                    ) : null}
+                </div>
+            </section>
+
+            <div className="mb-4 hidden shrink-0 items-start justify-between gap-3 md:flex">
                 <div>
                     <div className="text-2xl font-mono text-text-main">
                         {packedCount} / {gear.length} <span className="text-sm text-text-muted font-sans">packed</span>
                     </div>
                 </div>
-                <div className="text-right w-1/2">
+                <div className="w-1/2">
                     <div className="text-xs font-mono text-text-muted mb-1 flex justify-between">
                         <span>Gear readiness</span>
-                        <span className="text-text-main">{readiness}%</span>
+                        <span className="text-text-main">
+                            {readiness === null ? 'Unavailable' : `${readiness}%`}
+                        </span>
                     </div>
-                    <ProgressBar value={readiness} colorClass={readinessColor} />
+                    {readiness === null ? (
+                        <div className="h-2 rounded-full bg-border-subtle" aria-hidden="true" />
+                    ) : (
+                        <ProgressBar value={readiness} colorClass={readinessColor} />
+                    )}
                 </div>
             </div>
 
-            <div className="flex gap-2 mb-6 border-b border-border-subtle pb-4 shrink-0">
-                {(['all', 'needed', 'critical'] as FilterMode[]).map((f) => {
-                    const isActive = filter === f;
-                    const filterLabels = {
-                        all: 'All',
-                        needed: <><div className="w-2 h-2 rounded-full bg-accent-yellow" /> Needed</>,
-                        critical: <><div className="w-2 h-2 rounded-full bg-accent-red" /> Critical</>
-                    };
-                    
-                    return (
-                        <button
-                            key={f}
-                            type="button"
-                            aria-pressed={isActive}
-                            className={`flex min-h-10 items-center gap-2 rounded-full border px-4 text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
-                                isActive 
-                                    ? 'bg-border-subtle text-text-main border-border-subtle' 
-                                    : 'bg-card-bg text-text-muted border-border-subtle hover:bg-card-hover'
-                            }`}
-                            onClick={() => setFilter(f)}
-                        >
-                            {filterLabels[f]}
-                        </button>
-                    );
-                })}
+            <div className="gear-filter-bar mb-6 flex shrink-0 items-center gap-2 border-b border-border-subtle pb-4">
+                <div className="gear-filter-bar__options flex min-w-0 gap-2" role="group" aria-label="Gear checklist filters">
+                    {(['all', 'to-pack', 'required'] as FilterMode[]).map((f) => {
+                        const isActive = filter === f;
+
+                        return (
+                            <button
+                                key={f}
+                                type="button"
+                                aria-pressed={isActive}
+                                className={`flex min-h-10 items-center gap-2 rounded-full border px-4 text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
+                                    isActive
+                                        ? 'bg-border-subtle text-text-main border-border-subtle'
+                                        : 'bg-card-bg text-text-muted border-border-subtle hover:bg-card-hover'
+                                }`}
+                                onClick={() => setFilter(f)}
+                            >
+                                {f === 'all' ? null : (
+                                    <span
+                                        className={`gear-filter-marker size-2 rounded-full ${f === 'required' ? 'gear-filter-marker--required' : 'gear-filter-marker--to-pack'}`}
+                                        aria-hidden="true"
+                                    />
+                                )}
+                                {f === 'all' ? 'All' : f === 'to-pack' ? 'To pack' : 'Required'}
+                            </button>
+                        );
+                    })}
+                </div>
+                <div className="ml-auto hidden min-h-10 shrink-0 items-center rounded-lg border border-border-subtle bg-card-hover px-3 font-mono text-[11px] text-text-muted md:flex">
+                    Total estimated gear weight: {estimatedGearWeight}
+                </div>
             </div>
 
             {pendingDeleteId && (() => {
@@ -178,29 +331,36 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                                 {category}
                             </span>
                             <span className="flex items-center gap-2 text-xs font-mono text-text-muted transition-colors group-hover:text-text-main">
-                                {items.filter((i) => i.packed).length}/{items.length} 
+                                {items.filter((i) => i.packed).length}/{items.length}
                                 <ChevronDown aria-hidden="true" size={14} className={`transform transition-transform ${expandedCategory === category || expandedCategory === null ? 'rotate-180' : ''}`} />
                             </span>
                         </button>
                         {(expandedCategory === category || expandedCategory === null) && (
                             <div id={`gear-category-${category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="space-y-1">
-                                {items.map((item) => (
-                                    <ChecklistItem
+                                {items.map((item) => {
+                                    const responsibility = resolveCrewResponsibility(
+                                        item.responsible_crew_member_id,
+                                        item.owner,
+                                        crew
+                                    );
+                                    return <ChecklistItem
                                         key={item.id}
                                         item={item}
                                         onToggle={onToggle}
                                         onTogglePacked={onTogglePacked}
                                         onEdit={onUpdate ? () => openEdit(item) : undefined}
                                         onDelete={onDelete ? () => setPendingDeleteId(item.id) : undefined}
+                                        responsibilityLabel={responsibility.label}
+                                        responsibilityKind={responsibility.kind}
                                     />
-                                ))}
+                                })}
                             </div>
                         )}
                     </div>
                 ))}
                 {filtered.length === 0 && (
-                    <div className="text-center text-sm text-text-muted py-8 font-mono opacity-50">
-                        ✅ All items packed for this filter
+                    <div className="py-8 text-center font-mono text-sm text-text-muted opacity-70">
+                        {emptyFilterMessage}
                     </div>
                 )}
             </div>
@@ -210,6 +370,8 @@ export default function GearChecklistCard({ gear, onToggle, onTogglePacked, onAd
                 onClose={() => setSheetOpen(false)}
                 onSubmit={handleFormSubmit}
                 initialItem={editingItem}
+                crew={crew}
+                defaultRequired={createAsRequired}
             />
         </Card>
     );

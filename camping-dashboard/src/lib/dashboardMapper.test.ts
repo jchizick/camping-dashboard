@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
+  CrewMemberRow,
+  GearItemRow,
+  MealRow,
   PrepFeedItemRow,
   TimelineEventRow,
   TripRow,
@@ -7,6 +10,9 @@ import type {
 } from '@/types/database';
 import {
   parsePrepFeedItem,
+  toCrewMember,
+  toGearItem,
+  toMeal,
   toPrepFeedItem,
   toTimelineEvent,
   toTimelineEvents,
@@ -14,6 +20,23 @@ import {
   toTripMemberRole,
   toWeatherCurrent,
 } from './dashboardMapper';
+
+const gearRow: GearItemRow = {
+  id: 'gear-test', trip_id: 'trip-test', name: 'Tent', category: 'Shelter',
+  acquired: true, packed: false, owner: null, responsible_crew_member_id: null,
+  priority: 'critical', notes: '', weight_kg: 2,
+};
+
+const mealRow: MealRow = {
+  id: 'meal-test', trip_id: 'trip-test', day_number: 1, meal_type: 'dinner',
+  title: 'Chili', prep_type: 'fresh', calories: 600, assigned_to: null,
+  prep_crew_member_id: null, notes: '',
+};
+
+const crewRow: CrewMemberRow = {
+  id: 'crew-test', trip_id: 'trip-test', trip_member_id: null, name: 'Jordan',
+  role: 'Lead', load_item: '', load_weight_kg: 0, canoe_number: 1, notes: '',
+};
 
 const weatherRow: WeatherCurrentRow = {
   trip_id: 'trip-test',
@@ -123,6 +146,12 @@ describe('dashboard row transformations', () => {
 
   it('preserves a null timeline phase as an uncategorized event', () => {
     expect(toTimelineEvent(timelineRow)).toEqual(timelineRow);
+  });
+
+  it('accepts null legacy assignments and null stable relationship IDs', () => {
+    expect(toGearItem(gearRow)).toMatchObject({ owner: null, responsible_crew_member_id: null });
+    expect(toMeal(mealRow)).toMatchObject({ assigned_to: null, prep_crew_member_id: null });
+    expect(toCrewMember(crewRow).trip_member_id).toBeNull();
   });
 
   it('omits one malformed timeline event without rejecting valid rows', () => {

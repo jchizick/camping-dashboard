@@ -16,6 +16,7 @@ interface TripSidebarProps {
   tripLocation: string;
   onMissionBrief: () => void;
   onProjectIntel: () => void;
+  onAppearance?: () => void;
   onSignOut: () => Promise<void>;
 }
 
@@ -25,6 +26,7 @@ export default function TripSidebar({
   tripLocation,
   onMissionBrief,
   onProjectIntel,
+  onAppearance,
   onSignOut,
 }: TripSidebarProps) {
   const pathname = usePathname();
@@ -71,6 +73,7 @@ export default function TripSidebar({
             tripId={tripId}
             onMissionBrief={onMissionBrief}
             onProjectIntel={onProjectIntel}
+            onAppearance={onAppearance}
             onSignOut={onSignOut}
             placement="sidebar"
           />

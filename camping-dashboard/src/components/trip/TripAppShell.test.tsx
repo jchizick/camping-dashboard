@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => ({
     error: null as string | null,
   },
   workspace: null as TripWorkspaceValue | null,
+  updateThemeVariant: vi.fn(),
+  reload: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -63,12 +65,28 @@ vi.mock('@/components/ui/ProjectIntelModal', () => ({
     ) : null,
 }));
 
+vi.mock('./TripAppearanceDialog', () => ({
+  default: ({
+    isOpen,
+    onClose,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) =>
+    isOpen ? (
+      <div role="dialog" aria-label="Appearance dialog">
+        Appearance dialog
+        <button type="button" onClick={onClose}>Close Appearance dialog</button>
+      </div>
+    ) : null,
+}));
+
 import TripAppShell from './TripAppShell';
 
 function workspaceValue(): TripWorkspaceValue {
   return {
     data: {
-      settings: {},
+      settings: { theme_variant: 'expedition' },
     },
     trip: {
       id: 'trip-1',
@@ -77,6 +95,14 @@ function workspaceValue(): TripWorkspaceValue {
     },
     isLoading: false,
     error: null,
+    source: 'online',
+    connectivity: 'online',
+    isReloading: false,
+    lastOnlineVerifiedAt: '2026-08-24T12:00:00.000Z',
+    reload: mocks.reload,
+    editableActions: {
+      updateThemeVariant: mocks.updateThemeVariant,
+    },
   } as unknown as TripWorkspaceValue;
 }
 
@@ -88,6 +114,8 @@ beforeEach(() => {
   mocks.trip.error = null;
   mocks.workspace = workspaceValue();
   mocks.signOut.mockReset();
+  mocks.updateThemeVariant.mockReset();
+  mocks.reload.mockReset();
 });
 
 afterEach(cleanup);
@@ -177,11 +205,14 @@ describe('TripAppShell', () => {
       '/trips'
     );
 
-    const expectedOrder = ['Home', 'Plan', 'Gear', 'Crew', 'Guide'];
+    const expectedOrder = ['Home', 'Plan', 'Gear', 'Crew', 'Field'];
     for (const testId of ['desktop-trip-navigation', 'mobile-trip-navigation']) {
       const nav = within(screen.getByTestId(testId));
       expect(nav.getAllByRole('link').map((link) => link.textContent?.replace('(current)', '')))
         .toEqual(expectedOrder);
+      expect(nav.getByRole('link', { name: 'Field' }).getAttribute('href')).toBe(
+        '/trips/trip-1/guide'
+      );
     }
 
     const activePlanLinks = screen
@@ -201,6 +232,23 @@ describe('TripAppShell', () => {
     }
   });
 
+  it('shows one compact read-only source banner for a saved workspace', () => {
+    mocks.workspace = {
+      ...workspaceValue(),
+      source: 'cache',
+      connectivity: 'offline',
+      editableActions: null,
+    };
+
+    render(<TripAppShell><h1>Plan</h1></TripAppShell>);
+
+    const status = screen.getByRole('status', { name: 'Workspace connection status' });
+    expect(status.textContent).toContain('Offline · Read-only');
+    expect(status.textContent).toContain('Reconnect to make changes.');
+    fireEvent.click(within(status).getByRole('button', { name: 'Try again' }));
+    expect(mocks.reload).toHaveBeenCalledOnce();
+  });
+
   it('keeps Field Log and all existing secondary actions in More', () => {
     render(
       <TripAppShell>
@@ -213,6 +261,15 @@ describe('TripAppShell', () => {
       '/trips/trip-1/field-log'
     );
     expect(screen.queryByRole('menuitem', { name: /Settings/i })).toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Appearance' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Appearance' }));
+    expect(screen.getByText('Appearance dialog')).toBeTruthy();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.queryByRole('menu')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close Appearance dialog' }));
+    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
     expect(screen.getByText('Mission Brief dialog')).toBeTruthy();
@@ -230,6 +287,27 @@ describe('TripAppShell', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
     expect(mocks.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides Appearance from read-only members in every More placement', () => {
+    mocks.trip.role = 'viewer';
+    mocks.trip.canEdit = false;
+    mocks.trip.isOwner = false;
+    mocks.workspace = {
+      ...workspaceValue(),
+      editableActions: null,
+    } as TripWorkspaceValue;
+    render(
+      <TripAppShell>
+        <h1>Plan</h1>
+      </TripAppShell>
+    );
+
+    for (const trigger of screen.getAllByRole('button', { name: /More/ })) {
+      fireEvent.click(trigger);
+      expect(screen.queryByRole('menuitem', { name: 'Appearance' })).toBeNull();
+      fireEvent.keyDown(document, { key: 'Escape' });
+    }
   });
 
   it('clears the active information dialog when the route changes', async () => {

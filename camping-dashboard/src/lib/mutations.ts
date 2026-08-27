@@ -5,8 +5,17 @@
 // ============================================================
 
 import { supabase } from './supabase';
-import type { GearItem, Meal, TimelineEvent, CrewMember, Alert, OfflineStatus } from '@/types';
-import type { TripUpdate } from '@/types/database';
+import type {
+  Alert,
+  CrewMember,
+  GearItem,
+  Meal,
+  OfflineStatus,
+  ThemeVariant,
+  TimelineEvent,
+  TripDetailsUpdate,
+} from '@/types';
+import type { SettingsUpdate, TripUpdate } from '@/types/database';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 
 /** Generate a UUID for new rows — belt-and-suspenders alongside the DB default */
@@ -242,7 +251,7 @@ export async function updateOfflineStatus(
         .single();
 }
 
-// â”€â”€â”€ Trip Campsite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Trip Campsite ─────────────────────────────────────────
 
 export async function updateTripCampsite(
     tripId: string,
@@ -262,6 +271,32 @@ export async function updateTripCampsite(
         .eq('id', tripId)
         .select()
         .single();
+}
+
+// ─── Trip Appearance ───────────────────────────────────────
+
+export async function updateTripDetails(
+  tripId: string,
+  patch: TripDetailsUpdate
+) {
+  return supabase
+    .from('trips')
+    .update({ ...patch } satisfies TripUpdate)
+    .eq('id', tripId)
+    .select()
+    .single();
+}
+
+export async function updateThemeVariant(
+  tripId: string,
+  themeVariant: ThemeVariant
+) {
+  return supabase
+    .from('settings')
+    .update({ theme_variant: themeVariant } satisfies SettingsUpdate)
+    .eq('trip_id', tripId)
+    .select()
+    .single();
 }
 
 // ─── Prep Feed ────────────────────────────────────────────

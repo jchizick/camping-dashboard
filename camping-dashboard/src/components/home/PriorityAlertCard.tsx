@@ -112,7 +112,7 @@ export default function PriorityAlertCard({
   if (!alert) {
     return (
       <Card
-        title="Priority notice"
+        title="Trip notice"
         icon={CheckCircle2}
         className="home-priority-card home-glass-surface home-glass-surface--warning h-full"
       >
@@ -141,16 +141,16 @@ export default function PriorityAlertCard({
 
   return (
     <Card
-      title="Priority notice"
+      title="Trip notice"
       icon={AlertTriangle}
       className="home-priority-card home-glass-surface home-glass-surface--warning h-full"
       action={
         <GuardedTripLink
           href={href}
           className="home-action-link inline-flex items-center gap-1 rounded text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          aria-label="View all field guide notices"
+          aria-label="View all trip notices in Field"
         >
-          Field Guide <ChevronRight size={14} aria-hidden="true" />
+          Field <ChevronRight size={14} aria-hidden="true" />
         </GuardedTripLink>
       }
     >
@@ -158,7 +158,7 @@ export default function PriorityAlertCard({
         className="home-priority-card__notice flex flex-1 flex-col justify-center rounded-xl border p-3.5"
         data-tone={tone.tone}
         role="status"
-        aria-label={`${alert.severity} priority notice: ${displayTitle}`}
+        aria-label={`${alert.severity} trip notice: ${displayTitle}`}
       >
         <div className="home-priority-card__severity mb-2 flex items-center gap-2">
           <span className="inline-flex items-center gap-2 text-sm font-semibold capitalize text-text-main">
@@ -180,9 +180,9 @@ export default function PriorityAlertCard({
         <GuardedTripLink
           href={href}
           className="home-priority-card__inline-action items-center gap-1 rounded-lg border border-current/25 px-3 text-xs font-medium text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          aria-label="View priority notice in Field Guide"
+          aria-label="View trip notice in Field"
         >
-          View in Field Guide <ChevronRight size={14} aria-hidden="true" />
+          View in Field <ChevronRight size={14} aria-hidden="true" />
         </GuardedTripLink>
       </div>
     </Card>

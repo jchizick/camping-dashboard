@@ -57,7 +57,7 @@ function MobileExpeditionJourney() {
       </div>
       <div className="signed-out-mobile-readiness">
         {mobileReadinessItems.map((label) => (
-          <span className="signed-out-mobile-readiness__pill" key={label}>
+          <span className="signed-out-mobile-readiness__pill" data-marketing-type-role="ui-label" key={label}>
             <Check size={14} strokeWidth={2.5} aria-hidden="true" />
             {label}
           </span>
@@ -78,7 +78,7 @@ function FieldProtocolMark() {
         height={76}
         aria-hidden="true"
       />
-      <span className="signed-out-brand__name">FIELD<br />PROTOCOL</span>
+      <span className="signed-out-brand__name" data-marketing-type-role="editorial-brand">FIELD<br />PROTOCOL</span>
     </div>
   );
 }
@@ -97,21 +97,25 @@ export function SignedOutLanding({ error, onSignIn }: SignedOutLandingProps) {
   }
 
   return (
-    <main className="signed-out-landing" data-signed-out-landing>
+    <main
+      className="signed-out-landing"
+      data-signed-out-landing
+      data-signed-out-type-system="editorial-operational-bridge"
+    >
       <div className="signed-out-landing__topo" aria-hidden="true" />
       <div className="signed-out-landing__shell">
         <section className="signed-out-intro" aria-labelledby="signed-out-heading">
           <FieldProtocolMark />
           <div className="signed-out-intro__copy">
-            <p className="signed-out-eyebrow">Your outdoor command centre</p>
-            <h1 id="signed-out-heading"><span>Plan the trip.</span><span>Pack with confidence.</span><span>Get outside.</span></h1>
-            <p className="signed-out-lede">Organize your campsite, gear, crew, weather and daily plans in one shared camping workspace.</p>
+            <p className="signed-out-eyebrow" data-marketing-type-role="operational-display">Your outdoor command centre</p>
+            <h1 id="signed-out-heading" data-marketing-type-role="editorial-hero"><span>Plan the trip.</span><span>Pack with confidence.</span><span>Get outside.</span></h1>
+            <p className="signed-out-lede" data-marketing-type-role="ui-body">Organize your campsite, gear, crew, weather and daily plans in one shared camping workspace.</p>
             {error ? <p role="alert" className="signed-out-error">{error}</p> : null}
-            <button type="button" className="signed-out-google" onClick={() => void handleSignIn()} disabled={isStartingSignIn}>
+            <button type="button" className="signed-out-google" data-marketing-type-role="ui-control" onClick={() => void handleSignIn()} disabled={isStartingSignIn}>
               <Image src="/google-g-logo.png" alt="" width={18} height={18} aria-hidden="true" />
               <span>{isStartingSignIn ? 'Connecting…' : 'Continue with Google'}</span>
             </button>
-            <p className="signed-out-reassurance"><ShieldCheck size={17} /> Free to get started <span>·</span> No credit card required</p>
+            <p className="signed-out-reassurance" data-marketing-type-role="ui-supporting"><ShieldCheck size={17} /> Free to get started <span>·</span> No credit card required</p>
           </div>
         </section>
 

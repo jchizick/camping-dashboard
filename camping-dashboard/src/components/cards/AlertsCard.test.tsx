@@ -55,9 +55,9 @@ const alert: Alert = {
 describe('alert lifecycle rendering', () => {
   it('distinguishes unsupported from a confirmed fresh empty result', () => {
     const view = render(<AlertsCard alerts={[]} refreshStates={[]} />);
-    expect(screen.getByText('No automated alert source is configured for this trip.')).toBeTruthy();
+    expect(screen.getByText('No automated notice source is configured for this trip.')).toBeTruthy();
     view.rerender(<AlertsCard alerts={[]} refreshStates={[state]} />);
-    expect(screen.getByText('No active alerts were reported by the configured sources.')).toBeTruthy();
+    expect(screen.getByText('No active notices were reported by the configured sources.')).toBeTruthy();
   });
 
   it('retains stale alerts and labels the failed refresh', () => {
@@ -72,7 +72,7 @@ describe('alert lifecycle rendering', () => {
       />
     );
     expect(screen.getByText('Route closure')).toBeTruthy();
-    expect(screen.getByText(/previously confirmed alerts are retained/i)).toBeTruthy();
+    expect(screen.getByText(/previously confirmed notices are retained/i)).toBeTruthy();
   });
 
   it('does not render a persistently dismissed provider alert', () => {

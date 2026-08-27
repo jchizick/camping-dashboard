@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { CrewMember } from '@/types';
+import type { CrewMember, GearItem, Meal } from '@/types';
 import { Badge, Card } from '@/components/ui/Primitives';
 import { useTheme } from '@/lib/themeContext';
 import CrewFormSheet from '@/components/cards/CrewFormSheet';
@@ -12,6 +12,8 @@ interface CrewRosterCardProps {
     onAdd?: (member: Omit<CrewMember, 'id' | 'trip_id'>) => Promise<void>;
     onUpdate?: (id: string, patch: Partial<Omit<CrewMember, 'id' | 'trip_id'>>) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    gear?: GearItem[];
+    meals?: Meal[];
 }
 
 const loadToneClasses = [
@@ -42,7 +44,7 @@ export function getCrewLoadRows(crew: CrewMember[]) {
     };
 }
 
-export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: CrewRosterCardProps) {
+export default function CrewRosterCard({ crew, gear = [], meals = [], onAdd, onUpdate, onDelete }: CrewRosterCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<CrewMember | undefined>(undefined);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -111,9 +113,14 @@ export default function CrewRosterCard({ crew, onAdd, onUpdate, onDelete }: Crew
 
                 {pendingDeleteId && (() => {
                     const member = crew.find((candidate) => candidate.id === pendingDeleteId);
+                    const gearCount = gear.filter((item) => item.responsible_crew_member_id === pendingDeleteId).length;
+                    const mealCount = meals.filter((meal) => meal.prep_crew_member_id === pendingDeleteId).length;
                     return (
                         <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent-red/20 bg-accent-red/10 p-3 text-sm text-accent-red">
-                            <span>Remove <strong>{member?.name ?? 'this member'}</strong>?</span>
+                            <span>
+                                Remove <strong>{member?.name ?? 'this member'}</strong>?{' '}
+                                {gearCount} Gear {gearCount === 1 ? 'item' : 'items'} and {mealCount} {mealCount === 1 ? 'meal' : 'meals'} will become unassigned.
+                            </span>
                             <div className="flex gap-2">
                                 <button type="button" className="min-h-10 rounded-lg border border-border-subtle bg-card-bg px-3 text-xs text-text-muted hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60" onClick={() => setPendingDeleteId(null)}>Cancel</button>
                                 <button type="button" className="min-h-10 rounded-lg bg-accent-red px-3 text-xs font-bold text-bg-main hover:bg-accent-red/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-red/60" onClick={confirmDelete}>Remove</button>

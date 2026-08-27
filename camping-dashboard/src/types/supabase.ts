@@ -216,7 +216,8 @@ export type Database = {
           name: string
           notes: string | null
           role: string | null
-          trip_id: string | null
+          trip_id: string
+          trip_member_id: string | null
         }
         Insert: {
           canoe_number?: number | null
@@ -226,7 +227,8 @@ export type Database = {
           name: string
           notes?: string | null
           role?: string | null
-          trip_id?: string | null
+          trip_id: string
+          trip_member_id?: string | null
         }
         Update: {
           canoe_number?: number | null
@@ -236,9 +238,17 @@ export type Database = {
           name?: string
           notes?: string | null
           role?: string | null
-          trip_id?: string | null
+          trip_id?: string
+          trip_member_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crew_members_same_trip_member_fkey"
+            columns: ["trip_id", "trip_member_id"]
+            isOneToOne: false
+            referencedRelation: "trip_members"
+            referencedColumns: ["trip_id", "id"]
+          },
           {
             foreignKeyName: "crew_members_trip_id_fkey"
             columns: ["trip_id"]
@@ -258,7 +268,8 @@ export type Database = {
           owner: string | null
           packed: boolean | null
           priority: string | null
-          trip_id: string | null
+          responsible_crew_member_id: string | null
+          trip_id: string
           weight_kg: number | null
         }
         Insert: {
@@ -270,7 +281,8 @@ export type Database = {
           owner?: string | null
           packed?: boolean | null
           priority?: string | null
-          trip_id?: string | null
+          responsible_crew_member_id?: string | null
+          trip_id: string
           weight_kg?: number | null
         }
         Update: {
@@ -282,10 +294,18 @@ export type Database = {
           owner?: string | null
           packed?: boolean | null
           priority?: string | null
-          trip_id?: string | null
+          responsible_crew_member_id?: string | null
+          trip_id?: string
           weight_kg?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "gear_items_same_trip_responsible_crew_fkey"
+            columns: ["trip_id", "responsible_crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["trip_id", "id"]
+          },
           {
             foreignKeyName: "gear_items_trip_id_fkey"
             columns: ["trip_id"]
@@ -303,9 +323,10 @@ export type Database = {
           id: string
           meal_type: string | null
           notes: string | null
+          prep_crew_member_id: string | null
           prep_type: string | null
           title: string | null
-          trip_id: string | null
+          trip_id: string
         }
         Insert: {
           assigned_to?: string | null
@@ -314,9 +335,10 @@ export type Database = {
           id?: string
           meal_type?: string | null
           notes?: string | null
+          prep_crew_member_id?: string | null
           prep_type?: string | null
           title?: string | null
-          trip_id?: string | null
+          trip_id: string
         }
         Update: {
           assigned_to?: string | null
@@ -325,11 +347,19 @@ export type Database = {
           id?: string
           meal_type?: string | null
           notes?: string | null
+          prep_crew_member_id?: string | null
           prep_type?: string | null
           title?: string | null
-          trip_id?: string | null
+          trip_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "meals_same_trip_prep_crew_fkey"
+            columns: ["trip_id", "prep_crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["trip_id", "id"]
+          },
           {
             foreignKeyName: "meals_trip_id_fkey"
             columns: ["trip_id"]

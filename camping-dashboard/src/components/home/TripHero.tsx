@@ -65,7 +65,12 @@ export default function TripHero({
           <Route size={15} aria-hidden="true" />
           {status.label}
         </p>
-        <h1 id="trip-hero-title" tabIndex={-1} className="trip-hero__title">
+        <h1
+          id="trip-hero-title"
+          tabIndex={-1}
+          className="trip-hero__title"
+          data-mobile-type-role="trip-title"
+        >
           {trip.name}
         </h1>
         <p className="trip-hero__location">

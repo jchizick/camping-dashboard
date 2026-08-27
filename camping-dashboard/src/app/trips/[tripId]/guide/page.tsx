@@ -1,56 +1,72 @@
 'use client';
 
-import AlertsCard from '@/components/cards/AlertsCard';
-import AstroCard from '@/components/cards/AstroCard';
-import OfflineVaultCard from '@/components/cards/OfflineVaultCard';
-import ParkIntelCard from '@/components/cards/ParkIntelCard';
+import React from 'react';
+import DesktopFieldOverview from '@/components/field/DesktopFieldOverview';
+import MobileFieldOverview from '@/components/field/MobileFieldOverview';
+import { createFieldViewModel } from '@/components/field/fieldViewModel';
 import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
+
+const mobileFieldCompositionQuery = '(max-width: 767px)';
+
+function subscribeToMobileFieldComposition(onChange: () => void) {
+  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
+
+  const query = window.matchMedia(mobileFieldCompositionQuery);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function getMobileFieldCompositionSnapshot() {
+  return (
+    typeof window !== 'undefined' &&
+    Boolean(window.matchMedia) &&
+    window.matchMedia(mobileFieldCompositionQuery).matches
+  );
+}
 
 export default function TripGuidePage() {
   const {
     data,
+    trip,
     alerts,
     offlineStatus,
     parkIntel,
+    readiness,
     editableActions,
   } = useTripWorkspace();
-  if (!data) return null;
+  const usesMobileFieldComposition = React.useSyncExternalStore(
+    subscribeToMobileFieldComposition,
+    getMobileFieldCompositionSnapshot,
+    () => false
+  );
+
+  if (!data || !trip || !readiness) return null;
+
+  const model = createFieldViewModel({
+    data,
+    trip,
+    alerts,
+    parkIntel,
+    offlineStatus,
+    manualPrep: readiness.categories.offline,
+  });
 
   return (
     <TripSectionPage route="guide">
-      <TripPageHeader title="Field Guide" description="Park information and advisories" />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="trip-section-surface lg:col-span-4">
-          <ParkIntelCard
-            intel={parkIntel}
-            onUpdate={editableActions?.updateParkIntel}
-          />
-        </div>
-        <div className="trip-section-surface lg:col-span-8 lg:row-span-2">
-          <AlertsCard
-            alerts={alerts}
-            refreshStates={data.alertRefresh}
-            onAddManual={editableActions?.addAlert}
-            onDeleteManual={editableActions?.deleteAlert}
-            onDismissSystem={editableActions?.dismissAlert}
-            onRefresh={editableActions?.refreshAlerts}
-          />
-        </div>
-        {data.settings.show_offline && (
-          <div className="trip-section-surface lg:col-span-4">
-            <OfflineVaultCard
-              status={offlineStatus}
-              onToggle={editableActions?.toggleOfflineStatus}
-            />
-          </div>
-        )}
-        {data.settings.show_astro && (
-          <div className="trip-section-surface lg:col-span-12">
-            <AstroCard astro={data.astro} weather={data.currentWeather} />
-          </div>
-        )}
-      </div>
+      <TripPageHeader
+        title="Field"
+        description={
+          usesMobileFieldComposition
+            ? 'Conditions, notices and field essentials'
+            : 'Park information and advisories'
+        }
+      />
+      {usesMobileFieldComposition ? (
+        <MobileFieldOverview model={model} actions={editableActions} />
+      ) : (
+        <DesktopFieldOverview model={model} actions={editableActions} />
+      )}
     </TripSectionPage>
   );
 }

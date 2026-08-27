@@ -1,49 +1,58 @@
 import { describe, expect, it } from 'vitest';
 import {
-  calculateMealCompleteness,
-  calculateOfflineReadiness,
-  calculateTimelineCompleteness,
-  calculateWeatherPreparedness,
-  getSkyQuality,
+  calculateEstimatedGearWeight,
+  formatEstimatedGearWeight,
 } from './helpers';
-import type { AstroData, Meal, TimelineEvent } from '@/types';
 
-const astro: AstroData = {
-  trip_id: 'trip-test',
-  golden_hour_start: '',
-  golden_hour_end: '',
-  blue_hour_end: '',
-  moon_phase: '',
-  moon_illumination: 20,
-  milky_way_visibility: '',
-  stargazing_notes: '',
-  updated_at: '',
-};
+describe('estimated gear weight', () => {
+  it('sums multiple planned item weights and formats sensible decimal precision', () => {
+    const estimate = calculateEstimatedGearWeight([
+      { weight_kg: 2.4 },
+      { weight_kg: 1.35 },
+      { weight_kg: 0.3 },
+    ]);
 
-describe('blank dashboard calculations', () => {
-  it('treats missing optional modules as not ready without throwing', () => {
-    expect(calculateOfflineReadiness(null)).toBe(0);
-    expect(calculateWeatherPreparedness(null, [])).toBe(0);
-    expect(getSkyQuality(null, astro)).toBe('Unavailable');
-  });
-});
-
-describe('trip-length-dependent readiness calculations', () => {
-  it('uses all five inclusive trip days for meal completeness', () => {
-    const meals = [
-      { meal_type: 'breakfast' },
-      { meal_type: 'lunch' },
-      { meal_type: 'dinner' },
-    ] as unknown as Meal[];
-
-    expect(calculateMealCompleteness(meals, 5)).toBe(20);
+    expect(estimate).toEqual({
+      totalKg: 4.05,
+      knownItemCount: 3,
+      unknownItemCount: 0,
+    });
+    expect(formatEstimatedGearWeight(estimate)).toBe('4.1 kg');
   });
 
-  it('uses all five inclusive trip days for timeline completeness', () => {
-    const events = Array.from({ length: 4 }, (_, index) => ({
-      id: `event-${index}`,
-    })) as unknown as TimelineEvent[];
+  it('marks partial totals approximate and ignores missing or invalid weights', () => {
+    const estimate = calculateEstimatedGearWeight([
+      { weight_kg: 2.4 },
+      { weight_kg: null },
+      { weight_kg: 0 },
+      { weight_kg: -1 },
+      { weight_kg: Number.POSITIVE_INFINITY },
+    ]);
 
-    expect(calculateTimelineCompleteness(events, 5)).toBe(20);
+    expect(estimate).toEqual({
+      totalKg: 2.4,
+      knownItemCount: 1,
+      unknownItemCount: 4,
+    });
+    expect(formatEstimatedGearWeight(estimate)).toBe('~2.4 kg');
+  });
+
+  it('distinguishes an empty plan from planned gear with no known weights', () => {
+    expect(formatEstimatedGearWeight(calculateEstimatedGearWeight([]))).toBe('0 kg');
+    expect(formatEstimatedGearWeight(calculateEstimatedGearWeight([
+      { weight_kg: null },
+      { weight_kg: 0 },
+    ]))).toBe('—');
+  });
+
+  it('does not change the total with acquired or packed state', () => {
+    const gear = [
+      { weight_kg: 2, acquired: true, packed: true },
+      { weight_kg: 3, acquired: false, packed: false },
+    ];
+    const estimate = calculateEstimatedGearWeight(gear);
+
+    expect(estimate.totalKg).toBe(5);
+    expect(formatEstimatedGearWeight(estimate)).toBe('5 kg');
   });
 });

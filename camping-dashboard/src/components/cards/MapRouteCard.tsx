@@ -6,6 +6,7 @@ import type { TripDashboard } from '@/types';
 import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import { Card } from '@/components/ui/Primitives';
 import { Map, MapPin, Pencil } from 'lucide-react';
+import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
 
 interface MapRouteCardProps {
     trip: TripDashboard;
@@ -40,6 +41,8 @@ export default function MapRouteCard({
     variant = 'default',
 }: MapRouteCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
+    const workspace = useOptionalTripWorkspaceStatus();
+    const usesSavedTrip = workspace?.source === 'cache';
     const hasLocation = hasCoordinates(trip);
     const isProvisional = trip.campsite_source === 'legacy_site_coordinates_unverified';
     const campsiteIdentity =
@@ -113,7 +116,19 @@ export default function MapRouteCard({
                     role="region"
                     aria-label="Campsite map"
                 >
-                    {hasLocation ? (
+                    {usesSavedTrip ? (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center">
+                            <MapPin size={28} className="text-text-muted" aria-hidden="true" />
+                            <div>
+                                <p className="text-sm font-semibold text-text-main">Map unavailable while using saved trip</p>
+                                <p className="mt-1 text-xs text-text-muted">
+                                    {hasLocation
+                                        ? `${trip.campsite_latitude?.toFixed(5)}, ${trip.campsite_longitude?.toFixed(5)}`
+                                        : campsiteIdentity}
+                                </p>
+                            </div>
+                        </div>
+                    ) : hasLocation ? (
                         <MapInner trip={trip} />
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-3 px-6 text-center">

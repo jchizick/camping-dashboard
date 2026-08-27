@@ -8,6 +8,7 @@ import {
   FileText,
   LogOut,
   MoreHorizontal,
+  Palette,
   Radio,
 } from 'lucide-react';
 import GuardedTripLink from './GuardedTripLink';
@@ -18,6 +19,7 @@ interface TripMoreMenuProps {
   tripId: string;
   onMissionBrief: () => void;
   onProjectIntel: () => void;
+  onAppearance?: () => void;
   onSignOut: () => Promise<void>;
   mobile?: boolean;
   placement?: 'below' | 'sidebar';
@@ -28,6 +30,7 @@ export default function TripMoreMenu({
   tripId,
   onMissionBrief,
   onProjectIntel,
+  onAppearance,
   onSignOut,
   mobile = false,
   placement = 'below',
@@ -125,6 +128,17 @@ export default function TripMoreMenu({
             <Radio size={17} aria-hidden="true" />
             Mission Brief
           </button>
+          {onAppearance ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => runAction(onAppearance)}
+              className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            >
+              <Palette size={17} aria-hidden="true" />
+              Appearance
+            </button>
+          ) : null}
           <button
             type="button"
             role="menuitem"

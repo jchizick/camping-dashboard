@@ -59,9 +59,9 @@ export default function AlertsCard({
         setRefreshMessage(null);
         try {
             await onRefresh();
-            setRefreshMessage('Alert sources refreshed.');
+            setRefreshMessage('Notice sources refreshed.');
         } catch (error) {
-            setRefreshMessage(error instanceof Error ? error.message : 'Alerts could not be refreshed.');
+            setRefreshMessage(error instanceof Error ? error.message : 'Notices could not be refreshed.');
         } finally {
             setRefreshing(false);
         }
@@ -94,7 +94,7 @@ export default function AlertsCard({
                 <div className="flex items-center gap-2 text-[10px] text-text-muted uppercase tracking-wider">
                     <span>{isManual ? 'Manual note' : alert.source}</span>
                     {!isManual && alert.source_url && (
-                        <a href={alert.source_url} target="_blank" rel="noopener noreferrer" aria-label="Open alert source">
+                        <a href={alert.source_url} target="_blank" rel="noopener noreferrer" aria-label="Open notice source">
                             <ExternalLink size={12} />
                         </a>
                     )}
@@ -105,7 +105,7 @@ export default function AlertsCard({
                             <Trash2 size={14} />
                         </button>
                     ) : onDismissSystem ? (
-                        <button onClick={() => onDismissSystem(alert.id)} className="p-1.5 text-text-muted hover:text-text-main hover:bg-hover-bg rounded" aria-label="Dismiss alert">
+                        <button onClick={() => onDismissSystem(alert.id)} className="p-1.5 text-text-muted hover:text-text-main hover:bg-hover-bg rounded" aria-label="Dismiss notice">
                             <X size={14} />
                         </button>
                     ) : null}
@@ -114,27 +114,27 @@ export default function AlertsCard({
         );
     }
 
-    let emptyMessage = 'No active alerts were reported by the configured sources.';
-    if (refreshStates === null) emptyMessage = 'Alert synchronization status could not be loaded.';
-    else if (unsupported) emptyMessage = 'No automated alert source is configured for this trip.';
-    else if (processing) emptyMessage = 'Alert sources are refreshing.';
-    else if (failed && !hasSuccessfulRefresh) emptyMessage = 'Alert sources could not be checked yet.';
-    else if (!hasSuccessfulRefresh) emptyMessage = 'Alert sources have not been checked yet.';
+    let emptyMessage = 'No active notices were reported by the configured sources.';
+    if (refreshStates === null) emptyMessage = 'Notice synchronization status could not be loaded.';
+    else if (unsupported) emptyMessage = 'No automated notice source is configured for this trip.';
+    else if (processing) emptyMessage = 'Notice sources are refreshing.';
+    else if (failed && !hasSuccessfulRefresh) emptyMessage = 'Notice sources could not be checked yet.';
+    else if (!hasSuccessfulRefresh) emptyMessage = 'Notice sources have not been checked yet.';
 
     return (
         <Card
-            title={`Alerts ${active.length > 0 ? `(${active.length})` : ''}`}
+            title={`Notices ${active.length > 0 ? `(${active.length})` : ''}`}
             icon={AlertTriangle}
             className="h-full"
             action={(onAddManual || onRefresh) && (
                 <div className="flex items-center gap-1">
                     {onRefresh && !unsupported && (
-                        <button onClick={refresh} disabled={refreshing || processing} className="p-1 hover:bg-card-hover rounded text-text-muted disabled:opacity-50" aria-label="Refresh alerts">
+                        <button onClick={refresh} disabled={refreshing || processing} className="p-1 hover:bg-card-hover rounded text-text-muted disabled:opacity-50" aria-label="Refresh notices">
                             <RefreshCw size={16} className={refreshing || processing ? 'animate-spin' : ''} />
                         </button>
                     )}
                     {onAddManual && (
-                        <button onClick={() => setSheetOpen(true)} className="p-1 hover:bg-card-hover rounded text-text-muted" aria-label="Add manual alert">
+                        <button onClick={() => setSheetOpen(true)} className="p-1 hover:bg-card-hover rounded text-text-muted" aria-label="Add manual notice">
                             <Plus size={16} />
                         </button>
                     )}
@@ -151,7 +151,7 @@ export default function AlertsCard({
                 </div>
             )}
             {failed && hasSuccessfulRefresh && (
-                <p className="mb-3 text-xs text-accent-yellow">Latest refresh failed; previously confirmed alerts are retained and may be stale.</p>
+                <p className="mb-3 text-xs text-accent-yellow">Latest refresh failed; previously confirmed notices are retained and may be stale.</p>
             )}
             {refreshMessage && <p className="mb-3 text-xs text-text-muted">{refreshMessage}</p>}
             <div className="space-y-4">

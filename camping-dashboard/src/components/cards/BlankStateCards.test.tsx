@@ -3,6 +3,7 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { evaluateReadiness } from '@/lib/readiness';
 import OfflineVaultCard from './OfflineVaultCard';
 import ParkIntelCard from './ParkIntelCard';
 import ReadinessScoreCard from './ReadinessScoreCard';
@@ -46,28 +47,30 @@ describe('optional dashboard module empty states', () => {
 
         rerender(<OfflineVaultCard status={null} onToggle={vi.fn()} />);
 
-        expect(screen.getByText('Offline readiness has not been configured yet. Select an item to begin.')).toBeTruthy();
+        expect(screen.getByText('Field Prep hasn’t been set up yet')).toBeTruthy();
+        expect(screen.getByText('This saved trip is read-only. Field Prep can be set up when editing is available.')).toBeTruthy();
         expect(screen.queryByText('0%')).toBeNull();
-        expect(screen.getByRole('button', { name: 'Maps Cached' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Maps Cached' })).toBeNull();
     });
 
     it('marks missing optional readiness inputs unavailable', () => {
+        const readiness = evaluateReadiness({
+            tripId: 'test-trip',
+            tripDays: 1,
+            gear: [],
+            meals: [],
+            timeline: [],
+            currentWeather: null,
+            forecast: [],
+            offlineStatus: null,
+            modules: { mealsEnabled: false, offlineEnabled: true },
+        });
         render(
-            <ReadinessScoreCard
-                readiness={{
-                    overall: 0,
-                    gear: 0,
-                    meals: 0,
-                    weather: 0,
-                    offline: 0,
-                    timeline: 0,
-                    label: 'Not Ready',
-                }}
-                unavailable={{ offline: true, weather: true }}
-            />
+            <ReadinessScoreCard readiness={readiness} />
         );
 
-        expect(screen.getAllByText('Unavailable')).toHaveLength(2);
+        expect(screen.getByText('Readiness Unavailable')).toBeTruthy();
+        expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(2);
     });
 
     it('offers the first weather refresh while current weather is absent', async () => {

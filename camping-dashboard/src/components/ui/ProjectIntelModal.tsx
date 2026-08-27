@@ -36,7 +36,7 @@ const ABOUT_SECTIONS = [
   {
     title: 'Planning workspace',
     items: [
-      'Dedicated Home, Plan, Gear, Crew, Guide, and Field Log routes',
+      'Dedicated Home, Plan, Gear, Crew, Field, and Field Log routes',
       'Readiness, weather, timeline, meal, gear, and field-reference tools',
       'Draft-safe navigation for protected editing workflows',
     ],

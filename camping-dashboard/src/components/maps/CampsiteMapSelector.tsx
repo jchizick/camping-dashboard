@@ -21,6 +21,7 @@ interface CampsiteMapSelectorProps {
     showSearch?: boolean;
     visible?: boolean;
     className?: string;
+    onManualEntry?: () => void;
 }
 
 interface SearchMetadata {
@@ -70,6 +71,7 @@ export default function CampsiteMapSelector({
     showSearch = true,
     visible = true,
     className = '',
+    onManualEntry,
 }: CampsiteMapSelectorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maptilersdk.Map | null>(null);
@@ -81,7 +83,6 @@ export default function CampsiteMapSelector({
     const initialSearchRef = useRef(showSearch);
     const [attempt, setAttempt] = useState(0);
     const [mapState, setMapState] = useState<'loading' | 'ready' | 'error'>('loading');
-    const [mapFailure, setMapFailure] = useState<MapFailure | null>(null);
     const [geocoderUnavailable, setGeocoderUnavailable] = useState(false);
     const [networkWarning, setNetworkWarning] = useState(false);
     const [searching, setSearching] = useState(false);
@@ -136,7 +137,6 @@ export default function CampsiteMapSelector({
                 failure === 'initialization' ? 'Map initialization failed' : 'Map or tile loading failed',
                 error
             );
-            setMapFailure(failure);
             setMapState('error');
         };
         const failGeocoder = (error: unknown) => {
@@ -211,7 +211,6 @@ export default function CampsiteMapSelector({
                 if (disposed) return;
                 loaded = true;
                 if (loadTimeout) clearTimeout(loadTimeout);
-                setMapFailure(null);
                 setMapState('ready');
                 map?.resize();
             };
@@ -303,7 +302,6 @@ export default function CampsiteMapSelector({
 
     function handleRetry() {
         setMapState('loading');
-        setMapFailure(null);
         setGeocoderUnavailable(false);
         setNetworkWarning(false);
         setSearching(false);
@@ -314,7 +312,7 @@ export default function CampsiteMapSelector({
     const showBlockingFailure = missingKey || mapState === 'error';
 
     return (
-        <div className={`relative overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${className}`}>
+        <div className={`campsite-map-selector relative overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${className}`}>
             <div
                 ref={containerRef}
                 className="absolute inset-0 h-full w-full"
@@ -323,39 +321,44 @@ export default function CampsiteMapSelector({
             />
 
             {!missingKey && mapState === 'loading' && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center gap-2 bg-card-bg text-sm text-text-muted">
+                <div className="campsite-map-selector__loading absolute inset-0 z-20 flex items-center justify-center gap-2 bg-card-bg text-sm text-text-muted">
                     <Loader2 size={18} className="animate-spin" />
                     Loading campsite map…
                 </div>
             )}
 
             {showBlockingFailure && (
-                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-card-bg px-6 text-center" role="alert">
+                <div className="campsite-map-selector__failure absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-card-bg px-6 text-center" role="alert">
                     <MapPin size={26} className="text-accent-red" />
                     <div>
                         <p className="text-sm font-semibold text-text-main">
-                            {missingKey
-                                ? 'The campsite map is not configured.'
-                                : 'The campsite map could not load.'}
+                            Map unavailable
                         </p>
                         <p className="mt-1 text-xs text-text-muted">
-                            {missingKey
-                                ? 'Add NEXT_PUBLIC_MAPTILER_API_KEY and restart the development server.'
-                                : mapFailure === 'network'
-                                    ? 'Check the MapTiler network connection and try again.'
-                                    : 'Check the MapTiler configuration and try again.'}
+                            Retry the interactive map or enter the campsite coordinates manually.
                         </p>
                     </div>
-                    {!missingKey && (
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {!missingKey && (
                         <button
                             type="button"
                             onClick={handleRetry}
-                            className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-card-hover px-3 py-2 text-xs font-semibold text-text-main hover:border-accent-blue/50"
+                            className="campsite-map-selector__action inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-card-hover px-3 py-2 text-xs font-semibold text-text-main hover:border-accent-blue/50"
                         >
                             <RefreshCw size={14} />
                             Retry map
                         </button>
-                    )}
+                      )}
+                      {onManualEntry ? (
+                        <button
+                          type="button"
+                          onClick={onManualEntry}
+                          className="campsite-map-selector__action campsite-map-selector__manual-action inline-flex items-center rounded-lg border border-border-subtle bg-card-hover px-3 py-2 text-xs font-semibold text-text-main hover:border-accent-blue/50"
+                        >
+                          Enter coordinates manually
+                        </button>
+                      ) : null}
+                    </div>
                 </div>
             )}
 

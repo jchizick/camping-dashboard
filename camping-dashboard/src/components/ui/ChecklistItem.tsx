@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { GearItem } from '@/types';
-import { CheckCircle2, Circle, Pencil, Trash2 } from 'lucide-react';
+import { Backpack, CheckCircle2, Circle, Pencil, Trash2 } from 'lucide-react';
 
 interface ChecklistItemProps {
     item: GearItem;
@@ -10,17 +10,41 @@ interface ChecklistItemProps {
     onTogglePacked?: (id: string) => void;
     onEdit?: (item: GearItem) => void;
     onDelete?: (id: string) => void;
+    responsibilityLabel?: string;
+    responsibilityKind?: 'resolved' | 'legacy' | 'unassigned';
 }
 
-export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, onDelete }: ChecklistItemProps) {
+export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, onDelete, responsibilityLabel, responsibilityKind }: ChecklistItemProps) {
+    const isRequired = item.priority === 'critical';
+    const itemState = item.packed
+        ? 'packed'
+        : isRequired && !item.acquired
+          ? 'missing'
+          : isRequired
+            ? 'needs-packing'
+            : 'optional';
+    const stateLabel = item.packed
+        ? 'Packed'
+        : isRequired && !item.acquired
+          ? 'Missing · Not acquired'
+          : isRequired
+            ? 'On hand · Needs packing'
+            : item.acquired
+              ? 'On hand'
+              : 'Not acquired';
+
     return (
-        <div className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-card-hover focus-within:bg-card-hover/50">
+        <div
+            className="gear-checklist-item group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-card-hover focus-within:bg-card-hover/50"
+            data-required={isRequired ? 'true' : 'false'}
+            data-item-state={itemState}
+        >
             <button
                 type="button"
-                className="flex min-h-10 flex-1 cursor-pointer items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 disabled:cursor-default"
+                className="gear-checklist-item__acquired flex min-h-10 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 disabled:cursor-default"
                 onClick={() => onToggle?.(item.id)}
                 disabled={!onToggle}
-                aria-label={`${item.name} — ${item.acquired ? 'acquired' : 'not acquired'}`}
+                aria-label={`${item.name} — ${item.acquired ? 'on hand' : 'not acquired'}`}
                 aria-pressed={item.acquired}
             >
                 {item.acquired ? (
@@ -33,41 +57,50 @@ export default function ChecklistItem({ item, onToggle, onTogglePacked, onEdit, 
                     <Circle size={16} className="text-accent-yellow shrink-0" />
                 )}
                 
-                <span className={`text-sm ${item.acquired ? 'text-text-muted line-through' : 'text-text-main'}`}>
-                    {item.name}
-                </span>
-
-                <div className="flex items-center gap-2 ml-2">
-                    {item.owner && (
-                        <div className="text-[10px] uppercase tracking-wider bg-border-subtle px-2 py-0.5 rounded text-text-muted">
-                            {item.owner}
-                        </div>
-                    )}
-                    {item.weight_kg > 0 && (
-                        <span className="text-[10px] font-mono text-text-muted">{item.weight_kg}kg</span>
-                    )}
+                <div className="gear-checklist-item__copy min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <span className={`gear-checklist-item__name text-sm ${item.packed ? 'text-text-muted line-through decoration-text-muted/50' : 'text-text-main'}`}>
+                            {item.name}
+                        </span>
+                        {isRequired ? (
+                            <span className="gear-checklist-item__required rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                                Required
+                            </span>
+                        ) : null}
+                    </div>
+                    <span className="gear-checklist-item__state">{stateLabel}</span>
+                    <div className="gear-checklist-item__meta flex flex-wrap items-center gap-2">
+                        {responsibilityLabel && responsibilityKind !== 'unassigned' ? (
+                            <span className="rounded bg-border-subtle px-2 py-0.5 text-[10px] uppercase tracking-wider text-text-muted">
+                                {responsibilityLabel}
+                            </span>
+                        ) : null}
+                        {item.weight_kg > 0 ? (
+                            <span className="font-mono text-[10px] text-text-muted">{item.weight_kg}kg</span>
+                        ) : null}
+                    </div>
                 </div>
             </button>
 
-            {/* Packed indicator — independent from left readiness circle */}
             <button
                 type="button"
-                className={`flex size-10 shrink-0 items-center justify-center rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
+                className={`gear-checklist-item__pack flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-2 text-sm transition-[background-color,color,opacity,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
                     item.packed
                         ? 'opacity-90 hover:opacity-100'
                         : 'opacity-30 hover:opacity-60'
                 } ${onTogglePacked ? 'cursor-pointer hover:bg-card-hover' : 'cursor-default'}`}
                 onClick={(e) => { e.stopPropagation(); onTogglePacked?.(item.id); }}
                 disabled={!onTogglePacked}
-                aria-label={item.packed ? 'Packed' : 'Mark as packed'}
-                title={item.packed ? 'Packed' : 'Mark as packed'}
+                aria-label={`${item.name} — ${item.packed ? 'packed' : 'not packed'}`}
+                aria-pressed={item.packed}
+                title={item.packed ? 'Mark as unpacked' : 'Mark as packed'}
             >
-                {item.packed ? '🎒' : '—'}
+                <Backpack size={16} aria-hidden="true" />
+                <span className="gear-checklist-item__pack-label">{item.packed ? 'Packed' : 'Pack'}</span>
             </button>
 
-            {/* Action zone — edit / delete */}
             {(onEdit || onDelete) && (
-                <div className="ml-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                <div className="gear-checklist-item__actions ml-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     {onEdit && (
                         <button
                             type="button"

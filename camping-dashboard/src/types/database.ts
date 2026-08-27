@@ -19,6 +19,7 @@ export type PrepFeedItemRow = TableRow<'prep_feed_items'>;
 export type PrepFeedItemInsert = TableInsert<'prep_feed_items'>;
 export type PrepFeedItemUpdate = TableUpdate<'prep_feed_items'>;
 export type SettingsRow = TableRow<'settings'>;
+export type SettingsUpdate = TableUpdate<'settings'>;
 export type TimelineEventRow = TableRow<'timeline_events'>;
 export type TripMemberRow = TableRow<'trip_members'>;
 export type TripRow = TableRow<'trips'>;

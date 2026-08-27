@@ -5,10 +5,14 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
+  GearItem,
+  Meal,
+  OfflineStatus,
   TimelineEvent,
   WeatherForecast,
 } from '@/types';
 import type { TripWorkspaceValue } from '@/components/trip/TripWorkspaceProvider';
+import { evaluateReadiness } from '@/lib/readiness';
 
 const workspace = vi.hoisted(() => ({
   value: null as TripWorkspaceValue | null,
@@ -66,6 +70,46 @@ function activeAlert(overrides: Partial<Alert> = {}): Alert {
   } as Alert;
 }
 
+function readinessResult(complete = false) {
+  const gear = [{
+    id: 'gear-1',
+    trip_id: 'trip-1',
+    name: 'Tent',
+    priority: 'critical',
+    acquired: true,
+    packed: complete,
+  } as GearItem];
+  const meals = (['breakfast', 'lunch', 'dinner'] as const).map((mealType) => ({
+    id: `meal-${mealType}`,
+    trip_id: 'trip-1',
+    day_number: 1,
+    meal_type: mealType,
+    title: mealType,
+    prep_type: 'fresh',
+  } as Meal));
+  const offlineStatus = {
+    trip_id: 'trip-1',
+    maps_cached: true,
+    permit_saved: complete,
+    daily_vehicle_permit_saved: complete,
+    route_downloaded: complete,
+    satellite_device_connected: complete,
+    emergency_contact_ready: complete,
+  } as OfflineStatus;
+
+  return evaluateReadiness({
+    tripId: 'trip-1',
+    tripDays: 1,
+    gear,
+    meals,
+    timeline: [timelineEvent()],
+    currentWeather: null,
+    forecast: [],
+    offlineStatus,
+    modules: { mealsEnabled: true, offlineEnabled: true },
+  });
+}
+
 function workspaceValue(editable = true): TripWorkspaceValue {
   return {
     data: {
@@ -116,15 +160,7 @@ function workspaceValue(editable = true): TripWorkspaceValue {
       totalSeconds: 0,
       isPast: true,
     },
-    readiness: {
-      overall: 62,
-      label: 'Needs Attention',
-      gear: 50,
-      meals: 100,
-      weather: 80,
-      offline: 17,
-      timeline: 50,
-    },
+    readiness: readinessResult(),
     editableActions: editable ? { saveCampsite: vi.fn() } : null,
     permissions: {
       role: editable ? 'owner' : 'viewer',
@@ -167,7 +203,7 @@ describe('HomeOverview', () => {
       Array.from(document.querySelectorAll('[data-home-module]')).map((module) =>
         module.getAttribute('data-home-module')
       )
-    ).toEqual(['map', 'weather', 'readiness', 'day-plan', 'priority-notice']);
+    ).toEqual(['map', 'weather', 'readiness', 'day-plan', 'trip-notice']);
     expect(screen.getByTestId('map')).toBeTruthy();
     const weatherSurface = within(
       screen.getByRole('region', { name: 'Weather and forecast' })
@@ -182,7 +218,7 @@ describe('HomeOverview', () => {
     expect(screen.getByText('View gear').classList.contains(
       'home-readiness-header-action__label'
     )).toBe(true);
-    for (const category of ['Offline', 'Gear', 'Plan']) {
+    for (const category of ['Manual Prep', 'Gear', 'Meals']) {
       expect(
         screen.getByRole('progressbar', { name: `${category} readiness` })
       ).toBeTruthy();
@@ -210,7 +246,7 @@ describe('HomeOverview', () => {
     expect(document.querySelector('.home-workspaces')).toBeNull();
     expect(document.querySelector('.home-overview__footer')).toBeNull();
     expect(screen.queryByText(/Workspace synced/)).toBeNull();
-    for (const label of ['Plan', 'Gear', 'Crew', 'Field Guide', 'Field Log']) {
+    for (const label of ['Plan', 'Gear', 'Crew', 'Field', 'Field Log']) {
       expect(screen.queryByRole('link', { name: `Open ${label}` })).toBeNull();
     }
   });
@@ -224,7 +260,7 @@ describe('HomeOverview', () => {
     expect(screen.queryByRole('button', { name: /add|edit|delete/i })).toBeNull();
   });
 
-  it('uses the approved mobile operational order in the DOM', () => {
+  it('uses the readiness-first mobile composition without duplicate signals', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
       matches: query === '(max-width: 767px)',
       media: query,
@@ -238,11 +274,41 @@ describe('HomeOverview', () => {
 
     render(<HomeOverview />);
 
+    expect(document.querySelector('[data-home-composition="mobile"]')).toBeTruthy();
+    expect(document.querySelector('[data-home-composition="desktop"]')).toBeNull();
     expect(
       Array.from(document.querySelectorAll('[data-home-module]')).map((module) =>
         module.getAttribute('data-home-module')
       )
-    ).toEqual(['day-plan', 'priority-notice', 'map', 'weather', 'readiness']);
+    ).toEqual(['readiness-command', 'trip-context', 'trip-notice', 'map']);
+    expect(screen.queryByRole('region', { name: 'Current trip situation' })).toBeNull();
+    expect(screen.queryByTestId('weather')).toBeNull();
+    expect(screen.getByTestId('map').getAttribute('data-editable')).toBe('false');
+    expect(screen.getAllByText('Launch')).toHaveLength(1);
+    expect(
+      screen.getAllByRole('progressbar', { name: 'Overall trip readiness' })
+    ).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Pack critical gear' }).getAttribute('href'))
+      .toBe('/trips/trip-1/gear');
+  });
+
+  it('keeps the existing composition at the 768px tablet boundary', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => ({
+      matches: false,
+      media: '(max-width: 767px)',
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
+
+    render(<HomeOverview />);
+
+    expect(document.querySelector('[data-home-composition="desktop"]')).toBeTruthy();
+    expect(document.querySelector('[data-home-composition="mobile"]')).toBeNull();
+    expect(screen.getByRole('region', { name: 'Current trip situation' })).toBeTruthy();
   });
 
   it('renders empty operational states without restoring removed workspace summaries', () => {
@@ -263,16 +329,7 @@ describe('HomeOverview', () => {
   it('links an empty schedule to Plan and exposes complete readiness accessibly', () => {
     const value = workspaceValue();
     value.timeline = [];
-    value.readiness = {
-      ...value.readiness!,
-      overall: 100,
-      label: 'Locked In',
-      gear: 100,
-      meals: 100,
-      weather: 100,
-      offline: 100,
-      timeline: 100,
-    };
+    value.readiness = readinessResult(true);
     workspace.value = value;
     render(<HomeOverview />);
 
@@ -300,10 +357,14 @@ describe('HomeOverview', () => {
     ];
     value.readiness = {
       ...value.readiness!,
-      overall: 88,
-      label: 'Nearly Ready',
-      gear: 100,
-      offline: 67,
+      score: 88,
+      status: 'nearly-ready',
+      statusLabel: 'Nearly Ready',
+      categories: {
+        ...value.readiness!.categories,
+        gear: { ...value.readiness!.categories.gear, score: 100 },
+        offline: { ...value.readiness!.categories.offline, score: 67 },
+      },
     };
 
     view.rerender(<HomeOverview />);

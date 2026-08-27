@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import React from 'react';
+import fs from 'node:fs';
+import path from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,6 +41,36 @@ describe('SignedOutLanding', () => {
     }
     expect(container.textContent).not.toContain('Today');
     expect(container.textContent).not.toContain('Route Summary');
+  });
+
+  it('exposes the editorial, operational-display and UI typography boundaries', () => {
+    const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+    const landing = container.querySelector('[data-signed-out-landing]');
+
+    expect(landing?.getAttribute('data-signed-out-type-system')).toBe('editorial-operational-bridge');
+    expect(screen.getByRole('heading', { level: 1 }).getAttribute('data-marketing-type-role')).toBe('editorial-hero');
+    expect(container.querySelector('.signed-out-brand__name')?.getAttribute('data-marketing-type-role')).toBe('editorial-brand');
+    expect(container.querySelector('.signed-out-eyebrow')?.getAttribute('data-marketing-type-role')).toBe('operational-display');
+    expect(container.querySelector('.signed-out-lede')?.getAttribute('data-marketing-type-role')).toBe('ui-body');
+    expect(screen.getByRole('button', { name: 'Continue with Google' }).getAttribute('data-marketing-type-role')).toBe('ui-control');
+    expect(container.querySelectorAll('[data-marketing-type-role="ui-label"]').length).toBe(4);
+  });
+
+  it('uses the canonical local topographic asset for the signed-out atmosphere', () => {
+    const projectRoot = process.cwd();
+    const css = fs.readFileSync(path.join(projectRoot, 'src/app/globals.css'), 'utf8');
+
+    expect(fs.existsSync(path.join(projectRoot, 'public/topo-map-bg.svg'))).toBe(true);
+    expect(css).toContain('--landing-topography: url("/topo-map-bg.svg")');
+  });
+
+  it('keeps preview and capability product labels in the UI type family', () => {
+    const projectRoot = process.cwd();
+    const css = fs.readFileSync(path.join(projectRoot, 'src/app/globals.css'), 'utf8');
+
+    expect(css).toMatch(/\.signed-out-map__heading strong\s*{[^}]*font-family:\s*var\(--font-ui\)/);
+    expect(css).toMatch(/\.signed-out-capability h2\s*{[^}]*font-family:\s*var\(--font-ui\)/);
+    expect(css).not.toMatch(/\.signed-out-capability h2\s*{[^}]*font-family:\s*var\(--font-trip-display\)/);
   });
 
   it('keeps the decorative product preview hidden from assistive technology and free of focusable controls', () => {

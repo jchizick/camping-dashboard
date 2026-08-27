@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(22);
 
 select hasnt_column('public', 'settings', 'id', 'settings has no legacy id');
 select col_is_pk('public', 'settings', 'trip_id', 'settings is keyed by trip_id');
@@ -105,6 +105,25 @@ select is(
   ),
   1,
   'mandatory settings singleton is created'
+);
+
+select is(
+  (
+    select s.theme_variant
+    from public.settings s
+    join public.trips t on t.id = s.trip_id
+    where t.name = 'Integration Test Trip'
+  ),
+  'expedition',
+  'new trips use Expedition by default'
+);
+
+select col_default_is(
+  'public',
+  'settings',
+  'theme_variant',
+  'expedition',
+  'settings theme variant column defaults to Expedition'
 );
 
 select is(

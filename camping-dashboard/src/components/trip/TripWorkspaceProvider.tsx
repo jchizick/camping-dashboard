@@ -20,10 +20,11 @@ import type {
   ParkIntel,
   PrepFeedCategory,
   PrepFeedItem,
-  ReadinessScore,
   TimelineEvent,
   TripDashboard,
+  TripDetailsUpdate,
   TripMemberRole,
+  ThemeVariant,
 } from '@/types';
 import { useAuth } from '@/lib/authContext';
 import {
@@ -36,19 +37,20 @@ import {
   toMeal,
   toOfflineStatus,
   toParkIntel,
+  toSettings,
   toTimelineEvent,
   toTripDashboard,
 } from '@/lib/dashboardMapper';
-import { fetchDashboardData } from '@/lib/fetchDashboard';
+import { tripRepository } from '@/lib/tripRepository';
+import type { TripRepositoryResult, TripRepositorySource } from '@/lib/tripRepository';
+import { prepareOfflineShell } from '@/lib/offlineShell';
+import { TripWorkspaceStatusProvider } from './TripWorkspaceStatus';
+import { isExplicitWorkspaceDenial } from '@/lib/remoteWorkspaceError';
+import { getTripCountdown } from '@/lib/helpers';
 import {
-  calculateGearReadiness,
-  calculateMealCompleteness,
-  calculateOfflineReadiness,
-  calculateOverallReadiness,
-  calculateTimelineCompleteness,
-  calculateWeatherPreparedness,
-  getTripCountdown,
-} from '@/lib/helpers';
+  evaluateReadiness,
+  type ReadinessResult,
+} from '@/lib/readiness';
 import { getTripDuration } from '@/lib/tripDuration';
 import {
   createAlert,
@@ -70,7 +72,9 @@ import {
   updateOfflineStatus,
   updateParkIntel,
   updateTimelineEvent,
+  updateThemeVariant as persistThemeVariant,
   updateTripCampsite,
+  updateTripDetails,
 } from '@/lib/mutations';
 import { ThemeProvider } from '@/lib/themeContext';
 import { useTrip } from '@/lib/tripContext';
@@ -82,6 +86,18 @@ async function runWithoutDraftGuard(
 ): Promise<boolean> {
   await action();
   return true;
+}
+
+function guardWorkspaceMutation<Args extends unknown[]>(
+  allowed: React.MutableRefObject<boolean>,
+  action: (...args: Args) => Promise<void>
+) {
+  return async (...args: Args) => {
+    if (!allowed.current) {
+      throw new Error('This saved trip is read-only. Reconnect to make changes.');
+    }
+    await action(...args);
+  };
 }
 
 const emptyOfflineStatus = (tripId: string): OfflineStatus => ({
@@ -148,7 +164,10 @@ export interface TripWorkspaceEditableActions {
   }) => Promise<void>;
   deletePrepFeedItem: (id: string) => Promise<void>;
   toggleOfflineStatus: (key: keyof OfflineStatus) => Promise<void>;
+  initializeFieldPrep: () => Promise<void>;
   saveCampsite: (selection: CampsiteSelection) => Promise<void>;
+  updateTripDetails: (details: TripDetailsUpdate) => Promise<void>;
+  updateThemeVariant: (variant: ThemeVariant) => Promise<void>;
 }
 
 interface TripWorkspacePermissions {
@@ -157,13 +176,7 @@ interface TripWorkspacePermissions {
   isOwner: boolean;
 }
 
-interface TripWorkspaceReadinessCategories {
-  gear: number;
-  meals: number;
-  weather: number;
-  offline: number;
-  timeline: number;
-}
+export type WorkspaceConnectivity = 'online' | 'offline' | 'checking';
 
 export interface TripWorkspaceValue {
   data: DashboardData | null;
@@ -178,9 +191,14 @@ export interface TripWorkspaceValue {
   prepFeed: PrepFeedItem[];
   tripDays: number;
   countdown: CountdownResult | null;
-  readiness: ReadinessScore | null;
-  readinessCategories: TripWorkspaceReadinessCategories;
+  readiness: ReadinessResult | null;
   permissions: TripWorkspacePermissions;
+  source: TripRepositorySource;
+  connectivity: WorkspaceConnectivity;
+  canMutateWorkspace: boolean;
+  cachedAt: string | null;
+  lastOnlineVerifiedAt: string | null;
+  navigationPath: string | null;
   editableActions: TripWorkspaceEditableActions | null;
   uploaderName: string;
   isLoading: boolean;
@@ -198,10 +216,14 @@ function workspaceErrorMessage(error: unknown): string {
 
 export function TripWorkspaceProvider({
   children,
+  initialCachedWorkspace,
+  navigationPath = null,
 }: {
   children: React.ReactNode;
+  initialCachedWorkspace?: TripRepositoryResult;
+  navigationPath?: string | null;
 }) {
-  const { user } = useAuth();
+  const { user, identity } = useAuth();
   const draftGuard = useOptionalTripDraftGuard();
   const requestAction = draftGuard?.requestAction ?? runWithoutDraftGuard;
   const {
@@ -211,6 +233,9 @@ export function TripWorkspaceProvider({
     isOwner,
     isLoading: roleLoading,
     error: roleError,
+    verificationSource,
+    cachedWorkspace,
+    revalidateAccess,
   } = useTrip();
 
   const [data, setData] = useState<DashboardData | null>(null);
@@ -227,9 +252,31 @@ export function TripWorkspaceProvider({
   const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<TripRepositorySource>(
+    initialCachedWorkspace ? 'cache' : 'online'
+  );
+  const [connectivity, setConnectivity] = useState<WorkspaceConnectivity>(() =>
+    typeof navigator !== 'undefined' && navigator.onLine === false
+      ? 'offline'
+      : initialCachedWorkspace
+        ? 'offline'
+        : 'online'
+  );
+  const [sourceMetadata, setSourceMetadata] = useState<{
+    cachedAt: string | null;
+    lastOnlineVerifiedAt: string | null;
+  }>({
+    cachedAt: initialCachedWorkspace?.cachedAt ?? null,
+    lastOnlineVerifiedAt: initialCachedWorkspace?.lastOnlineVerifiedAt ?? null,
+  });
   const [countdownTick, setCountdownTick] = useState(0);
   const initialLoadTripRef = useRef<string | null>(null);
   const loadVersionRef = useRef(0);
+  const canMutateRef = useRef(false);
+  const revalidationPromiseRef = useRef<Promise<void> | null>(null);
+  const browserOnlineRef = useRef(
+    typeof navigator === 'undefined' || navigator.onLine !== false
+  );
 
   const applyDashboardData = useCallback((nextData: DashboardData) => {
     setData(nextData);
@@ -245,6 +292,29 @@ export function TripWorkspaceProvider({
     setLoadedTripId(nextData.trip.id);
   }, []);
 
+  const applyRepositoryResult = useCallback(
+    (result: TripRepositoryResult) => {
+      const effectiveSource =
+        result.source === 'online' && !browserOnlineRef.current
+          ? 'cache'
+          : result.source;
+      applyDashboardData(result.data);
+      setSource(effectiveSource);
+      setSourceMetadata({
+        cachedAt: result.cachedAt,
+        lastOnlineVerifiedAt: result.lastOnlineVerifiedAt,
+      });
+      setConnectivity(
+        effectiveSource === 'online'
+          ? 'online'
+          : navigator.onLine === false
+            ? 'offline'
+            : 'online'
+      );
+    },
+    [applyDashboardData]
+  );
+
   const loadWorkspace = useCallback(
     async (kind: 'initial' | 'reload') => {
       const loadVersion = ++loadVersionRef.current;
@@ -256,13 +326,48 @@ export function TripWorkspaceProvider({
       setError(null);
 
       try {
-        const nextData = await fetchDashboardData(tripId);
+        const userId = user?.id ?? identity?.userId;
+        if (!userId || !role || verificationSource !== 'online') return;
+        const result = await tripRepository.loadOnlineTrip({
+          tripId,
+          userId,
+          verifiedRole: role,
+        });
         if (loadVersion !== loadVersionRef.current) return;
-        applyDashboardData(nextData);
+        applyRepositoryResult(result);
+        if (result.cacheWriteOutcome === 'stored') {
+          void prepareOfflineShell().then(async (prepared) => {
+            if (prepared) await tripRepository.markShellPrepared({ userId });
+          });
+        }
       } catch (loadError) {
         if (loadVersion !== loadVersionRef.current) return;
         console.error('Fetch failed:', loadError);
-        setError(workspaceErrorMessage(loadError));
+        const userId = user?.id ?? identity?.userId;
+        if (isExplicitWorkspaceDenial(loadError)) {
+          setData(null);
+          setTrip(null);
+          setError('This trip is no longer available.');
+          if (userId) {
+            try {
+              await tripRepository.clearCachedTrip({ userId, tripId });
+            } catch (cacheError) {
+              console.error(
+                '[TripWorkspaceProvider] Denied trip cache could not be cleared.',
+                cacheError
+              );
+            }
+          }
+          return;
+        }
+        const cached = await tripRepository.readOfflineTrip({ tripId });
+        if (loadVersion !== loadVersionRef.current) return;
+        if (cached.status === 'available') {
+          applyRepositoryResult(cached.workspace);
+          setError(null);
+        } else {
+          setError(workspaceErrorMessage(loadError));
+        }
       } finally {
         if (loadVersion === loadVersionRef.current) {
           setIsWorkspaceLoading(false);
@@ -270,15 +375,41 @@ export function TripWorkspaceProvider({
         }
       }
     },
-    [applyDashboardData, tripId]
+    [applyRepositoryResult, identity, role, tripId, user, verificationSource]
   );
 
   useEffect(() => {
-    if (roleLoading || roleError) return;
+    const initial = initialCachedWorkspace ?? cachedWorkspace;
+    if (verificationSource !== 'cache' || !initial) return;
+    applyRepositoryResult(initial);
+    setIsWorkspaceLoading(false);
+  }, [
+    applyRepositoryResult,
+    cachedWorkspace,
+    initialCachedWorkspace,
+    verificationSource,
+  ]);
+
+  useEffect(() => {
+    if (
+      roleLoading ||
+      roleError ||
+      !role ||
+      !identity ||
+      verificationSource !== 'online'
+    ) return;
     if (initialLoadTripRef.current === tripId) return;
     initialLoadTripRef.current = tripId;
     void loadWorkspace('initial');
-  }, [loadWorkspace, roleError, roleLoading, tripId]);
+  }, [
+    identity,
+    loadWorkspace,
+    role,
+    roleError,
+    roleLoading,
+    tripId,
+    verificationSource,
+  ]);
 
   useEffect(() => {
     if (!trip) return;
@@ -288,10 +419,70 @@ export function TripWorkspaceProvider({
     return () => window.clearInterval(id);
   }, [trip]);
 
+  const revalidateWorkspace = useCallback(() => {
+    if (revalidationPromiseRef.current) return revalidationPromiseRef.current;
+    const revalidation = (async () => {
+      setConnectivity('checking');
+      setIsReloading(true);
+      try {
+        const access = await revalidateAccess();
+        if (access === 'online') {
+          await loadWorkspace('reload');
+          return;
+        }
+        if (access === 'denied') {
+          setData(null);
+          setTrip(null);
+          setError('Access to this saved trip could not be verified.');
+        }
+        setConnectivity(browserOnlineRef.current ? 'online' : 'offline');
+        setIsReloading(false);
+      } catch (revalidationError) {
+        console.error(
+          '[TripWorkspaceProvider] Revalidation failed.',
+          revalidationError
+        );
+        setConnectivity(browserOnlineRef.current ? 'online' : 'offline');
+        setIsReloading(false);
+      }
+    })();
+    revalidationPromiseRef.current = revalidation;
+    void revalidation.then(() => {
+      if (revalidationPromiseRef.current === revalidation) {
+        revalidationPromiseRef.current = null;
+      }
+    });
+    return revalidation;
+  }, [loadWorkspace, revalidateAccess]);
+
   const reload = useCallback(async () => {
-    if (roleLoading || roleError) return;
-    await requestAction(() => loadWorkspace('reload'));
-  }, [loadWorkspace, requestAction, roleError, roleLoading]);
+    if (!identity || roleLoading) return;
+    await requestAction(revalidateWorkspace);
+  }, [identity, requestAction, revalidateWorkspace, roleLoading]);
+
+  useEffect(() => {
+    function handleOffline() {
+      browserOnlineRef.current = false;
+      setConnectivity('offline');
+      setSource((current) => (data ? 'cache' : current));
+    }
+
+    function handleOnline() {
+      browserOnlineRef.current = true;
+      if (!data || source !== 'cache') {
+        setConnectivity('online');
+        return;
+      }
+      void revalidateWorkspace();
+    }
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [data, revalidateWorkspace, source]);
 
   const tripDays = useMemo(
     () =>
@@ -307,33 +498,26 @@ export function TripWorkspaceProvider({
     },
     [countdownTick, trip]
   );
-  const readinessCategories = useMemo<TripWorkspaceReadinessCategories>(
-    () => ({
-      gear: calculateGearReadiness(gear),
-      meals: calculateMealCompleteness(meals, tripDays),
-      weather: calculateWeatherPreparedness(
-        data?.currentWeather ?? null,
-        data?.forecast ?? []
-      ),
-      offline: calculateOfflineReadiness(offlineStatus),
-      timeline: calculateTimelineCompleteness(timeline, tripDays),
-    }),
-    [
-      data?.currentWeather,
-      data?.forecast,
-      gear,
-      meals,
-      offlineStatus,
-      timeline,
-      tripDays,
-    ]
-  );
   const readiness = useMemo(
     () =>
       data && trip
-        ? calculateOverallReadiness(readinessCategories)
+        ? evaluateReadiness({
+            tripId: trip.id,
+            tripDays,
+            gear,
+            meals,
+            timeline,
+            currentWeather: data.currentWeather,
+            forecast: data.forecast,
+            offlineStatus,
+            modules: {
+              mealsEnabled: data.settings.show_meals,
+              offlineEnabled: data.settings.show_offline,
+            },
+            alerts,
+          })
         : null,
-    [data, readinessCategories, trip]
+    [alerts, data, gear, meals, offlineStatus, timeline, trip, tripDays]
   );
 
   async function handleGearToggleAcquired(id: string) {
@@ -539,6 +723,16 @@ export function TripWorkspaceProvider({
       throw mutationError;
     }
     setCrew((current) => current.filter((member) => member.id !== id));
+    setGear((current) => current.map((item) =>
+      item.responsible_crew_member_id === id
+        ? { ...item, responsible_crew_member_id: null }
+        : item
+    ));
+    setMeals((current) => current.map((meal) =>
+      meal.prep_crew_member_id === id
+        ? { ...meal, prep_crew_member_id: null }
+        : meal
+    ));
   }
 
   async function handleAlertAdd(alertData: {
@@ -671,6 +865,21 @@ export function TripWorkspaceProvider({
     setOfflineStatus(toOfflineStatus(updated));
   }
 
+  async function handleFieldPrepInitialize() {
+    if (offlineStatus) return;
+    const { data: updated, error: mutationError } = await updateOfflineStatus(
+      tripId,
+      {}
+    );
+    if (mutationError || !updated) {
+      console.error('[initializeFieldPrep]', mutationError?.message);
+      throw new Error(
+        mutationError?.message ?? 'Field Prep could not be set up.'
+      );
+    }
+    setOfflineStatus(toOfflineStatus(updated));
+  }
+
   async function handleCampsiteSave(selection: CampsiteSelection) {
     const { data: updated, error: mutationError } = await updateTripCampsite(
       tripId,
@@ -682,34 +891,114 @@ export function TripWorkspaceProvider({
         mutationError?.message ?? 'The campsite location could not be saved.'
       );
     }
-    setTrip(toTripDashboard(updated));
+    const nextTrip = toTripDashboard(updated);
+    setTrip(nextTrip);
+    setData((current) =>
+      current ? { ...current, trip: nextTrip } : current
+    );
   }
 
-  const editableActions: TripWorkspaceEditableActions | null = canEdit
+  async function handleTripDetailsUpdate(details: TripDetailsUpdate) {
+    const duration = getTripDuration(details.start_date, details.end_date);
+    if (!duration) {
+      throw new Error('Enter a valid trip date range.');
+    }
+
+    const latestPlannedDay = Math.max(
+      1,
+      ...timeline.map((event) => event.day_number),
+      ...meals.map((meal) => meal.day_number)
+    );
+    if (duration.days < latestPlannedDay) {
+      throw new Error(
+        `This trip has itinerary or meal plans on Day ${latestPlannedDay}. Extend the date range before shortening the trip.`
+      );
+    }
+
+    const { data: updated, error: mutationError } = await updateTripDetails(
+      tripId,
+      details
+    );
+    if (mutationError || !updated) {
+      console.error('[updateTripDetails]', mutationError);
+      throw new Error(
+        mutationError?.message ?? 'The trip details could not be saved.'
+      );
+    }
+
+    const nextTrip = toTripDashboard(updated);
+    setTrip(nextTrip);
+    setData((current) =>
+      current ? { ...current, trip: nextTrip } : current
+    );
+  }
+
+  async function handleThemeVariantUpdate(nextVariant: ThemeVariant) {
+    if (!data || data.settings.theme_variant === nextVariant) return;
+    const previousSettings = data.settings;
+
+    setData((current) =>
+      current
+        ? {
+            ...current,
+            settings: { ...current.settings, theme_variant: nextVariant },
+          }
+        : current
+    );
+
+    const { data: updated, error: mutationError } = await persistThemeVariant(
+      tripId,
+      nextVariant
+    );
+    if (mutationError || !updated) {
+      setData((current) =>
+        current ? { ...current, settings: previousSettings } : current
+      );
+      throw new Error(
+        mutationError?.message ?? 'The trip appearance could not be updated.'
+      );
+    }
+
+    setData((current) =>
+      current ? { ...current, settings: toSettings(updated) } : current
+    );
+  }
+
+  const canMutateWorkspace =
+    canEdit &&
+    source === 'online' &&
+    connectivity === 'online' &&
+    !isReloading;
+  canMutateRef.current = canMutateWorkspace;
+
+  const editableActions: TripWorkspaceEditableActions | null = canMutateWorkspace
     ? {
-        toggleGearAcquired: handleGearToggleAcquired,
-        toggleGearPacked: handleGearTogglePacked,
-        addGearItem: handleGearAdd,
-        updateGearItem: handleGearUpdate,
-        deleteGearItem: handleGearDelete,
-        addMeal: handleMealAdd,
-        updateMeal: handleMealUpdate,
-        deleteMeal: handleMealDelete,
-        addTimelineEvent: handleTimelineAdd,
-        updateTimelineEvent: handleTimelineUpdate,
-        deleteTimelineEvent: handleTimelineDelete,
-        addCrewMember: handleCrewAdd,
-        updateCrewMember: handleCrewUpdate,
-        deleteCrewMember: handleCrewDelete,
-        addAlert: handleAlertAdd,
-        deleteAlert: handleAlertDelete,
-        dismissAlert: handleAlertDismiss,
-        refreshAlerts: handleAlertRefresh,
-        updateParkIntel: handleParkIntelUpdate,
-        addPrepFeedItem: handlePrepFeedAdd,
-        deletePrepFeedItem: handlePrepFeedDelete,
-        toggleOfflineStatus: handleOfflineToggle,
-        saveCampsite: handleCampsiteSave,
+        toggleGearAcquired: guardWorkspaceMutation(canMutateRef, handleGearToggleAcquired),
+        toggleGearPacked: guardWorkspaceMutation(canMutateRef, handleGearTogglePacked),
+        addGearItem: guardWorkspaceMutation(canMutateRef, handleGearAdd),
+        updateGearItem: guardWorkspaceMutation(canMutateRef, handleGearUpdate),
+        deleteGearItem: guardWorkspaceMutation(canMutateRef, handleGearDelete),
+        addMeal: guardWorkspaceMutation(canMutateRef, handleMealAdd),
+        updateMeal: guardWorkspaceMutation(canMutateRef, handleMealUpdate),
+        deleteMeal: guardWorkspaceMutation(canMutateRef, handleMealDelete),
+        addTimelineEvent: guardWorkspaceMutation(canMutateRef, handleTimelineAdd),
+        updateTimelineEvent: guardWorkspaceMutation(canMutateRef, handleTimelineUpdate),
+        deleteTimelineEvent: guardWorkspaceMutation(canMutateRef, handleTimelineDelete),
+        addCrewMember: guardWorkspaceMutation(canMutateRef, handleCrewAdd),
+        updateCrewMember: guardWorkspaceMutation(canMutateRef, handleCrewUpdate),
+        deleteCrewMember: guardWorkspaceMutation(canMutateRef, handleCrewDelete),
+        addAlert: guardWorkspaceMutation(canMutateRef, handleAlertAdd),
+        deleteAlert: guardWorkspaceMutation(canMutateRef, handleAlertDelete),
+        dismissAlert: guardWorkspaceMutation(canMutateRef, handleAlertDismiss),
+        refreshAlerts: guardWorkspaceMutation(canMutateRef, handleAlertRefresh),
+        updateParkIntel: guardWorkspaceMutation(canMutateRef, handleParkIntelUpdate),
+        addPrepFeedItem: guardWorkspaceMutation(canMutateRef, handlePrepFeedAdd),
+        deletePrepFeedItem: guardWorkspaceMutation(canMutateRef, handlePrepFeedDelete),
+        toggleOfflineStatus: guardWorkspaceMutation(canMutateRef, handleOfflineToggle),
+        initializeFieldPrep: guardWorkspaceMutation(canMutateRef, handleFieldPrepInitialize),
+        saveCampsite: guardWorkspaceMutation(canMutateRef, handleCampsiteSave),
+        updateTripDetails: guardWorkspaceMutation(canMutateRef, handleTripDetailsUpdate),
+        updateThemeVariant: guardWorkspaceMutation(canMutateRef, handleThemeVariantUpdate),
       }
     : null;
 
@@ -718,7 +1007,7 @@ export function TripWorkspaceProvider({
     user?.email?.split('@')[0] ||
     'Unknown';
   const isLoading =
-    roleLoading ||
+    (roleLoading && !data) ||
     isWorkspaceLoading ||
     (roleError === null && loadedTripId !== tripId);
 
@@ -736,8 +1025,13 @@ export function TripWorkspaceProvider({
     tripDays,
     countdown,
     readiness,
-    readinessCategories,
-    permissions: { role, canEdit, isOwner },
+    permissions: { role, canEdit: canMutateWorkspace, isOwner },
+    source,
+    connectivity,
+    canMutateWorkspace,
+    cachedAt: sourceMetadata.cachedAt,
+    lastOnlineVerifiedAt: sourceMetadata.lastOnlineVerifiedAt,
+    navigationPath,
     editableActions,
     uploaderName,
     isLoading,
@@ -748,13 +1042,24 @@ export function TripWorkspaceProvider({
 
   return (
     <TripWorkspaceContext.Provider value={value}>
-      <ThemeProvider
-        settings={data?.settings ?? null}
-        sunriseTime={data?.currentWeather?.sunrise_time ?? undefined}
-        sunsetTime={data?.currentWeather?.sunset_time ?? undefined}
+      <TripWorkspaceStatusProvider
+        value={{
+          source,
+          connectivity,
+          navigationPath,
+          cachedAt: sourceMetadata.cachedAt,
+          lastOnlineVerifiedAt: sourceMetadata.lastOnlineVerifiedAt,
+          reload,
+        }}
       >
-        {children}
-      </ThemeProvider>
+        <ThemeProvider
+          settings={data?.settings ?? null}
+          sunriseTime={data?.currentWeather?.sunrise_time ?? undefined}
+          sunsetTime={data?.currentWeather?.sunset_time ?? undefined}
+        >
+          {children}
+        </ThemeProvider>
+      </TripWorkspaceStatusProvider>
     </TripWorkspaceContext.Provider>
   );
 }

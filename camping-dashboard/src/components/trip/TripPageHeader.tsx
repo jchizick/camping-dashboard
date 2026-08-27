@@ -28,6 +28,7 @@ export default function TripPageHeader({
     <header className="trip-section-header space-y-1">
       <h1
         tabIndex={-1}
+        data-mobile-type-role="page-title"
         className="scroll-mt-20 text-3xl font-bold tracking-tight text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:text-4xl"
       >
         {title}

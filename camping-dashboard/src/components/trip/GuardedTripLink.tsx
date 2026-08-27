@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
+import { useOptionalTripWorkspaceStatus } from './TripWorkspaceStatus';
 
 type GuardedTripLinkProps = Omit<
   React.ComponentProps<typeof Link>,
@@ -19,6 +20,7 @@ export default function GuardedTripLink({
   ...props
 }: GuardedTripLinkProps) {
   const draftGuard = useOptionalTripDraftGuard();
+  const workspace = useOptionalTripWorkspaceStatus();
 
   function handleClick(event: React.MouseEvent<HTMLAnchorElement>) {
     onClick?.(event);
@@ -34,11 +36,22 @@ export default function GuardedTripLink({
       return;
     }
 
-    if (draftGuard) {
+    if (workspace?.source === 'cache') {
+      event.preventDefault();
+      window.location.assign(href);
+    } else if (draftGuard) {
       event.preventDefault();
       draftGuard.requestNavigation(href);
     }
   }
 
-  return <Link {...props} href={href} target={target} onClick={handleClick} />;
+  return (
+    <Link
+      {...props}
+      href={href}
+      target={target}
+      prefetch={workspace?.source === 'cache' ? false : props.prefetch}
+      onClick={handleClick}
+    />
+  );
 }

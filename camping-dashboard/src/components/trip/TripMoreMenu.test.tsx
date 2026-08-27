@@ -10,13 +10,14 @@ import TripMoreMenu from './TripMoreMenu';
 
 afterEach(cleanup);
 
-function renderMenu() {
+function renderMenu(onAppearance: (() => void) | undefined) {
   return render(
     <TripMoreMenu
       id="test-more"
       tripId="trip-1"
       onMissionBrief={vi.fn()}
       onProjectIntel={vi.fn()}
+      onAppearance={onAppearance}
       onSignOut={vi.fn()}
     />
   );
@@ -24,12 +25,13 @@ function renderMenu() {
 
 describe('TripMoreMenu', () => {
   it('preserves the existing items, roles, routes, and Field Log current state', () => {
-    renderMenu();
+    renderMenu(vi.fn());
     fireEvent.click(screen.getByRole('button', { name: 'More' }));
     expect(screen.getByRole('menu', { name: 'More trip actions' })).toBeTruthy();
     expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
       'Field Log',
       'Mission Brief',
+      'Appearance',
       'About this app',
       'Sign out',
     ]);
@@ -38,8 +40,14 @@ describe('TripMoreMenu', () => {
     expect(fieldLog.getAttribute('aria-current')).toBe('page');
   });
 
+  it('hides shared appearance controls when no editable action is provided', () => {
+    renderMenu(undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    expect(screen.queryByRole('menuitem', { name: 'Appearance' })).toBeNull();
+  });
+
   it('closes on Escape and restores focus to the trigger', () => {
-    renderMenu();
+    renderMenu(vi.fn());
     const trigger = screen.getByRole('button', { name: 'More' });
     trigger.focus();
     fireEvent.click(trigger);
@@ -49,7 +57,7 @@ describe('TripMoreMenu', () => {
   });
 
   it('closes on an outside pointer interaction', () => {
-    renderMenu();
+    renderMenu(vi.fn());
     fireEvent.click(screen.getByRole('button', { name: 'More' }));
     fireEvent.pointerDown(document.body);
     expect(screen.queryByRole('menu')).toBeNull();

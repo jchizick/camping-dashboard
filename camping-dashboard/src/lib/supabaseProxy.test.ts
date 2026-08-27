@@ -77,6 +77,15 @@ describe('Supabase session proxy', () => {
     expect(response.headers.get('location')).toBeNull();
   });
 
+  it('serves the generic offline bootstrap without session work', async () => {
+    const response = await updateSupabaseSession(
+      new NextRequest('https://dashboard.example/offline?target=%2Ftrips%2Ftrip-123%2Fgear')
+    );
+
+    expect(proxyMocks.getClaims).not.toHaveBeenCalled();
+    expect(response.headers.get('location')).toBeNull();
+  });
+
   it('allows an authenticated protected request and forwards refreshed cookies', async () => {
     proxyMocks.getClaims.mockResolvedValue({
       data: { claims: { sub: 'user-123' } },

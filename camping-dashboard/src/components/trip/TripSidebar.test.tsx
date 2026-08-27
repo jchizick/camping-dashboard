@@ -47,7 +47,7 @@ describe('TripSidebar', () => {
   it('uses the shared nested-route active-state helper', () => {
     mocks.pathname = '/trips/trip-1/guide/notices/notice-1';
     renderSidebar();
-    expect(screen.getByRole('link', { name: /Guide/ }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: /Field/ }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: /Home/ }).getAttribute('aria-current')).toBeNull();
   });
 

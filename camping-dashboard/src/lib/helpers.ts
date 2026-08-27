@@ -5,14 +5,8 @@
 
 import type {
     CountdownResult,
-    GearItem,
-    Meal,
-    OfflineStatus,
-    TimelineEvent,
     WeatherCurrent,
-    WeatherForecast,
     AstroData,
-    ReadinessScore,
     ThemeMode,
     ThemeOverride,
 } from '@/types';
@@ -52,107 +46,46 @@ export function getThemeModeFromTime(
     return isDaytime ? 'day' : 'night';
 }
 
-// ─── Readiness Calculators ────────────────────────────────
-export function calculateGearReadiness(gear: GearItem[]): number {
-    if (gear.length === 0) return 0;
-    const criticalItems = gear.filter((g) => g.priority === 'critical');
-    const critical = criticalItems.length > 0
-        ? criticalItems.filter((g) => g.acquired).length / criticalItems.length
-        : 1;
-    const total = gear.filter((g) => g.acquired).length / gear.length;
-    // Weight critical items higher
-    return Math.round((critical * 0.6 + total * 0.4) * 100);
+export interface EstimatedGearWeight {
+    totalKg: number;
+    knownItemCount: number;
+    unknownItemCount: number;
 }
 
-export function calculateMealCompleteness(meals: Meal[], totalDays: number): number {
-    if (totalDays === 0) return 0;
-    const expectedMeals = totalDays * 3; // breakfast + lunch + dinner per day
-    const plannedMeals = meals.filter(
-        (m) => m.meal_type === 'breakfast' || m.meal_type === 'lunch' || m.meal_type === 'dinner'
-    ).length;
-    return Math.min(Math.round((plannedMeals / expectedMeals) * 100), 100);
-}
-
-export function calculateOfflineReadiness(status: OfflineStatus | null): number {
-    if (!status) return 0;
-    const checks = [
-        status.maps_cached,
-        status.permit_saved,
-        status.daily_vehicle_permit_saved,
-        status.route_downloaded,
-        status.satellite_device_connected,
-        status.emergency_contact_ready,
-    ];
-    const passed = checks.filter(Boolean).length;
-    return Math.round((passed / checks.length) * 100);
-}
-
-export function calculateTimelineCompleteness(
-    events: TimelineEvent[],
-    totalDays: number
-): number {
-    if (totalDays === 0) return 0;
-    const expectedEventsPerDay = 4; // launch, paddle, camp, dinner (rough baseline)
-    const expected = totalDays * expectedEventsPerDay;
-    return Math.min(Math.round((events.length / expected) * 100), 100);
-}
-
-export function calculateWeatherPreparedness(
-    weather: WeatherCurrent | null,
-    forecast: WeatherForecast[]
-): number {
-    if (!weather) return 0;
-    let score = 100;
-    // Penalise for high rain chance in forecast
-    const rainValues = [weather.rain_chance, ...forecast.map((f) => f.rain_chance)]
-        .filter((value): value is number => typeof value === 'number');
-    const maxRain = rainValues.length > 0 ? Math.max(...rainValues) : 0;
-    if (maxRain > 70) score -= 30;
-    else if (maxRain > 40) score -= 15;
-    // Penalise for high wind
-    const windValues = [weather.wind_kph, ...forecast.map((f) => f.wind_kph)]
-        .filter((value): value is number => typeof value === 'number');
-    const maxWind = windValues.length > 0 ? Math.max(...windValues) : 0;
-    if (maxWind > 40) score -= 20;
-    else if (maxWind > 25) score -= 10;
-    return Math.max(score, 0);
-}
-
-// ─── Overall Readiness ────────────────────────────────────
-const READINESS_WEIGHTS = {
-    gear: 0.35,
-    meals: 0.20,
-    weather: 0.15,
-    offline: 0.20,
-    timeline: 0.10,
+type WeightedGearItem = {
+    weight_kg: number | null | undefined;
 };
 
-export function getReadinessLabel(score: number): string {
-    if (score >= 90) return 'Locked In';
-    if (score >= 75) return 'Nearly Ready';
-    if (score >= 50) return 'Needs Attention';
-    return 'Not Ready';
+export function calculateEstimatedGearWeight(
+    gear: readonly WeightedGearItem[]
+): EstimatedGearWeight {
+    return gear.reduce<EstimatedGearWeight>(
+        (estimate, item) => {
+            const weight = item.weight_kg;
+            if (typeof weight === 'number' && Number.isFinite(weight) && weight > 0) {
+                estimate.totalKg += weight;
+                estimate.knownItemCount += 1;
+            } else {
+                estimate.unknownItemCount += 1;
+            }
+            return estimate;
+        },
+        { totalKg: 0, knownItemCount: 0, unknownItemCount: 0 }
+    );
 }
 
-export function calculateOverallReadiness(scores: {
-    gear: number;
-    meals: number;
-    weather: number;
-    offline: number;
-    timeline: number;
-}): ReadinessScore {
-    const overall = Math.round(
-        scores.gear * READINESS_WEIGHTS.gear +
-        scores.meals * READINESS_WEIGHTS.meals +
-        scores.weather * READINESS_WEIGHTS.weather +
-        scores.offline * READINESS_WEIGHTS.offline +
-        scores.timeline * READINESS_WEIGHTS.timeline
-    );
-    return {
-        overall,
-        label: getReadinessLabel(overall),
-        ...scores,
-    };
+export function formatEstimatedGearWeight(estimate: EstimatedGearWeight): string {
+    if (estimate.knownItemCount === 0) {
+        return estimate.unknownItemCount === 0 ? '0 kg' : '—';
+    }
+
+    const roundedKg = Math.round((estimate.totalKg + Number.EPSILON) * 10) / 10;
+    const formattedKg = Number.isInteger(roundedKg)
+        ? roundedKg.toFixed(0)
+        : roundedKg.toFixed(1);
+    const approximation = estimate.unknownItemCount > 0 ? '~' : '';
+
+    return `${approximation}${formattedKg} kg`;
 }
 
 // ─── Astro Helpers ────────────────────────────────────────

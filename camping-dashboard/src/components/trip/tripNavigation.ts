@@ -12,7 +12,7 @@ export const TRIP_PRIMARY_DESTINATIONS: readonly TripDestination[] = [
   { label: 'Plan', segment: 'plan', icon: CalendarDays },
   { label: 'Gear', segment: 'gear', icon: Backpack },
   { label: 'Crew', segment: 'crew', icon: Users },
-  { label: 'Guide', segment: 'guide', icon: Compass },
+  { label: 'Field', segment: 'guide', icon: Compass },
 ];
 
 export function tripDestinationHref(tripId: string, segment: string) {

@@ -12,6 +12,8 @@ import { getDaylightSummary, getDaylightWindow } from '@/lib/daylight';
 import { Card } from '@/components/ui/Primitives';
 import { useTheme } from '@/lib/themeContext';
 import { useTrip } from '@/lib/tripContext';
+import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
+import { cachedWeatherPresentation } from '@/lib/offlineFreshness';
 import {
     AlertCircle,
     Check,
@@ -177,9 +179,14 @@ export default function WeatherCard({
 }: WeatherCardProps) {
     const { labels } = useTheme();
     const { canEdit } = useTrip();
+    const workspace = useOptionalTripWorkspaceStatus();
     const [refreshState, setRefreshState] = useState<RefreshState>('idle');
     const [localNow, setLocalNow] = useState<Date | null>(null);
     const statusMessage = syncMessage(weather, weatherRefresh);
+    const cachedPresentation = workspace?.source === 'cache'
+        ? cachedWeatherPresentation(weather, weatherRefresh, forecast)
+        : null;
+    const displayForecast = cachedPresentation?.futureForecast ?? forecast;
 
     useEffect(() => {
         if (variant !== 'home') return;
@@ -223,7 +230,7 @@ export default function WeatherCard({
         : refreshState === 'error'
             ? AlertCircle
             : RefreshCw;
-    const homeUpdatedTime = updatedTime(weather, weatherRefresh);
+    const homeUpdatedTime = cachedPresentation?.label ?? updatedTime(weather, weatherRefresh);
     const homeHeaderAction = variant === 'home' ? (
         <div className="home-weather-header-action">
             {homeUpdatedTime && (
@@ -279,7 +286,7 @@ export default function WeatherCard({
         ] : [];
         return (
             <Card
-                title="Weather"
+                title={cachedPresentation?.isPrevious ? 'Previous conditions' : 'Weather'}
                 icon={CloudRain}
                 action={homeHeaderAction}
                 className="home-weather-card home-glass-surface home-glass-surface--dense"
@@ -331,6 +338,11 @@ export default function WeatherCard({
                         {homeStatusMessage}
                     </p>
                 )}
+                {cachedPresentation ? (
+                    <p className="weather-current-status home-weather-status" title={cachedPresentation.exactTimestamp ?? undefined}>
+                        {cachedPresentation.label}
+                    </p>
+                ) : null}
 
                 {daylightWindow && (
                     <div
@@ -382,9 +394,9 @@ export default function WeatherCard({
 
                 <div className="home-weather-forecast">
                     <p className="home-weather-forecast__label">5-day forecast</p>
-                    {forecast.length > 0 ? (
+                    {displayForecast.length > 0 ? (
                         <div className="home-weather-forecast__days">
-                            {forecast.slice(0, 5).map((day, index) => {
+                            {displayForecast.slice(0, 5).map((day, index) => {
                                 return (
                                     <div
                                         key={day.id}
@@ -439,13 +451,14 @@ export default function WeatherCard({
 
     if (!weather) {
         return (
-            <Card title={labels.weather} icon={CloudRain} className="h-full">
+            <Card title={cachedPresentation?.isPrevious ? 'Previous conditions' : labels.weather} icon={CloudRain} className="h-full">
                 <div className="min-h-48 flex items-center justify-center text-center text-sm text-text-muted">
                     Weather has not been refreshed for this campsite yet.
                 </div>
                 {statusMessage && (
                     <p className="text-xs text-text-muted text-center">{statusMessage}</p>
                 )}
+                {cachedPresentation ? <p className="mt-3 text-center text-xs text-text-muted">{cachedPresentation.label}</p> : null}
                 {refreshControl}
             </Card>
         );
@@ -471,7 +484,7 @@ export default function WeatherCard({
     ];
 
     return (
-        <Card title={labels.weather} icon={CloudRain} className="h-full">
+        <Card title={cachedPresentation?.isPrevious ? 'Previous conditions' : labels.weather} icon={CloudRain} className="h-full">
             <div className="weather-current-summary mb-6 flex items-center gap-4">
                 <Star
                     size={48}
@@ -487,6 +500,11 @@ export default function WeatherCard({
                     </div>
                 </div>
             </div>
+            {cachedPresentation ? (
+                <p className="mb-4 text-xs text-text-muted" title={cachedPresentation.exactTimestamp ?? undefined}>
+                    {cachedPresentation.label}
+                </p>
+            ) : null}
 
             <div className="weather-current-stats flex-1 space-y-3">
                 {stats.map((stat) => (

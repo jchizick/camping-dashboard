@@ -4,19 +4,10 @@ import React, { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { ThemeProvider } from '@/lib/themeContext';
+import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
 import CampsiteMapSelector, { type CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
+import ManualCampsiteEntry from '@/components/maps/ManualCampsiteEntry';
 import { ArrowLeft, Loader2, MapPin, Plus, RotateCcw } from 'lucide-react';
-
-const APP_SHELL_SETTINGS = {
-  trip_id: '',
-  manual_theme_override: 'day' as const,
-  preferred_units: 'metric' as const,
-  show_astro: false,
-  show_meals: false,
-  show_offline: false,
-  show_crew: false,
-  theme_variant: 'clean' as const,
-};
 
 export default function NewTripPage() {
   return (
@@ -28,7 +19,7 @@ export default function NewTripPage() {
   );
 }
 
-function NewTripContent() {
+export function NewTripContent() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +31,7 @@ function NewTripContent() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [campsite, setCampsite] = useState<CampsiteSelection | null>(null);
+  const [manualLocationOpen, setManualLocationOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/trips');
@@ -61,12 +53,19 @@ function NewTripContent() {
 
   const canSubmit = requirements.length === 0 && !isSubmitting;
 
+  function openManualLocation() {
+    setManualLocationOpen(true);
+    requestAnimationFrame(() => {
+      document.getElementById('manual-campsite-latitude')?.focus();
+    });
+  }
+
   if (authLoading || !user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="flex items-center gap-3 text-text-muted text-sm">
+      <main className="trip-create-state">
+        <div className="trip-create-state__message">
           <Loader2 size={18} className="animate-spin" />
-          Loading…
+          Preparing trip setup…
         </div>
       </main>
     );
@@ -111,44 +110,42 @@ function NewTripContent() {
   }
 
   return (
-    <main className="min-h-screen bg-app-bg p-4 sm:p-6 md:p-8 font-sans">
-      <div className="max-w-[1100px] mx-auto">
-        <button
-          type="button"
-          onClick={() => router.push('/trips')}
-          className="inline-flex items-center gap-1.5 text-text-muted text-sm bg-transparent border-none cursor-pointer mb-8 p-0 hover:text-text-main transition-colors"
-        >
-          <ArrowLeft size={14} /> Back to Trips
-        </button>
+    <main className="trip-create" data-entry-flow="create-trip">
+      <div className="trip-create__canvas">
+        <header className="trip-create__header">
+          <button
+            type="button"
+            onClick={() => router.push('/trips')}
+            className="trip-create__back"
+          >
+            <ArrowLeft size={16} aria-hidden="true" /> Back to Trips
+          </button>
 
-        <h1 className="text-text-main text-2xl font-bold mb-2">Create New Trip</h1>
-        <p className="text-text-muted text-sm mb-8 leading-relaxed">
-          Add the trip details, then search and place the campsite marker precisely on the map.
-        </p>
+          <div className="trip-create__identity">
+            <p>Field Protocol</p>
+            <h1 data-mobile-type-role="page-title">Create Trip</h1>
+            <span>Set the basics now. You can refine the plan later.</span>
+          </div>
+        </header>
 
         {error && (
           <div
-            className="p-3 mb-6 rounded-lg text-sm border"
+            className="trip-create__error"
             role="alert"
-            style={{
-              background: 'color-mix(in srgb, var(--accent-red) 8%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--accent-red) 25%, transparent)',
-              color: 'var(--accent-red)',
-            }}
           >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] gap-6 lg:gap-8 items-start">
-          <section className="rounded-xl border border-border-subtle bg-card-bg p-5 sm:p-6 space-y-5">
-            <div>
-              <h2 className="text-text-main text-lg font-semibold">Trip details</h2>
-              <p className="mt-1 text-xs text-text-muted">Destination names remain editable trip details and are not replaced by map search results.</p>
+        <form onSubmit={handleSubmit} className="trip-create__form">
+          <section className="trip-create__surface trip-create__details" aria-labelledby="trip-details-heading">
+            <div className="trip-create__section-heading">
+              <h2 id="trip-details-heading">Trip details</h2>
+              <p>Destination names stay editable and are not replaced by map search results.</p>
             </div>
 
-            <div>
-              <label htmlFor="trip-name" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+            <div className="trip-create__field">
+              <label htmlFor="trip-name" className="trip-create__label">
                 Trip Name *
               </label>
               <input
@@ -157,13 +154,13 @@ function NewTripContent() {
                 onChange={(event) => setName(event.target.value)}
                 placeholder="e.g. Algonquin Backcountry"
                 required
-                className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20 placeholder:text-text-muted/50"
+                className="trip-create__input"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="trip-start" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+            <div className="trip-create__field-grid">
+              <div className="trip-create__field">
+                <label htmlFor="trip-start" className="trip-create__label">
                   Start Date *
                 </label>
                 <input
@@ -172,11 +169,11 @@ function NewTripContent() {
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20"
+                  className="trip-create__input"
                 />
               </div>
-              <div>
-                <label htmlFor="trip-end" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+              <div className="trip-create__field">
+                <label htmlFor="trip-end" className="trip-create__label">
                   End Date *
                 </label>
                 <input
@@ -187,14 +184,14 @@ function NewTripContent() {
                   onChange={(event) => setEndDate(event.target.value)}
                   required
                   aria-invalid={Boolean(dateError)}
-                  className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20"
+                  className="trip-create__input"
                 />
               </div>
             </div>
-            {dateError && <p className="text-xs text-accent-red" role="alert">{dateError}</p>}
+            {dateError && <p className="trip-create__field-error" role="alert">{dateError}</p>}
 
-            <div>
-              <label htmlFor="trip-park" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+            <div className="trip-create__field">
+              <label htmlFor="trip-park" className="trip-create__label">
                 Park Name
               </label>
               <input
@@ -202,13 +199,13 @@ function NewTripContent() {
                 value={parkName}
                 onChange={(event) => setParkName(event.target.value)}
                 placeholder="e.g. Algonquin Provincial Park"
-                className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20 placeholder:text-text-muted/50"
+                className="trip-create__input"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="trip-lake" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+            <div className="trip-create__field-grid">
+              <div className="trip-create__field">
+                <label htmlFor="trip-lake" className="trip-create__label">
                   Lake / Destination
                 </label>
                 <input
@@ -216,11 +213,11 @@ function NewTripContent() {
                   value={lakeName}
                   onChange={(event) => setLakeName(event.target.value)}
                   placeholder="e.g. Maple Lake"
-                  className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20 placeholder:text-text-muted/50"
+                  className="trip-create__input"
                 />
               </div>
-              <div>
-                <label htmlFor="trip-site" className="block text-text-muted text-xs font-semibold uppercase tracking-wide mb-1.5">
+              <div className="trip-create__field">
+                <label htmlFor="trip-site" className="trip-create__label">
                   Site
                 </label>
                 <input
@@ -228,27 +225,27 @@ function NewTripContent() {
                   value={siteName}
                   onChange={(event) => setSiteName(event.target.value)}
                   placeholder="e.g. Site 4"
-                  className="w-full px-3.5 py-2.5 bg-app-bg border border-border-subtle rounded-lg text-text-main text-sm outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow/20 placeholder:text-text-muted/50"
+                  className="trip-create__input"
                 />
               </div>
             </div>
           </section>
 
-          <section className="rounded-xl border border-border-subtle bg-card-bg p-5 sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <section className="trip-create__surface trip-create__location" aria-labelledby="campsite-location-heading">
+            <div className="trip-create__section-heading trip-create__section-heading--map">
               <div>
-                <h2 className="flex items-center gap-2 text-text-main text-lg font-semibold">
+                <h2 id="campsite-location-heading">
                   <MapPin size={18} className="text-accent-blue" /> Campsite location *
                 </h2>
-                <p className="mt-1 text-xs text-text-muted">
-                  Search for the area, then click the exact campsite. Click again or drag the marker to refine it.
+                <p>
+                  Search and place the campsite on the map, or enter exact coordinates manually.
                 </p>
               </div>
               {campsite && (
                 <button
                   type="button"
                   onClick={() => setCampsite(null)}
-                  className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-main"
+                  className="trip-create__reset"
                 >
                   <RotateCcw size={13} /> Reset selection
                 </button>
@@ -259,10 +256,29 @@ function NewTripContent() {
               value={campsite}
               onChange={setCampsite}
               mapStyle="openstreetmap"
-              className="h-[430px] min-h-[330px]"
+              className="trip-create__map"
+              onManualEntry={openManualLocation}
             />
 
-            <div className="mt-4 rounded-lg border border-border-subtle bg-app-bg/60 p-3 font-mono text-xs text-text-muted" aria-live="polite">
+            <button
+              type="button"
+              onClick={openManualLocation}
+              aria-expanded={manualLocationOpen}
+              aria-controls="manual-campsite-entry"
+              className="trip-create__manual-toggle"
+            >
+              Enter coordinates manually
+            </button>
+
+            {manualLocationOpen ? (
+              <ManualCampsiteEntry
+                value={campsite}
+                suggestedLabel={siteName || lakeName || parkName || null}
+                onApply={setCampsite}
+              />
+            ) : null}
+
+            <div className="trip-create__location-summary" aria-live="polite">
               {campsite ? (
                 <>
                   Latitude <span className="text-text-main">{campsite.latitude.toFixed(6)}</span>
@@ -270,22 +286,22 @@ function NewTripContent() {
                   Longitude <span className="text-text-main">{campsite.longitude.toFixed(6)}</span>
                 </>
               ) : (
-                'No campsite selected yet.'
+                <span className="trip-create__location-empty">No campsite selected yet.</span>
               )}
             </div>
           </section>
 
-          <div className="lg:col-span-2">
+          <div className="trip-create__submit-region">
             {requirements.length > 0 && (
-              <p className="mb-3 text-sm text-text-muted" id="create-trip-requirements">
-                To create this trip, add: <span className="text-text-main">{requirements.join(', ')}</span>.
+              <p className="trip-create__requirements" id="create-trip-requirements">
+                To create this trip, add: <strong>{requirements.join(', ')}</strong>.
               </p>
             )}
             <button
               type="submit"
               disabled={!canSubmit}
               aria-describedby={requirements.length ? 'create-trip-requirements' : undefined}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm transition-all hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none bg-accent-yellow text-white"
+              className="trip-create__submit"
             >
               {isSubmitting ? (
                 <><Loader2 size={18} className="animate-spin" /> Creating trip…</>

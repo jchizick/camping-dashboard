@@ -1,4 +1,5 @@
-import type { ReadinessScore, WeatherCurrent } from '@/types';
+import type { WeatherCurrent } from '@/types';
+import type { ReadinessResult } from '@/lib/readiness';
 import { Activity, CalendarClock, CloudSun, Sunset } from 'lucide-react';
 import type { HomeScheduleSummary } from './homeSelectors';
 
@@ -14,7 +15,7 @@ export default function TripSituationRail({
   schedule,
 }: {
   weather: WeatherCurrent | null;
-  readiness: ReadinessScore;
+  readiness: ReadinessResult;
   schedule: HomeScheduleSummary;
 }) {
   const nextEvent = schedule.events[0] ?? null;
@@ -31,9 +32,9 @@ export default function TripSituationRail({
       key: 'readiness',
       label: 'Readiness',
       icon: Activity,
-      value: `${readiness.overall}%`,
-      detail: readiness.label,
-      progress: readiness.overall,
+      value: readiness.score === null ? 'Unavailable' : `${readiness.score}%`,
+      detail: readiness.statusLabel,
+      progress: readiness.score ?? undefined,
     },
     {
       key: 'sunset',

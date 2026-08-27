@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CrewMember } from '@/types';
 import CrewRosterCard, { getCrewLoadRows, splitResponsibilities } from './CrewRosterCard';
@@ -17,6 +17,7 @@ vi.mock('@/components/cards/CrewFormSheet', () => ({
 const member = (overrides: Partial<CrewMember>): CrewMember => ({
     id: 'crew-test',
     trip_id: 'trip-test',
+    trip_member_id: null,
     name: 'Jordan',
     role: 'Navigator',
     load_item: 'SHELTER SYSTEM + SAFETY CORE',
@@ -114,5 +115,22 @@ describe('CrewRosterCard', () => {
         expect(container.querySelector('.crew-member-card__notes')).toBeTruthy();
         expect(container.querySelector('.crew-member-card__systems')).toBeTruthy();
         expect(container.querySelector('.crew-member-card__metrics')).toBeTruthy();
+    });
+
+    it('reports Gear and Meal impact before deleting a Crew member', () => {
+        const jordan = member({});
+        render(
+            <CrewRosterCard
+                crew={[jordan]}
+                gear={[{ id: 'gear', responsible_crew_member_id: jordan.id } as never]}
+                meals={[{ id: 'meal', prep_crew_member_id: jordan.id } as never]}
+                onDelete={vi.fn()}
+            />
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Remove Jordan' }));
+        expect(screen.getByRole('alert').textContent).toContain(
+            '1 Gear item and 1 meal will become unassigned'
+        );
     });
 });
