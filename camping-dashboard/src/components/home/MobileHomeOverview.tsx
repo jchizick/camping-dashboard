@@ -17,6 +17,7 @@ import {
   Sunset,
 } from 'lucide-react';
 import PriorityAlertCard from './PriorityAlertCard';
+import ReadinessGauge from './ReadinessGauge';
 import TripHero from './TripHero';
 import type { HomeSetupContext, HomeViewModel } from './homeViewModel';
 import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
@@ -113,7 +114,10 @@ function MobileReadinessCommandCentre({
         Readiness command
       </div>
 
-      <div className="mobile-readiness-command__status">
+      <div
+        className="mobile-readiness-command__status"
+        data-comparable={showPrimaryScore ? 'true' : 'false'}
+      >
         {showPrimaryScore ? (
           <p
             className="mobile-readiness-command__score"
@@ -144,18 +148,11 @@ function MobileReadinessCommandCentre({
         </div>
       </div>
 
-      {showPrimaryScore ? (
-        <div
-          className="mobile-readiness-command__progress"
-          role="progressbar"
-          aria-label="Overall trip readiness"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={readiness.score ?? undefined}
-          aria-valuetext={`${readiness.score}% · ${readiness.statusLabel}`}
-        >
-          <span style={{ width: `${readiness.score}%` }} />
-        </div>
+      {showPrimaryScore && readiness.score !== null ? (
+        <ReadinessGauge
+          score={readiness.score}
+          statusLabel={readiness.statusLabel}
+        />
       ) : null}
 
       <div

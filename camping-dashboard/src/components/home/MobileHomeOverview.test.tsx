@@ -14,6 +14,7 @@ import type {
 import { evaluateReadiness, type EvaluateReadinessInput } from '@/lib/readiness';
 import type { HomeViewModel } from './homeViewModel';
 import MobileHomeOverview from './MobileHomeOverview';
+import ReadinessGauge from './ReadinessGauge';
 
 vi.mock('@/components/cards/MapRouteCard', () => ({
   default: () => <div data-testid="mobile-map">Map context</div>,
@@ -112,6 +113,37 @@ function homeModel(
 afterEach(cleanup);
 
 describe('MobileHomeOverview readiness command centre', () => {
+  it('renders the exact comparable score as a measured instrument gauge', () => {
+    const result = {
+      ...readiness({
+        gear: [gearItem({ acquired: false, packed: false })],
+      }),
+      score: 43,
+      scoreStatus: 'not-ready' as const,
+      status: 'not-ready' as const,
+      statusLabel: 'Not Ready',
+    };
+    render(<MobileHomeOverview model={homeModel(result)} />);
+
+    expect(screen.getByText('43')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Not Ready' })).toBeTruthy();
+
+    const gauge = screen.getByRole('progressbar', {
+      name: 'Overall trip readiness',
+    });
+    expect(gauge.getAttribute('aria-valuenow')).toBe('43');
+    expect(gauge.getAttribute('aria-valuetext')).toBe('43% · Not Ready');
+    expect(gauge.querySelector('[data-readiness-fill]')?.getAttribute('style'))
+      .toContain('clip-path: inset(0 57% 0 0)');
+    expect(gauge.querySelector('[data-readiness-marker]')?.getAttribute('style'))
+      .toContain('left: 43%');
+    expect(gauge.querySelector('[data-readiness-marker-notch]')).toBeTruthy();
+
+    for (const landmark of ['25%', '50%', '75%', '100%']) {
+      expect(within(gauge).getByText(landmark)).toBeTruthy();
+    }
+  });
+
   it('leads with Required Gear setup before a fresh-trip Meal warning', () => {
     const result = readiness({
       gear: [],
@@ -223,6 +255,7 @@ describe('MobileHomeOverview readiness command centre', () => {
     expect(screen.queryByText('Locked In')).toBeNull();
     expect(screen.queryByRole('progressbar', { name: 'Overall trip readiness' }))
       .toBeNull();
+    expect(document.querySelector('[data-readiness-gauge]')).toBeNull();
     expect(screen.getByRole('link', { name: 'Review gear' }).getAttribute('href'))
       .toBe('/trips/trip-1/gear');
   });
@@ -237,6 +270,22 @@ describe('MobileHomeOverview readiness command centre', () => {
     expect(screen.getByText('No readiness score is available.')).toBeTruthy();
     expect(screen.queryByRole('progressbar', { name: 'Overall trip readiness' }))
       .toBeNull();
+    expect(document.querySelector('[data-readiness-gauge]')).toBeNull();
+  });
+});
+
+describe('ReadinessGauge score marker edges', () => {
+  it.each([
+    { score: 0, edge: 'start', clip: 'inset(0 100% 0 0)' },
+    { score: 100, edge: 'end', clip: 'inset(0 0% 0 0)' },
+  ])('keeps the $score% marker notch inside the $edge edge', ({ score, edge, clip }) => {
+    render(<ReadinessGauge score={score} statusLabel="Not Ready" />);
+
+    const marker = document.querySelector('[data-readiness-marker]');
+    expect(marker?.getAttribute('data-edge')).toBe(edge);
+    expect(marker?.querySelector('[data-readiness-marker-notch]')).toBeTruthy();
+    expect(document.querySelector('[data-readiness-fill]')?.getAttribute('style'))
+      .toContain(`clip-path: ${clip}`);
   });
 });
 

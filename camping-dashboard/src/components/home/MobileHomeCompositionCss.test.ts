@@ -24,6 +24,9 @@ describe('Mobile Home composition CSS boundary', () => {
     expect(endMarker).toBeGreaterThan(marker);
     expect(mobileBlock).toContain('.mobile-home-overview');
     expect(mobileBlock).toContain('.mobile-readiness-command');
+    expect(mobileBlock).toContain('.mobile-readiness-gauge');
+    expect(mobileBlock).toContain('.mobile-readiness-gauge__marker');
+    expect(mobileBlock).toContain('.mobile-readiness-gauge__landmarks');
     expect(mobileBlock).toContain('.mobile-trip-context');
     expect(mobileBlock).toContain('.mobile-home-schedule');
     expect(milestoneCss).not.toContain('@media (min-width:');
