@@ -10,7 +10,7 @@ import AuthenticatedTripsLoader from './AuthenticatedTripsLoader';
 afterEach(cleanup);
 
 describe('AuthenticatedTripsLoader', () => {
-  it('renders the canonical logo fragments with one accessible loading status', () => {
+  it('renders the canonical logo geometry inline with one accessible loading status', () => {
     const { container } = render(<AuthenticatedTripsLoader />);
 
     const status = screen.getByRole('status');
@@ -19,25 +19,44 @@ describe('AuthenticatedTripsLoader', () => {
     expect(status.getAttribute('aria-atomic')).toBe('true');
     expect(container.querySelector('main')?.getAttribute('aria-busy')).toBe('true');
 
-    const uses = Array.from(container.querySelectorAll('use'));
-    expect(uses.map((use) => use.getAttribute('href'))).toEqual([
-      '/logo.svg#waypoint-shield',
-      '/logo.svg#waypoint-route',
-      '/logo.svg#waypoint-pin',
-      '/logo.svg#waypoint-pin',
-    ]);
+    expect(container.querySelector('use')).toBeNull();
+    expect(container.querySelectorAll('[data-logo-part]')).toHaveLength(4);
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelector('.trip-workspace-state-panel')).toBeNull();
   });
 
-  it('keeps the canonical asset addressable for drawing and reduced-motion fallback', () => {
+  it('matches the canonical asset paths exactly and keeps the route directly animatable', () => {
+    const { container } = render(<AuthenticatedTripsLoader />);
     const logo = readFileSync(resolve(process.cwd(), 'public/logo.svg'), 'utf8');
     const css = readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8');
+    const canonicalLogo = new DOMParser().parseFromString(logo, 'image/svg+xml');
+    const normalizePath = (path: string | null | undefined) => path?.replace(/\s+/g, '') ?? '';
+
+    const canonicalShield = canonicalLogo.querySelector('#waypoint-shield');
+    const canonicalRoute = canonicalLogo.querySelector('#waypoint-route');
+    const canonicalPin = canonicalLogo.querySelector('#waypoint-pin');
+    const inlineShield = container.querySelector('[data-logo-part="shield"]');
+    const inlineRoute = container.querySelector('[data-logo-part="route"]');
+    const inlinePin = container.querySelector('[data-logo-part="waypoint"]');
+    const inlineGlow = container.querySelector('[data-logo-part="waypoint-glow"]');
 
     expect(logo).toContain('id="waypoint-shield"');
     expect(logo).toContain('id="waypoint-route"');
     expect(logo).toContain('pathLength="1"');
     expect(logo).toContain('id="waypoint-pin"');
+    expect(normalizePath(inlineShield?.getAttribute('d'))).toBe(
+      normalizePath(canonicalShield?.getAttribute('d') ?? null)
+    );
+    expect(normalizePath(inlineRoute?.getAttribute('d'))).toBe(
+      normalizePath(canonicalRoute?.getAttribute('d') ?? null)
+    );
+    expect(normalizePath(inlinePin?.getAttribute('d'))).toBe(
+      normalizePath(canonicalPin?.getAttribute('d') ?? null)
+    );
+    expect(inlineGlow?.getAttribute('d')).toBe(inlinePin?.getAttribute('d'));
+    expect(inlineRoute?.getAttribute('pathLength')).toBe('1');
+    expect(inlineRoute?.getAttribute('stroke')).toBe('#E4A83D');
+    expect(inlineRoute?.getAttribute('fill')).toBe('none');
 
     const entryFlowCss = css.slice(css.indexOf('/* Authenticated entry flow'));
     expect(entryFlowCss).toMatch(
