@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/lib/themeContext';
 import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
 import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
 import { SignedOutLanding } from '@/components/trips/SignedOutLanding';
+import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoader';
 import { EmptyTripsState, TripsWelcome } from '@/components/trips/TripsLandingOnboarding';
 import {
   canDeleteTrip,
@@ -313,7 +314,7 @@ export function TripsContent() {
   }
 
   if (isLoading) {
-    return <main className="trips-auth-state"><div className="trips-loading"><Loader2 size={20} className="animate-spin" /> Preparing base camp…</div></main>;
+    return <AuthenticatedTripsLoader />;
   }
 
   return (

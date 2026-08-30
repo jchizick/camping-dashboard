@@ -13,6 +13,7 @@ import TripMoreMenu from './TripMoreMenu';
 import TripPrimaryNav from './TripPrimaryNav';
 import TripSidebar from './TripSidebar';
 import TripWorkspaceBackground from './TripWorkspaceBackground';
+import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoader';
 import { useTripWorkspace } from './TripWorkspaceProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
@@ -21,50 +22,6 @@ type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
   name: AppInfoDialogName;
   pathname: string;
-}
-
-function WorkspaceLoading() {
-  return (
-    <div className="trip-workspace-state-frame">
-      <TripWorkspaceBackground />
-      <main className="relative z-10 flex min-h-[100dvh] items-center justify-center p-6 font-sans">
-      <style>{`
-        @keyframes spin-slow { to { transform: rotate(360deg); } }
-        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
-        @keyframes pulse-ring {
-          0% { transform: scale(0.8); opacity: 0.6; }
-          50% { transform: scale(1.15); opacity: 0.2; }
-          100% { transform: scale(0.8); opacity: 0.6; }
-        }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <div
-        className="trip-workspace-state-panel flex flex-col items-center gap-8 px-8 py-10 text-center [animation:fade-up_0.6s_ease_forwards]"
-        role="status"
-        aria-live="polite"
-      >
-        <div className="relative flex h-[120px] w-[120px] items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-accent-yellow/25 [animation:pulse-ring_2.4s_ease-in-out_infinite]" />
-          <div className="absolute inset-3 rounded-full border border-accent-yellow/35 [animation:pulse-ring_2.4s_ease-in-out_infinite_0.4s]" />
-          <div className="absolute inset-1 rounded-full border-2 border-transparent border-r-accent-yellow/20 border-t-accent-yellow/70 [animation:spin-slow_1.8s_linear_infinite]" />
-          <div className="absolute inset-5 rounded-full border border-transparent border-b-accent-yellow/50 border-l-accent-yellow/15 [animation:spin-reverse_1.2s_linear_infinite]" />
-          <div className="h-2 w-2 rounded-full bg-accent-yellow shadow-[0_0_12px_3px_color-mix(in_srgb,var(--accent-yellow)_50%,transparent)]" />
-        </div>
-        <p className="text-sm font-semibold uppercase tracking-widest">
-          Loading Trip Dashboard
-          <span className="[animation:blink_1.2s_step-end_infinite]">_</span>
-        </p>
-      </div>
-      </main>
-    </div>
-  );
 }
 
 export default function TripAppShell({ children }: { children: React.ReactNode }) {
@@ -176,7 +133,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     );
   }
 
-  if (!data || !trip || roleLoading || isLoading) return <WorkspaceLoading />;
+  if (!data || !trip || roleLoading || isLoading) return <AuthenticatedTripsLoader />;
 
   return (
     <div className="trip-workspace-shell min-h-[100dvh] text-text-main" data-trip-app-shell>

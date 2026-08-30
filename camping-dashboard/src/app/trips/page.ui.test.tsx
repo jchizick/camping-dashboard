@@ -114,6 +114,16 @@ describe('Trips landing onboarding states', () => {
 });
 
 describe('authenticated Trips source states', () => {
+  it('uses the shared branded loader while authentication is resolving', () => {
+    appMocks.auth.isLoading = true;
+
+    const { container } = render(<TripsContent />);
+
+    expect(screen.getByRole('status').textContent).toContain('PREPARING BASE CAMP…');
+    expect(container.querySelector('[data-authenticated-trips-loader]')).toBeTruthy();
+    expect(appMocks.fetchUserTrips).not.toHaveBeenCalled();
+  });
+
   it('renders first-trip onboarding only after a successful empty result', async () => {
     render(<TripsContent />);
 

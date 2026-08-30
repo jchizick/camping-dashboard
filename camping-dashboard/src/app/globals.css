@@ -5055,7 +5055,8 @@ body {
    A pre-trip shell: global destinations only, with no selected-trip context.
    ============================================================ */
 .trips-landing,
-.trips-auth-state {
+.trips-auth-state,
+.authenticated-trips-loader {
   --trips-canvas: #071611;
   --trips-surface: rgba(15, 35, 27, 0.82);
   --trips-surface-raised: rgba(22, 45, 35, 0.88);
@@ -5075,7 +5076,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.trips-landing {
+.trips-landing,
+.authenticated-trips-loader {
   min-height: 100dvh;
   background:
     linear-gradient(115deg, rgba(3, 17, 12, 0.96), rgba(5, 24, 17, 0.92)),
@@ -5083,7 +5085,8 @@ body {
   isolation: isolate;
 }
 
-.trips-landing::before {
+.trips-landing::before,
+.authenticated-trips-loader::before {
   position: fixed;
   inset: 0;
   z-index: -1;
@@ -5583,7 +5586,91 @@ body {
 .trips-auth-state__card { width: min(100%, 29rem); padding: 2rem; border: 1px solid var(--trips-border); border-radius: var(--trips-radius-hero); background: rgba(7, 25, 19, 0.84); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42); backdrop-filter: blur(20px); }
 .trips-auth-state__card h1 { margin: 2.5rem 0 0; font-size: clamp(2.2rem, 8vw, 3.3rem); line-height: 1; letter-spacing: -0.025em; }
 .trips-auth-state__card > p:not(.trips-error) { margin: 1rem 0 1.5rem; color: var(--trips-muted); line-height: 1.55; }
-.trips-loading { display: flex; align-items: center; gap: 0.75rem; color: var(--trips-muted); font-size: 0.875rem; }
+
+@keyframes authenticated-trip-route-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+  7% {
+    opacity: 1;
+  }
+  58%,
+  82% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  94%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes authenticated-trip-waypoint-signal {
+  0%,
+  58%,
+  82%,
+  100% {
+    opacity: 0;
+  }
+  67% {
+    opacity: 0.82;
+  }
+  74% {
+    opacity: 0.2;
+  }
+}
+
+.authenticated-trips-loader {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 1.5rem;
+  place-items: center;
+}
+
+.authenticated-trips-loader__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.authenticated-trips-loader__logo {
+  display: block;
+  width: clamp(6.25rem, 24vw, 7.5rem);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0.75rem 1.75rem rgba(0, 0, 0, 0.28));
+}
+
+.authenticated-trips-loader__route {
+  opacity: 0;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: authenticated-trip-route-draw 2.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.authenticated-trips-loader__waypoint-glow {
+  opacity: 0;
+  filter: drop-shadow(0 0 0.42rem rgba(228, 168, 61, 0.9));
+  animation: authenticated-trip-waypoint-signal 2.4s ease-in-out infinite;
+}
+
+.authenticated-trips-loader__content p {
+  margin: 0;
+  color: var(--trips-muted);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
 
 @media (min-width: 640px) {
   .trips-landing__canvas { padding: 2.5rem 1.5rem 4rem; }
@@ -5659,7 +5746,19 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .trips-landing *,
-  .trips-auth-state * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  .trips-auth-state *,
+  .authenticated-trips-loader * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+
+  .authenticated-trips-loader__route {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .authenticated-trips-loader__waypoint-glow {
+    opacity: 0;
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-data: reduce) {
@@ -10185,6 +10284,7 @@ body {
 /* Authenticated entry flow — Trips library and focused trip setup. */
 .trips-landing,
 .trips-auth-state,
+.authenticated-trips-loader,
 .trip-create,
 .trip-create-state {
   --entry-canvas: #071611;
@@ -10206,11 +10306,13 @@ body {
   font-family: var(--font-ui);
 }
 
-.trips-landing {
+.trips-landing,
+.authenticated-trips-loader {
   background: linear-gradient(180deg, rgba(4, 17, 13, 0.98), rgba(6, 24, 18, 0.96));
 }
 
-.trips-landing::before {
+.trips-landing::before,
+.authenticated-trips-loader::before {
   opacity: 0.26;
   background-image:
     radial-gradient(circle at 82% 12%, rgba(142, 191, 155, 0.08), transparent 28rem),
@@ -10749,6 +10851,7 @@ body {
 
 @media (max-width: 767px) {
   .trips-landing::before,
+  .authenticated-trips-loader::before,
   .trip-create::before,
   .trip-create-state::before {
     background-position: center;
@@ -10872,6 +10975,7 @@ body {
 
 @media (prefers-reduced-transparency: reduce) {
   .trips-landing::before,
+  .authenticated-trips-loader::before,
   .trip-create::before,
   .trip-create-state::before {
     opacity: 0;

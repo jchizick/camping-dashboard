@@ -348,15 +348,16 @@ describe('TripAppShell', () => {
     expect(document.querySelector('.trip-workspace-background img')).toBeNull();
   });
 
-  it('keeps loading and initialization retry states on the atmospheric fallback', () => {
+  it('uses the shared branded loader before preserving the initialization retry fallback', () => {
     mocks.trip.isLoading = true;
     const view = render(
       <TripAppShell>
         <h1>Secret section</h1>
       </TripAppShell>
     );
-    expect(screen.getByRole('status').textContent).toContain('Loading Trip Dashboard');
-    expect(document.querySelector('[data-background-state="fallback"]')).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toContain('PREPARING BASE CAMP…');
+    expect(document.querySelector('[data-authenticated-trips-loader]')).toBeTruthy();
+    expect(document.querySelector('.trip-workspace-background')).toBeNull();
 
     mocks.trip.isLoading = false;
     const reload = vi.fn();
