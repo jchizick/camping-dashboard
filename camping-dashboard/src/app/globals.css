@@ -11089,9 +11089,22 @@ body {
     line-height: 1.42;
   }
 
+  .trips-welcome[data-trips-state="populated"] .trips-primary-action > svg {
+    color: color-mix(in srgb, var(--entry-amber) 45%, var(--trips-canvas));
+  }
+
   .trips-feature {
     min-height: 23rem;
     padding: 1.25rem;
+    border-color: color-mix(in srgb, var(--entry-amber) 48%, transparent);
+  }
+
+  .trips-feature__status {
+    color: color-mix(in srgb, var(--entry-amber) 68%, var(--entry-muted));
+  }
+
+  .trips-feature__status > svg {
+    color: color-mix(in srgb, var(--entry-amber) 92%, var(--entry-ink));
   }
 
   .trips-feature__content {
@@ -11133,7 +11146,7 @@ body {
   .trips-feature__stat > svg {
     width: 1.75rem;
     height: 1.75rem;
-    color: var(--entry-sage);
+    color: var(--entry-amber);
     stroke-width: 2;
   }
 
