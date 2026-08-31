@@ -16,25 +16,43 @@ import { SignedOutLanding } from './SignedOutLanding';
 afterEach(cleanup);
 
 describe('SignedOutLanding', () => {
-  it('renders the approved marketing and expedition preview content', () => {
+  it('renders both responsive hero copy contracts with one heading and one Google action', () => {
     const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(container.querySelector('.signed-out-eyebrow .signed-out-copy--desktop')?.textContent).toBe(
+      'Your outdoor command centre'
+    );
+    expect(container.querySelector('h1 .signed-out-copy--desktop')?.textContent).toBe(
       'Plan the trip.Pack with confidence.Get outside.'
     );
+    expect(container.querySelector('.signed-out-lede .signed-out-copy--desktop')?.textContent).toBe(
+      'Organize your campsite, gear, crew, weather and daily plans in one shared camping workspace.'
+    );
+    expect(container.querySelector('.signed-out-eyebrow .signed-out-copy--mobile')?.textContent).toBe(
+      'Trip readiness, made clear'
+    );
+    expect(container.querySelector('h1 .signed-out-copy--mobile')?.textContent).toBe(
+      'Know whatneeds attention.Then head out.'
+    );
+    expect(container.querySelector('.signed-out-lede .signed-out-copy--mobile')?.textContent).toBe(
+      'Plan the trip, identify critical gear, coordinate preparation, and see the next action before you leave.'
+    );
+    expect(container.querySelectorAll('.signed-out-intro[aria-labelledby="signed-out-heading"]')).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Continue with Google' })).toHaveLength(1);
     const googleButton = screen.getByRole('button', { name: 'Continue with Google' });
     expect(googleButton).toBeTruthy();
     expect(googleButton.querySelector('img')?.getAttribute('src')).toBe('/google-g-logo.png');
+  });
+
+  it('keeps the existing desktop product proof content intact', () => {
+    const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+
     expect(container.textContent).toContain('ALGONQUIN CANOE TRIP');
     expect(container.textContent).toContain('3 nights');
     expect(container.textContent).toContain('23 km');
     expect(container.textContent).toContain('Packing status');
     expect(container.textContent).toContain('Weather');
-    expect(screen.getByRole('region', { name: 'Plan, pack and prepare' })).toBeTruthy();
-
-    for (const item of ['Campsite', 'Gear', 'Crew', 'Weather']) {
-      expect(screen.getByRole('region', { name: 'Plan, pack and prepare' }).textContent).toContain(item);
-    }
 
     for (const item of ['Tent', 'Sleeping Bag', 'Camp Stove', 'Headlamp', 'Water Filter', 'First Aid Kit']) {
       expect(container.textContent).toContain(item);
@@ -43,12 +61,40 @@ describe('SignedOutLanding', () => {
     expect(container.textContent).not.toContain('Route Summary');
   });
 
+  it('renders the mobile readiness inputs and canonical static assessment without fabricated detail', () => {
+    const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+    const inputRegion = screen.getByRole('region', { name: 'Readiness inputs' });
+    const assessment = screen.getByRole('region', { name: 'Readiness command' });
+    const mobileStory = container.querySelector('.signed-out-mobile-story');
+
+    expect(inputRegion.querySelectorAll('ol > li')).toHaveLength(4);
+    for (const item of ['Plan', 'Gear', 'Field Prep', 'Conditions']) {
+      expect(inputRegion.textContent).toContain(item);
+    }
+    expect(inputRegion.querySelector('[data-input-kind="context"]')?.textContent).toContain('Conditions');
+    expect(inputRegion.querySelector('[data-input-kind="context"]')?.textContent).toContain('Context');
+    expect(assessment.textContent).toContain('Example trip assessment');
+    expect(mobileStory?.textContent).toContain('Every trip signal, one field view');
+    expect(assessment.textContent).toContain('Readiness command');
+    expect(assessment.textContent).toContain('Needs Attention');
+    expect(assessment.textContent).toContain('1 blocker');
+    expect(assessment.textContent).toContain('Critical gear still needs to be acquired');
+    expect(assessment.textContent).toContain('Next action');
+    expect(assessment.textContent).toContain('Review gear');
+    expect(assessment.getAttribute('data-readiness-status')).toBe('needs-attention');
+    expect(assessment.getAttribute('data-issue-severity')).toBe('blocker');
+    expect(mobileStory?.textContent).not.toContain('Crew');
+    expect(mobileStory?.textContent).not.toMatch(/\d+%|\d+°|ALGONQUIN CANOE TRIP/i);
+    expect(assessment.querySelectorAll('button, a, input, select, textarea, [tabindex]')).toHaveLength(0);
+  });
+
   it('exposes the editorial, operational-display and UI typography boundaries', () => {
     const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
     const landing = container.querySelector('[data-signed-out-landing]');
 
     expect(landing?.getAttribute('data-signed-out-type-system')).toBe('editorial-operational-bridge');
     expect(screen.getByRole('heading', { level: 1 }).getAttribute('data-marketing-type-role')).toBe('editorial-hero');
+    expect(container.querySelector('h1 .signed-out-copy--mobile')?.getAttribute('data-marketing-type-role')).toBe('operational-hero');
     expect(container.querySelector('.signed-out-brand__name')?.getAttribute('data-marketing-type-role')).toBe('editorial-brand');
     expect(container.querySelector('.signed-out-eyebrow')?.getAttribute('data-marketing-type-role')).toBe('operational-display');
     expect(container.querySelector('.signed-out-lede')?.getAttribute('data-marketing-type-role')).toBe('ui-body');
@@ -61,7 +107,17 @@ describe('SignedOutLanding', () => {
     const css = fs.readFileSync(path.join(projectRoot, 'src/app/globals.css'), 'utf8');
 
     expect(fs.existsSync(path.join(projectRoot, 'public/topo-map-bg.svg'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'public/trips/signed-out-sunset-canoe-composed.webp'))).toBe(true);
     expect(css).toContain('--landing-topography: url("/topo-map-bg.svg")');
+    expect(css).toContain('background-image: url("/trips/signed-out-sunset-canoe-composed.webp")');
+    expect(css).toMatch(/@media \(prefers-reduced-transparency: reduce\)[\s\S]*?\.signed-out-landing__topo::before \{\s*display: none;/);
+    expect(css).toMatch(/@media \(prefers-reduced-data: reduce\)[\s\S]*?\.signed-out-landing__topo::before,[\s\S]*?display: none;/);
+  });
+
+  it('preserves a visible keyboard-focus contract for the shared Google action', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/app/globals.css'), 'utf8');
+
+    expect(css).toMatch(/\.signed-out-google:focus-visible \{[^}]*outline: 3px solid #8ab4f8;[^}]*outline-offset: 3px;/);
   });
 
   it('keeps preview and capability product labels in the UI type family', () => {

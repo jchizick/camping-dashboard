@@ -88,6 +88,9 @@ describe('Field Protocol mobile typography application', () => {
       /\.signed-out-intro h1 \{[^}]*font-family: var\(--font-trip-display\)/
     );
     expect(globalCss).toMatch(
+      /@media \(max-width: 767px\) \{[\s\S]*?\.signed-out-intro h1 \{[^}]*font-family: var\(--font-display\)/
+    );
+    expect(globalCss).toMatch(
       /\.type-technical \{[^}]*font-family: var\(--font-technical\)/
     );
   });
