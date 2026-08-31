@@ -238,13 +238,6 @@ export async function updateOfflineStatus(
         .from('offline_status')
         .upsert({
             trip_id: tripId,
-            maps_cached: false,
-            permit_saved: false,
-            daily_vehicle_permit_saved: false,
-            route_downloaded: false,
-            satellite_device_connected: false,
-            satellite_device_name: '',
-            emergency_contact_ready: false,
             ...patch,
         }, { onConflict: 'trip_id' })
         .select()

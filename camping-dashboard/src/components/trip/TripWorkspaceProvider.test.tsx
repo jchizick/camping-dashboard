@@ -466,6 +466,38 @@ function renderProvider(child: React.ReactNode = <WorkspaceProbe />) {
   );
 }
 
+function FieldPrepToggleProbe() {
+  const workspace = useTripWorkspace();
+  return (
+    <div>
+      <span data-testid="maps-ready">
+        {String(workspace.offlineStatus?.maps_cached ?? false)}
+      </span>
+      <span data-testid="permit-ready">
+        {String(workspace.offlineStatus?.permit_saved ?? false)}
+      </span>
+      <span data-testid="field-prep-score">
+        {workspace.readiness?.categories.offline.score ?? ''}
+      </span>
+      <button
+        type="button"
+        onClick={() => workspace.editableActions?.toggleOfflineStatus('maps_cached')}
+      >
+        Toggle maps
+      </button>
+      <button
+        type="button"
+        onClick={() => workspace.editableActions?.toggleOfflineStatus('permit_saved')}
+      >
+        Toggle permit
+      </button>
+      <button type="button" onClick={() => workspace.reload()}>
+        Reload Field Prep
+      </button>
+    </div>
+  );
+}
+
 function FieldPrepInitializationProbe() {
   const workspace = useTripWorkspace();
   return (
@@ -560,6 +592,67 @@ afterEach(() => {
 });
 
 describe('TripWorkspaceProvider loading and state', () => {
+  it('accumulates independent Field Prep confirmations and preserves them after reload', async () => {
+    let persistedStatus = {
+      trip_id: 'trip-1',
+      maps_cached: false,
+      permit_saved: false,
+      daily_vehicle_permit_saved: false,
+      route_downloaded: false,
+      satellite_device_connected: false,
+      satellite_device_name: '',
+      emergency_contact_ready: false,
+      updated_at: '2026-08-31T12:00:00Z',
+    } satisfies OfflineStatus;
+    const loaded = dashboardData({ gear: [] });
+    loaded.settings.show_offline = true;
+    loaded.offlineStatus = persistedStatus;
+    mocks.fetchDashboardData.mockImplementation(async () => ({
+      ...loaded,
+      offlineStatus: { ...persistedStatus },
+    }));
+    mocks.updateOfflineStatus.mockImplementation(async (_tripId, patch) => {
+      persistedStatus = { ...persistedStatus, ...patch };
+      return { data: { ...persistedStatus }, error: null };
+    });
+
+    renderProvider(<FieldPrepToggleProbe />);
+    await waitFor(() =>
+      expect(screen.getByTestId('field-prep-score').textContent).toBe('0')
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle maps' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('maps-ready').textContent).toBe('true');
+      expect(screen.getByTestId('permit-ready').textContent).toBe('false');
+      expect(screen.getByTestId('field-prep-score').textContent).toBe('17');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle permit' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('maps-ready').textContent).toBe('true');
+      expect(screen.getByTestId('permit-ready').textContent).toBe('true');
+      expect(screen.getByTestId('field-prep-score').textContent).toBe('33');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle maps' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('maps-ready').textContent).toBe('false');
+      expect(screen.getByTestId('permit-ready').textContent).toBe('true');
+      expect(screen.getByTestId('field-prep-score').textContent).toBe('17');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reload Field Prep' }));
+    await waitFor(() => expect(mocks.fetchDashboardData).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('maps-ready').textContent).toBe('false');
+    expect(screen.getByTestId('permit-ready').textContent).toBe('true');
+    expect(mocks.updateOfflineStatus.mock.calls.map(([, patch]) => patch)).toEqual([
+      { maps_cached: true },
+      { permit_saved: true },
+      { maps_cached: false },
+    ]);
+  });
+
   it('initializes the existing Field Prep record without completing any checks', async () => {
     const loaded = dashboardData({ gear: [] });
     loaded.offlineStatus = null;
