@@ -6,6 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NewTripContent } from './page';
 
 const push = vi.fn();
+const appMocks = vi.hoisted(() => ({
+  auth: {
+    user: { id: 'user-1' } as { id: string } | null,
+    isLoading: false,
+  },
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push, replace: vi.fn() }),
@@ -13,7 +19,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/authContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
-  useAuth: () => ({ user: { id: 'user-1' }, isLoading: false }),
+  useAuth: () => appMocks.auth,
 }));
 
 vi.mock('@/components/maps/CampsiteMapSelector', () => ({
@@ -52,6 +58,8 @@ vi.mock('@/components/maps/CampsiteMapSelector', () => ({
 
 beforeEach(() => {
   push.mockReset();
+  appMocks.auth.user = { id: 'user-1' };
+  appMocks.auth.isLoading = false;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
     callback(0);
     return 1;
@@ -64,6 +72,19 @@ afterEach(() => {
 });
 
 describe('authenticated Create Trip entry flow', () => {
+  it('reuses the canonical authenticated trips loader while setup is loading', () => {
+    appMocks.auth.isLoading = true;
+
+    const { container } = render(<NewTripContent />);
+
+    expect(screen.getByRole('status').textContent).toBe('PREPARING BASE CAMP…');
+    expect(container.querySelector('[data-authenticated-trips-loader]')).toBeTruthy();
+    expect(container.querySelector('[data-logo-part="route"]')).toBeTruthy();
+    expect(container.querySelector('.animate-spin')).toBeNull();
+    expect(screen.queryByText(/Preparing trip setup/i)).toBeNull();
+    expect(container.querySelector('[data-entry-flow="create-trip"]')).toBeNull();
+  });
+
   it('uses the authenticated layout hook while preserving native form semantics', () => {
     const { container } = render(<NewTripContent />);
 

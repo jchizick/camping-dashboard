@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/lib/themeContext';
 import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
 import CampsiteMapSelector, { type CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import ManualCampsiteEntry from '@/components/maps/ManualCampsiteEntry';
+import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoader';
 import { ArrowLeft, Loader2, MapPin, Plus, RotateCcw } from 'lucide-react';
 
 export default function NewTripPage() {
@@ -61,14 +62,7 @@ export function NewTripContent() {
   }
 
   if (authLoading || !user) {
-    return (
-      <main className="trip-create-state">
-        <div className="trip-create-state__message">
-          <Loader2 size={18} className="animate-spin" />
-          Preparing trip setup…
-        </div>
-      </main>
-    );
+    return <AuthenticatedTripsLoader />;
   }
 
   async function handleSubmit(event: FormEvent) {
