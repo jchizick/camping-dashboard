@@ -9,6 +9,10 @@ import type {
   TripWorkspaceEditableActions,
   TripWorkspaceValue,
 } from './TripWorkspaceProvider';
+import {
+  PHONE_LAYOUT_MEDIA_QUERY,
+  PhoneLayoutProvider,
+} from './PhoneLayoutProvider';
 
 const workspace = vi.hoisted(() => ({
   value: null as TripWorkspaceValue | null,
@@ -96,6 +100,14 @@ import TripCrewPage from '@/app/trips/[tripId]/crew/page';
 import TripGuidePage from '@/app/trips/[tripId]/guide/page';
 import TripFieldLogPage from '@/app/trips/[tripId]/field-log/page';
 
+function renderRoute(Page: React.ComponentType) {
+  return render(
+    <PhoneLayoutProvider>
+      <Page />
+    </PhoneLayoutProvider>
+  );
+}
+
 const editableActions = new Proxy(
   {},
   { get: () => vi.fn() }
@@ -181,7 +193,7 @@ describe('trip section routes', () => {
 
   it.each(routes)('renders the canonical %s composition', (title, Page, modules) => {
     workspace.value = workspaceValue('owner');
-    const { container } = render(<Page />);
+    const { container } = renderRoute(Page);
 
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
     expect(container.querySelector('[data-trip-section]')).toBeTruthy();
@@ -197,7 +209,7 @@ describe('trip section routes', () => {
       const canEdit = role !== 'viewer';
 
       for (const [, Page] of routes) {
-        const view = render(<Page />);
+        const view = renderRoute(Page);
         for (const editableModule of view.container.querySelectorAll('[data-editable]')) {
           expect(editableModule.getAttribute('data-editable')).toBe(String(canEdit));
         }
@@ -216,17 +228,17 @@ describe('trip section routes', () => {
       show_astro: false,
     });
 
-    const plan = render(<TripPlanPage />);
+    const plan = renderRoute(TripPlanPage);
     expect(screen.getByTestId('timeline')).toBeTruthy();
     expect(screen.queryByTestId('meals')).toBeNull();
     plan.unmount();
 
-    const crew = render(<TripCrewPage />);
+    const crew = renderRoute(TripCrewPage);
     expect(screen.queryByTestId('crew')).toBeNull();
     expect(screen.getByText('The crew module is hidden for this trip.')).toBeTruthy();
     crew.unmount();
 
-    render(<TripGuidePage />);
+    renderRoute(TripGuidePage);
     expect(screen.getByTestId('park')).toBeTruthy();
     expect(screen.getByTestId('alerts')).toBeTruthy();
     expect(screen.queryByTestId('offline')).toBeNull();
@@ -236,7 +248,7 @@ describe('trip section routes', () => {
   it('passes every inclusive trip day to the timeline and meal planner', () => {
     workspace.value = { ...workspaceValue('owner'), tripDays: 5 };
 
-    render(<TripPlanPage />);
+    renderRoute(TripPlanPage);
 
     expect(screen.getByTestId('timeline').getAttribute('data-days')).toBe('5');
     expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
@@ -244,7 +256,7 @@ describe('trip section routes', () => {
 
   it('mounts only the consolidated Plan composition below 768px', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(max-width: 767px)',
+      matches: query === PHONE_LAYOUT_MEDIA_QUERY,
       media: query,
       onchange: null,
       addEventListener: vi.fn(),
@@ -255,7 +267,7 @@ describe('trip section routes', () => {
     })));
     workspace.value = workspaceValue('owner');
 
-    render(<TripPlanPage />);
+    renderRoute(TripPlanPage);
 
     expect(screen.getByTestId('mobile-plan')).toBeTruthy();
     expect(screen.queryByTestId('timeline')).toBeNull();
@@ -265,7 +277,7 @@ describe('trip section routes', () => {
 
   it('mounts only the field-briefing composition below 768px', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(max-width: 767px)',
+      matches: query === PHONE_LAYOUT_MEDIA_QUERY,
       media: query,
       onchange: null,
       addEventListener: vi.fn(),
@@ -276,7 +288,7 @@ describe('trip section routes', () => {
     })));
     workspace.value = workspaceValue('owner');
 
-    render(<TripGuidePage />);
+    renderRoute(TripGuidePage);
 
     expect(screen.getByTestId('mobile-field')).toBeTruthy();
     expect(screen.queryByTestId('park')).toBeNull();
@@ -289,19 +301,19 @@ describe('trip section routes', () => {
   it('marks only Plan and Gear as operational workspaces', () => {
     workspace.value = workspaceValue('owner');
 
-    const plan = render(<TripPlanPage />);
+    const plan = renderRoute(TripPlanPage);
     expect(plan.container.querySelector('.trip-operational-grid')).toBeTruthy();
     expect(plan.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
     expect(plan.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
     plan.unmount();
 
-    const gear = render(<TripGearPage />);
+    const gear = renderRoute(TripGearPage);
     expect(gear.container.querySelector('.trip-operational-grid')).toBeTruthy();
     expect(gear.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
     expect(gear.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
     gear.unmount();
 
-    const crew = render(<TripCrewPage />);
+    const crew = renderRoute(TripCrewPage);
     expect(crew.container.querySelector('.trip-operational-grid')).toBeNull();
     expect(crew.container.querySelector('.trip-section-surface--primary')).toBeNull();
     expect(crew.container.querySelector('.trip-section-surface--secondary')).toBeNull();

@@ -38,8 +38,8 @@ describe('authenticated mobile supporting visual polish', () => {
     expect(topo).toContain('stroke:#789182;stroke-opacity:0.20');
   });
 
-  it('defines a mobile-only surface, divider, radius, and spacing hierarchy', () => {
-    expect(phaseCss).toContain('@media (max-width: 767px)');
+  it('defines a phone-layout surface, divider, radius, and spacing hierarchy', () => {
+    expect(phaseCss).toContain('@scope (html[data-phone-layout="true"])');
     for (const token of [
       '--workspace-phase3-surface-primary',
       '--workspace-phase3-surface-secondary',

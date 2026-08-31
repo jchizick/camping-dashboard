@@ -4,6 +4,7 @@ import React from 'react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -106,6 +107,30 @@ function workspaceValue(): TripWorkspaceValue {
   } as unknown as TripWorkspaceValue;
 }
 
+function installMatchMedia(initialMatches: boolean) {
+  let matches = initialMatches;
+  const listeners = new Set<() => void>();
+  const mediaQuery = {
+    get matches() {
+      return matches;
+    },
+    media: '',
+    onchange: null,
+    addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+    addListener: (listener: () => void) => listeners.add(listener),
+    removeListener: (listener: () => void) => listeners.delete(listener),
+    dispatchEvent: vi.fn(),
+  } as unknown as MediaQueryList;
+  vi.stubGlobal('matchMedia', vi.fn(() => mediaQuery));
+  return {
+    setMatches(nextMatches: boolean) {
+      matches = nextMatches;
+      act(() => listeners.forEach((listener) => listener()));
+    },
+  };
+}
+
 beforeEach(() => {
   mocks.pathname = '/trips/trip-1/plan';
   mocks.trip.role = 'owner';
@@ -118,10 +143,14 @@ beforeEach(() => {
   mocks.reload.mockReset();
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.documentElement.removeAttribute('data-phone-layout');
+  vi.unstubAllGlobals();
+});
 
 describe('TripAppShell', () => {
-  it('uses explicit 768px and 1280px navigation presentation contracts', () => {
+  it('uses semantic phone layout while preserving 768px tablet and 1280px sidebar contracts', () => {
     const { container } = render(
       <TripAppShell>
         <h1>Plan</h1>
@@ -175,6 +204,20 @@ describe('TripAppShell', () => {
     );
     expect(sharedHandoff).toMatch(/\.trip-app-main\s*\{\s*padding-bottom:\s*0;/);
 
+    const phoneHandoffStart = css.indexOf(
+      '@scope (html[data-phone-layout="true"])',
+      css.indexOf('@media (min-width: 768px)')
+    );
+    const phoneHandoff = css.slice(
+      phoneHandoffStart,
+      css.indexOf('/* Base container for the background */', phoneHandoffStart)
+    );
+    expect(phoneHandoffStart).toBeGreaterThan(-1);
+    expect(phoneHandoff).toMatch(/\.trip-navigation-desktop\s*\{\s*display:\s*none;/);
+    expect(phoneHandoff).toMatch(/\.trip-navigation-mobile-more\s*\{\s*display:\s*block;/);
+    expect(phoneHandoff).toMatch(/\.trip-navigation-mobile-bar\s*\{\s*display:\s*grid;/);
+    expect(phoneHandoff).toContain('--trip-mobile-nav-height: 4.25rem;');
+
     const wideHandoffStart = css.indexOf(
       '@media (min-width: 1280px) {',
       css.indexOf('@media (min-width: 768px)')
@@ -187,6 +230,21 @@ describe('TripAppShell', () => {
     expect(wideHandoff).toMatch(/\.trip-app-header,[\s\S]*display:\s*none;/);
     expect(wideHandoff).toMatch(/grid-template-columns:\s*11rem minmax\(0, 1fr\)/);
     expect(wideHandoff).not.toMatch(/overflow-y:\s*auto/);
+  });
+
+  it('closes the phone More menu when the semantic layout changes', async () => {
+    const media = installMatchMedia(true);
+    render(
+      <TripAppShell>
+        <h1>Plan</h1>
+      </TripAppShell>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'More trip actions' }));
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    media.setMatches(false);
+    await vi.waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 
   it('renders one shared header, one main landmark, and canonical navigation', () => {

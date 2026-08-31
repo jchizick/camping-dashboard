@@ -1,29 +1,11 @@
 'use client';
 
-import React from 'react';
 import DesktopFieldOverview from '@/components/field/DesktopFieldOverview';
 import MobileFieldOverview from '@/components/field/MobileFieldOverview';
 import { createFieldViewModel } from '@/components/field/fieldViewModel';
 import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
-
-const mobileFieldCompositionQuery = '(max-width: 767px)';
-
-function subscribeToMobileFieldComposition(onChange: () => void) {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
-
-  const query = window.matchMedia(mobileFieldCompositionQuery);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-
-function getMobileFieldCompositionSnapshot() {
-  return (
-    typeof window !== 'undefined' &&
-    Boolean(window.matchMedia) &&
-    window.matchMedia(mobileFieldCompositionQuery).matches
-  );
-}
+import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 
 export default function TripGuidePage() {
   const {
@@ -35,11 +17,7 @@ export default function TripGuidePage() {
     readiness,
     editableActions,
   } = useTripWorkspace();
-  const usesMobileFieldComposition = React.useSyncExternalStore(
-    subscribeToMobileFieldComposition,
-    getMobileFieldCompositionSnapshot,
-    () => false
-  );
+  const usesMobileFieldComposition = usePhoneLayout();
 
   if (!data || !trip || !readiness) return null;
 

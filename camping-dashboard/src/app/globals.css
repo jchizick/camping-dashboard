@@ -46,7 +46,7 @@
 }
 
 /* Mobile v1 Field composition. Desktop Field remains on the legacy card workspace. */
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .trip-section-page[data-trip-section="guide"] {
     padding: 0.75rem 1rem 6.5rem;
   }
@@ -3116,9 +3116,25 @@ body {
   }
 }
 
-@media (max-width: 767px) {
-  :root {
+@scope (html[data-phone-layout="true"]) {
+  :scope {
     --trip-mobile-nav-height: 4.25rem;
+  }
+
+  .trip-navigation-desktop {
+    display: none;
+  }
+
+  .trip-navigation-mobile-more {
+    display: block;
+  }
+
+  .trip-navigation-mobile-bar {
+    display: grid;
+  }
+
+  .trip-app-main {
+    padding-bottom: calc(var(--trip-mobile-nav-height) + 1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .trip-app-header {
@@ -3128,10 +3144,23 @@ body {
 
   .trip-shell-inner {
     min-height: 4rem;
+    padding-inline: 0.75rem;
   }
 
   .trip-shell-identity {
     max-width: none;
+  }
+
+  .trip-source-status {
+    padding-inline: 0.75rem;
+  }
+
+  .trip-section-page {
+    padding: 1rem;
+  }
+
+  .trip-section-header h1 {
+    font-size: 1.875rem;
   }
 
   .home-overview {
@@ -6452,7 +6481,7 @@ body {
 }
 
 /* Mobile v1 Home command centre. Desktop Home remains on the existing composition. */
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .mobile-home-overview {
     display: flex;
     min-height: 0;
@@ -7947,7 +7976,7 @@ body {
   display: none;
 }
 
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .trip-section-page[data-trip-section="gear"] .trip-gear-overall-readiness {
     display: none;
   }
@@ -7970,6 +7999,7 @@ body {
   }
 
   .gear-mobile-brief {
+    display: block;
     margin-bottom: 0.9rem;
     overflow: hidden;
     border: 1px solid var(--workspace-border-subtle);
@@ -8131,6 +8161,11 @@ body {
     padding-bottom: 0.8rem;
   }
 
+  .gear-desktop-summary,
+  .gear-desktop-weight {
+    display: none;
+  }
+
   .gear-filter-bar__options {
     width: 100%;
   }
@@ -8266,7 +8301,7 @@ body {
 /* End Mobile v1 Gear alignment. */
 
 /* Mobile v1 Plan consolidation. Desktop Plan remains on the legacy card workspace. */
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .trip-section-page[data-trip-section="plan"] {
     padding: 0.75rem 1rem 6.5rem;
   }
@@ -8773,7 +8808,7 @@ body {
 /* End Mobile v1 Plan consolidation. */
 
 /* Mobile v1 Crew responsibility composition. Desktop Crew remains card-led. */
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .trip-section-page[data-trip-section="crew"] .trip-section-surface {
     padding: 0;
     border: 0;
@@ -9149,7 +9184,7 @@ body {
   );
 }
 
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .trip-source-status {
     position: sticky;
     top: 0;
@@ -9191,6 +9226,10 @@ body {
 }
 
 @media (max-width: 767px) {
+  /* Portrait activation remains document-driven by PhoneLayoutProvider. */
+}
+
+@scope (html[data-phone-layout="true"]) {
   [data-trip-app-shell],
   [data-trip-app-shell] .font-sans,
   [data-trip-app-shell] .font-mono {
@@ -9596,6 +9635,9 @@ body {
     font-size: 1rem;
   }
 
+}
+
+@media (max-width: 767px) {
   .crud-sheet__panel--workspace {
     width: 100%;
     max-width: none;
@@ -9659,7 +9701,7 @@ body {
   mix-blend-mode: screen;
 }
 
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   [data-trip-app-shell] {
     --workspace-topography-opacity: 0.72;
     --workspace-phase3-surface-primary: color-mix(
@@ -10225,7 +10267,7 @@ body {
     opacity: 0;
   }
 
-  @media (max-width: 767px) {
+  @scope (html[data-phone-layout="true"]) {
     .trip-app-header,
     .trip-mobile-nav,
     .trip-source-status {
@@ -10236,7 +10278,7 @@ body {
 /* End Visual Phase 3 supporting visual polish. */
 
 /* First-trip contextual setup states. */
-@media (max-width: 767px) {
+@scope (html[data-phone-layout="true"]) {
   .mobile-field-prep__setup {
     display: grid;
     gap: 0.8rem;

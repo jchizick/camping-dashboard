@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import CrewRosterCard from '@/components/cards/CrewRosterCard';
 import MobileCrewOverview from '@/components/crew/MobileCrewOverview';
 import TripPageHeader, {
@@ -8,29 +7,11 @@ import TripPageHeader, {
   TripSectionEmptyState,
 } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
-
-const mobileCrewCompositionQuery = '(max-width: 767px)';
-
-function subscribeToMobileCrewComposition(onChange: () => void) {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
-  const query = window.matchMedia(mobileCrewCompositionQuery);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-
-function getMobileCrewCompositionSnapshot() {
-  return typeof window !== 'undefined'
-    && Boolean(window.matchMedia)
-    && window.matchMedia(mobileCrewCompositionQuery).matches;
-}
+import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 
 export default function TripCrewPage() {
   const { data, crew, gear, meals, editableActions } = useTripWorkspace();
-  const usesMobileCrewComposition = React.useSyncExternalStore(
-    subscribeToMobileCrewComposition,
-    getMobileCrewCompositionSnapshot,
-    () => false
-  );
+  const usesMobileCrewComposition = usePhoneLayout();
   if (!data) return null;
 
   return (

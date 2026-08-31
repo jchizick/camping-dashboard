@@ -17,6 +17,7 @@ import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoade
 import { useTripWorkspace } from './TripWorkspaceProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
+import { PhoneLayoutProvider, usePhoneLayout } from './PhoneLayoutProvider';
 
 type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
@@ -24,7 +25,7 @@ interface ActiveAppInfoDialog {
   pathname: string;
 }
 
-export default function TripAppShell({ children }: { children: React.ReactNode }) {
+function TripAppShellContent({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
   const draftGuard = useOptionalTripDraftGuard();
   const {
@@ -46,6 +47,7 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
     lastOnlineVerifiedAt,
   } = useTripWorkspace();
   const [openedInfoDialog, setOpenedInfoDialog] = useState<ActiveAppInfoDialog | null>(null);
+  const isPhoneLayout = usePhoneLayout();
   const routePathname = usePathname();
   const pathname = navigationPath ?? routePathname;
   const activeInfoDialog =
@@ -199,41 +201,45 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
             className="trip-navigation-desktop items-center gap-2"
             data-testid="desktop-trip-more-shell"
           >
-            <TripMoreMenu
-              id="desktop-trip-more"
-              tripId={tripId}
-              onMissionBrief={() =>
-                setOpenedInfoDialog({ name: 'mission-brief', pathname })
-              }
-              onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
-              onAppearance={
-                editableActions
-                  ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
-                  : undefined
-              }
-              onSignOut={handleSignOut}
-            />
+            {!isPhoneLayout ? (
+              <TripMoreMenu
+                id="desktop-trip-more"
+                tripId={tripId}
+                onMissionBrief={() =>
+                  setOpenedInfoDialog({ name: 'mission-brief', pathname })
+                }
+                onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+                onAppearance={
+                  editableActions
+                    ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
+                    : undefined
+                }
+                onSignOut={handleSignOut}
+              />
+            ) : null}
           </div>
 
           <div
             className="trip-navigation-mobile-more"
             data-testid="mobile-trip-more-shell"
           >
-            <TripMoreMenu
-              id="mobile-trip-more"
-              tripId={tripId}
-              onMissionBrief={() =>
-                setOpenedInfoDialog({ name: 'mission-brief', pathname })
-              }
-              onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
-              onAppearance={
-                editableActions
-                  ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
-                  : undefined
-              }
-              onSignOut={handleSignOut}
-              mobile
-            />
+            {isPhoneLayout ? (
+              <TripMoreMenu
+                id="mobile-trip-more"
+                tripId={tripId}
+                onMissionBrief={() =>
+                  setOpenedInfoDialog({ name: 'mission-brief', pathname })
+                }
+                onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
+                onAppearance={
+                  editableActions
+                    ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
+                    : undefined
+                }
+                onSignOut={handleSignOut}
+                mobile
+              />
+            ) : null}
           </div>
         </div>
       </header>
@@ -329,5 +335,13 @@ export default function TripAppShell({ children }: { children: React.ReactNode }
         />
       ) : null}
     </div>
+  );
+}
+
+export default function TripAppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <PhoneLayoutProvider>
+      <TripAppShellContent>{children}</TripAppShellContent>
+    </PhoneLayoutProvider>
   );
 }

@@ -8,17 +8,19 @@ const css = fs.readFileSync(
 );
 
 describe('Mobile Gear composition CSS boundary', () => {
-    it('keeps workflow layout changes below 768px', () => {
+    it('keeps workflow layout changes scoped to semantic phone layout', () => {
         const marker = css.indexOf('/* Mobile v1 Gear alignment.');
         const endMarker = css.indexOf('/* End Mobile v1 Gear alignment. */', marker);
         const milestoneCss = css.slice(marker, endMarker);
-        const mobileCss = milestoneCss.slice(milestoneCss.indexOf('@media (max-width: 767px)'));
+        const phoneCss = milestoneCss.slice(milestoneCss.indexOf('@scope (html[data-phone-layout="true"])'));
 
         expect(marker).toBeGreaterThan(-1);
         expect(endMarker).toBeGreaterThan(marker);
-        expect(mobileCss).toContain('.trip-gear-overall-readiness');
-        expect(mobileCss).toContain('.gear-mobile-brief');
-        expect(mobileCss).toContain('.gear-checklist-item__pack');
+        expect(phoneCss).toContain('.trip-gear-overall-readiness');
+        expect(phoneCss).toContain('.gear-mobile-brief');
+        expect(phoneCss).toContain('.gear-desktop-summary');
+        expect(phoneCss).toContain('.gear-desktop-weight');
+        expect(phoneCss).toContain('.gear-checklist-item__pack');
         expect(milestoneCss).not.toContain('@media (min-width:');
         expect(milestoneCss).not.toContain(':has(');
     });

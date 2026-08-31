@@ -237,7 +237,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
                 </div>
             </section>
 
-            <div className="mb-4 hidden shrink-0 items-start justify-between gap-3 md:flex">
+            <div className="gear-desktop-summary mb-4 hidden shrink-0 items-start justify-between gap-3 md:flex">
                 <div>
                     <div className="text-2xl font-mono text-text-main">
                         {packedCount} / {gear.length} <span className="text-sm text-text-muted font-sans">packed</span>
@@ -286,7 +286,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
                         );
                     })}
                 </div>
-                <div className="ml-auto hidden min-h-10 shrink-0 items-center rounded-lg border border-border-subtle bg-card-hover px-3 font-mono text-[11px] text-text-muted md:flex">
+                <div className="gear-desktop-weight ml-auto hidden min-h-10 shrink-0 items-center rounded-lg border border-border-subtle bg-card-hover px-3 font-mono text-[11px] text-text-muted md:flex">
                     Total estimated gear weight: {estimatedGearWeight}
                 </div>
             </div>

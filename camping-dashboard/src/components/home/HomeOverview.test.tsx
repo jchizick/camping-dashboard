@@ -13,6 +13,10 @@ import type {
 } from '@/types';
 import type { TripWorkspaceValue } from '@/components/trip/TripWorkspaceProvider';
 import { evaluateReadiness } from '@/lib/readiness';
+import {
+  PHONE_LAYOUT_MEDIA_QUERY,
+  PhoneLayoutProvider,
+} from '@/components/trip/PhoneLayoutProvider';
 
 const workspace = vi.hoisted(() => ({
   value: null as TripWorkspaceValue | null,
@@ -41,6 +45,14 @@ vi.mock('@/components/ui/MissionBriefModal', () => ({
 }));
 
 import HomeOverview from './HomeOverview';
+
+function renderHomeOverview() {
+  return render(
+    <PhoneLayoutProvider>
+      <HomeOverview />
+    </PhoneLayoutProvider>
+  );
+}
 
 function timelineEvent(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
@@ -185,7 +197,7 @@ afterEach(() => {
 
 describe('HomeOverview', () => {
   it('renders the focused Home hierarchy without legacy full modules', () => {
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' })).toBeTruthy();
@@ -253,7 +265,7 @@ describe('HomeOverview', () => {
 
   it('keeps viewer Home readable and the retained map read-only', () => {
     workspace.value = workspaceValue(false);
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(screen.getByTestId('map').getAttribute('data-editable')).toBe('false');
     expect(screen.getByRole('link', { name: 'View gear' })).toBeTruthy();
@@ -262,7 +274,7 @@ describe('HomeOverview', () => {
 
   it('uses the readiness-first mobile composition without duplicate signals', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
-      matches: query === '(max-width: 767px)',
+      matches: query === PHONE_LAYOUT_MEDIA_QUERY,
       media: query,
       onchange: null,
       addEventListener: vi.fn(),
@@ -272,7 +284,7 @@ describe('HomeOverview', () => {
       dispatchEvent: vi.fn(),
     })));
 
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(document.querySelector('[data-home-composition="mobile"]')).toBeTruthy();
     expect(document.querySelector('[data-home-composition="desktop"]')).toBeNull();
@@ -295,7 +307,7 @@ describe('HomeOverview', () => {
   it('keeps the existing composition at the 768px tablet boundary', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => ({
       matches: false,
-      media: '(max-width: 767px)',
+      media: PHONE_LAYOUT_MEDIA_QUERY,
       onchange: null,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -304,7 +316,7 @@ describe('HomeOverview', () => {
       dispatchEvent: vi.fn(),
     })));
 
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(document.querySelector('[data-home-composition="desktop"]')).toBeTruthy();
     expect(document.querySelector('[data-home-composition="mobile"]')).toBeNull();
@@ -319,7 +331,7 @@ describe('HomeOverview', () => {
     value.data!.settings.show_astro = false;
     value.alerts = [];
     workspace.value = value;
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(screen.getByText('No active notices')).toBeTruthy();
     expect(document.querySelector('.home-workspaces')).toBeNull();
@@ -331,7 +343,7 @@ describe('HomeOverview', () => {
     value.timeline = [];
     value.readiness = readinessResult(true);
     workspace.value = value;
-    render(<HomeOverview />);
+    renderHomeOverview();
 
     expect(screen.getByText('No events are planned for this day yet.')).toBeTruthy();
     expect(screen.getAllByRole('link', { name: 'Open Plan' })).toHaveLength(1);
@@ -346,7 +358,7 @@ describe('HomeOverview', () => {
   it('reflects canonical operational state immediately without calling reload', () => {
     const value = workspaceValue();
     workspace.value = value;
-    const view = render(<HomeOverview />);
+    const view = renderHomeOverview();
 
     value.timeline = [
       timelineEvent({ id: 'event-2', title: 'Portage', event_time: '10:30' }),
@@ -367,7 +379,11 @@ describe('HomeOverview', () => {
       },
     };
 
-    view.rerender(<HomeOverview />);
+    view.rerender(
+      <PhoneLayoutProvider>
+        <HomeOverview />
+      </PhoneLayoutProvider>
+    );
 
     expect(screen.getAllByText('Portage')).toHaveLength(2);
     expect(screen.getByText('Rain watch')).toBeTruthy();

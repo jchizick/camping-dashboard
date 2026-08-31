@@ -1,35 +1,15 @@
 'use client';
 
-import React from 'react';
 import MealPlannerCard from '@/components/cards/MealPlannerCard';
 import TimelineCard from '@/components/cards/TimelineCard';
 import MobilePlanOverview from '@/components/plan/MobilePlanOverview';
 import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
-
-const mobilePlanCompositionQuery = '(max-width: 767px)';
-
-function subscribeToMobilePlanComposition(onChange: () => void) {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
-
-  const query = window.matchMedia(mobilePlanCompositionQuery);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-
-function getMobilePlanCompositionSnapshot() {
-  return typeof window !== 'undefined' &&
-    Boolean(window.matchMedia) &&
-    window.matchMedia(mobilePlanCompositionQuery).matches;
-}
+import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 
 export default function TripPlanPage() {
   const { data, trip, crew, meals, timeline, tripDays, editableActions } = useTripWorkspace();
-  const usesMobilePlanComposition = React.useSyncExternalStore(
-    subscribeToMobilePlanComposition,
-    getMobilePlanCompositionSnapshot,
-    () => false
-  );
+  const usesMobilePlanComposition = usePhoneLayout();
 
   if (!data || !trip) return null;
 

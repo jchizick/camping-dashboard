@@ -1,26 +1,10 @@
 'use client';
 
-import React from 'react';
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
+import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 import DesktopHomeOverview from './DesktopHomeOverview';
 import MobileHomeOverview from './MobileHomeOverview';
 import { createHomeViewModel } from './homeViewModel';
-
-const mobileHomeCompositionQuery = '(max-width: 767px)';
-
-function subscribeToMobileHomeComposition(onChange: () => void) {
-  if (typeof window === 'undefined' || !window.matchMedia) return () => {};
-
-  const query = window.matchMedia(mobileHomeCompositionQuery);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
-}
-
-function getMobileHomeCompositionSnapshot() {
-  return typeof window !== 'undefined' &&
-    Boolean(window.matchMedia) &&
-    window.matchMedia(mobileHomeCompositionQuery).matches;
-}
 
 export default function HomeOverview() {
   const {
@@ -34,11 +18,7 @@ export default function HomeOverview() {
     readiness,
     editableActions,
   } = useTripWorkspace();
-  const usesMobileHomeComposition = React.useSyncExternalStore(
-    subscribeToMobileHomeComposition,
-    getMobileHomeCompositionSnapshot,
-    () => false
-  );
+  const usesMobileHomeComposition = usePhoneLayout();
 
   if (!data || !trip || !countdown || !readiness) return null;
 
