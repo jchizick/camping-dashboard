@@ -139,6 +139,10 @@ describe('authenticated Trips source states', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Your Trips' })).toBeTruthy();
     expect(screen.getAllByText('Killarney Base Camp')).toHaveLength(2);
+    expect(screen.getByRole('group', { name: 'Trip dates: Sep 12 – Sep 15, 2026' }).textContent)
+      .toContain('Sep 12–15');
+    expect(screen.getByRole('group', { name: 'Trip duration: 4 days · 3 nights' }).textContent)
+      .toContain('4 days3 nights');
     expect(screen.queryByRole('heading', { name: 'Plan your first trip' })).toBeNull();
   });
 

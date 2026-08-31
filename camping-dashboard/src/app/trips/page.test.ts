@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { UserTrip } from '@/lib/fetchDashboard';
 import {
   canDeleteTrip,
+  formatFeaturedTripDate,
   getTripHref,
   getTripLocation,
   getTripStatus,
@@ -46,6 +47,15 @@ describe('Trips landing page helpers', () => {
     expect(NEW_TRIP_HREF).toBe('/trips/new');
     expect(getTripHref('first-trip')).toBe('/trips/first-trip');
     expect(getTripHref('second-trip')).toBe('/trips/second-trip');
+  });
+
+  it.each([
+    ['same-day trip', '2026-07-05', '2026-07-05', { primary: 'Jul 5', secondary: '2026' }],
+    ['same-month range', '2026-07-05', '2026-07-09', { primary: 'Jul 5–9', secondary: '2026' }],
+    ['month boundary', '2026-07-31', '2026-08-02', { primary: 'Jul 31–Aug 2', secondary: '2026' }],
+    ['year boundary', '2026-12-31', '2027-01-01', { primary: 'Dec 31–Jan 1', secondary: '2026–2027' }],
+  ])('formats the featured date tile for a %s', (_label, startDate, endDate, expected) => {
+    expect(formatFeaturedTripDate(startDate, endDate)).toEqual(expected);
   });
 
   it('keeps deletion controls owner-only', () => {

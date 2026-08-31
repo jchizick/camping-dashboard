@@ -5449,6 +5449,7 @@ body {
 .trips-feature__location { display: flex; align-items: center; gap: 0.625rem; margin: 1rem 0 0; color: #f1eee5; font-size: 1.05rem; }
 .trips-feature__meta { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; margin: 1.25rem 0 1.5rem; color: var(--trips-muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
 .trips-feature__meta span { display: inline-flex; align-items: center; gap: 0.5rem; }
+.trips-feature__stats { display: none; }
 .trips-feature .trips-primary-action { min-width: 14rem; }
 
 .trips-overflow { position: relative; }
@@ -5745,7 +5746,7 @@ body {
   .trips-expedition-row { grid-template-columns: 5.5rem minmax(0, 1fr) auto; gap: 0.75rem; }
   .trips-expedition-row__dates,
   .trips-expedition-row__role { display: none; }
-  .trips-expedition-row__controls > a { width: 2.75rem; padding: 0; justify-content: center; font-size: 0; }
+  .trips-expedition-row__controls > a { width: 2.75rem; padding: 0; justify-content: center; gap: 0; font-size: 0; }
   .trips-expedition-row__controls > a svg { width: 18px; height: 18px; }
   .trips-expedition-row__identity > div { align-items: flex-start; flex-direction: column; gap: 0.375rem; }
   .trips-expedition-row h3 { max-width: 100%; }
@@ -11072,6 +11073,8 @@ body {
   }
 
   .trips-welcome {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
   }
 
@@ -11080,8 +11083,10 @@ body {
   }
 
   .trips-welcome p {
-    font-size: 0.8125rem;
-    line-height: 1.5;
+    max-width: 30rem;
+    margin-top: 0.5625rem;
+    font-size: 1.1875rem;
+    line-height: 1.42;
   }
 
   .trips-feature {
@@ -11097,9 +11102,88 @@ body {
     font-size: clamp(2.75rem, 13vw, 3.4rem);
   }
 
+  .trips-feature__meta {
+    display: none;
+  }
+
+  .trips-feature__stats {
+    display: grid;
+    width: 100%;
+    max-width: 28rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+    margin: 1.25rem 0 1.5rem;
+  }
+
+  .trips-feature__stat {
+    display: grid;
+    min-width: 0;
+    min-height: 5.5rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(185, 202, 158, 0.34);
+    border-radius: 0.75rem;
+    background: rgba(5, 22, 16, 0.7);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(7px);
+  }
+
+  .trips-feature__stat > svg {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--entry-sage);
+    stroke-width: 2;
+  }
+
+  .trips-feature__stat-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .trips-feature__stat-copy strong {
+    overflow: hidden;
+    color: var(--entry-ink);
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 5vw, 1.3rem);
+    font-weight: 800;
+    letter-spacing: 0.015em;
+    line-height: 1;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .trips-feature__stat-copy small {
+    overflow: hidden;
+    color: var(--entry-muted);
+    font-family: var(--font-ui);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
   .trips-utility {
     min-height: 6.25rem;
     padding: 0.875rem;
+  }
+
+  .trips-utility::before {
+    background-position: 62% center;
+    opacity: 0.68;
+  }
+
+  .trips-utility::after {
+    background:
+      linear-gradient(90deg, rgba(8, 29, 22, 0.99) 0%, rgba(8, 29, 22, 0.93) 42%, rgba(8, 29, 22, 0.46) 72%, rgba(8, 29, 22, 0.16) 100%),
+      linear-gradient(180deg, rgba(7, 24, 18, 0.2), rgba(5, 20, 15, 0.44));
   }
 
   .trips-utility__copy strong {
@@ -11117,6 +11201,16 @@ body {
 
   .trips-expedition-row__identity p {
     max-width: 100%;
+  }
+
+  .trips-expedition-row__controls {
+    align-self: end;
+    justify-self: end;
+  }
+
+  .trips-expedition-row__controls > a,
+  .trips-expedition-row__controls .trips-overflow summary {
+    line-height: 0;
   }
 
   .trips-empty {

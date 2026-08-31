@@ -61,3 +61,30 @@ export function formatTripDates(startDate: string, endDate: string): string {
   }).format(end);
   return `${startLabel} – ${endLabel}`;
 }
+
+export function formatFeaturedTripDate(startDate: string, endDate: string): {
+  primary: string;
+  secondary: string;
+} {
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { primary: formatTripDates(startDate, endDate), secondary: '' };
+  }
+
+  const monthFormatter = new Intl.DateTimeFormat('en-CA', { month: 'short' });
+  const startMonth = monthFormatter.format(start);
+  const endMonth = monthFormatter.format(end);
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const primary = start.getTime() === end.getTime()
+    ? `${startMonth} ${start.getDate()}`
+    : sameMonth
+      ? `${startMonth} ${start.getDate()}–${end.getDate()}`
+      : `${startMonth} ${start.getDate()}–${endMonth} ${end.getDate()}`;
+  const secondary = sameYear
+    ? String(start.getFullYear())
+    : `${start.getFullYear()}–${end.getFullYear()}`;
+
+  return { primary, secondary };
+}

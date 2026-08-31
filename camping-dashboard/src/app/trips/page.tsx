@@ -18,6 +18,7 @@ import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoade
 import { EmptyTripsState, TripsWelcome } from '@/components/trips/TripsLandingOnboarding';
 import {
   canDeleteTrip,
+  formatFeaturedTripDate,
   formatTripDates,
   getTripHref,
   getTripLocation,
@@ -48,6 +49,7 @@ import {
   UserRound,
   X,
   Loader2,
+  type LucideIcon,
 } from 'lucide-react';
 
 export default function TripsPage() {
@@ -141,10 +143,35 @@ function TripOverflow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
   );
 }
 
+function FeaturedTripStat({
+  icon: Icon,
+  primary,
+  secondary,
+  label,
+}: {
+  icon: LucideIcon;
+  primary: string;
+  secondary: string;
+  label: string;
+}) {
+  return (
+    <div className="trips-feature__stat" role="group" aria-label={label}>
+      <Icon size={30} aria-hidden="true" />
+      <span className="trips-feature__stat-copy" aria-hidden="true">
+        <strong>{primary}</strong>
+        {secondary ? <small>{secondary}</small> : null}
+      </span>
+    </div>
+  );
+}
+
 function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
   const background = resolveTripWorkspaceBackground(trip);
   const duration = getTripDuration(trip.start_date, trip.end_date);
   const durationLabel = duration ? formatTripDuration(duration) : null;
+  const [durationDaysLabel, durationNightsLabel] = durationLabel?.split(' · ') ?? [];
+  const dateLabel = formatTripDates(trip.start_date, trip.end_date);
+  const featuredDate = formatFeaturedTripDate(trip.start_date, trip.end_date);
   const status = getTripStatus(trip.start_date, trip.end_date);
   return (
     <section className="trips-feature" aria-labelledby="featured-trip-title" style={background ? { backgroundImage: `url(${background})` } : undefined}>
@@ -160,8 +187,24 @@ function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
         <h2 id="featured-trip-title" data-mobile-type-role="trip-title">{trip.name}</h2>
         <p className="trips-feature__location"><MapPin size={18} aria-hidden="true" /> {getTripLocation(trip)}</p>
         <div className="trips-feature__meta">
-          <span><CalendarDays size={17} aria-hidden="true" /> {formatTripDates(trip.start_date, trip.end_date)}</span>
+          <span><CalendarDays size={17} aria-hidden="true" /> {dateLabel}</span>
           {durationLabel ? <span><Route size={17} aria-hidden="true" /> {durationLabel}</span> : null}
+        </div>
+        <div className="trips-feature__stats" role="group" aria-label="Trip timing">
+          <FeaturedTripStat
+            icon={CalendarDays}
+            primary={featuredDate.primary}
+            secondary={featuredDate.secondary}
+            label={`Trip dates: ${dateLabel}`}
+          />
+          {durationLabel ? (
+            <FeaturedTripStat
+              icon={Route}
+              primary={durationDaysLabel}
+              secondary={durationNightsLabel}
+              label={`Trip duration: ${durationLabel}`}
+            />
+          ) : null}
         </div>
         <Link href={getTripHref(trip.id)} className="trips-primary-action">
           Continue Trip <ArrowRight size={20} aria-hidden="true" />
