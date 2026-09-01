@@ -138,6 +138,7 @@ describe('authenticated Trips source states', () => {
     render(<TripsContent />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Your Trips' })).toBeTruthy();
+    expect(screen.getAllByText('FIELD PROTOCOL')).toHaveLength(2);
     expect(screen.getAllByText('Killarney Base Camp')).toHaveLength(2);
     expect(screen.getByRole('group', { name: 'Trip dates: Sep 12 – Sep 15, 2026' }).textContent)
       .toContain('Sep 12–15');

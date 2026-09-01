@@ -10542,10 +10542,12 @@ body {
 }
 
 .trips-brand__name {
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.025em;
+  font-family: var(--font-editorial), Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .trips-welcome h1,

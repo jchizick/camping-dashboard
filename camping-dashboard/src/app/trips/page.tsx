@@ -68,7 +68,7 @@ function BrandMark() {
       <span className="trips-brand__crest" aria-hidden="true">
         <Image src="/logo.svg" alt="" width={67} height={83} />
       </span>
-      <span className="trips-brand__name">Field Protocol</span>
+      <span className="trips-brand__name">FIELD PROTOCOL</span>
     </Link>
   );
 }
