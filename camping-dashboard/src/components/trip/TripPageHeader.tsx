@@ -20,16 +20,18 @@ export function TripSectionPage({
 export default function TripPageHeader({
   title,
   description,
+  distressed = false,
 }: {
   title: string;
   description?: string;
+  distressed?: boolean;
 }) {
   return (
     <header className="trip-section-header space-y-1">
       <h1
         tabIndex={-1}
         data-mobile-type-role="page-title"
-        className="scroll-mt-20 text-3xl font-bold tracking-tight text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:text-4xl"
+        className={`scroll-mt-20 text-3xl font-bold tracking-tight text-text-main focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:text-4xl${distressed ? ' display-distressed display-distressed--light' : ''}`}
       >
         {title}
       </h1>

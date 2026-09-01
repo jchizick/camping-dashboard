@@ -34,6 +34,7 @@ export default function TripGuidePage() {
     <TripSectionPage route="guide">
       <TripPageHeader
         title="Field"
+        distressed
         description={
           usesMobileFieldComposition
             ? 'Conditions, notices and field essentials'

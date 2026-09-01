@@ -68,7 +68,7 @@ export default function TripHero({
         <h1
           id="trip-hero-title"
           tabIndex={-1}
-          className="trip-hero__title"
+          className="trip-hero__title display-distressed display-distressed--light"
           data-mobile-type-role="trip-title"
         >
           {trip.name}

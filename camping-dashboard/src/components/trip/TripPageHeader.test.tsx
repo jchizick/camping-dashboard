@@ -12,14 +12,24 @@ describe('TripPageHeader and section surfaces', () => {
   it('preserves one focusable primary route heading and supporting copy', () => {
     render(
       <TripSectionPage route="plan">
-        <TripPageHeader title="Plan" description="Schedule and meals" />
+        <TripPageHeader title="Plan" description="Schedule and meals" distressed />
       </TripSectionPage>
     );
 
     const heading = screen.getByRole('heading', { level: 1, name: 'Plan' });
     expect(heading.getAttribute('tabindex')).toBe('-1');
+    expect(heading.classList.contains('display-distressed')).toBe(true);
+    expect(heading.classList.contains('display-distressed--light')).toBe(true);
     expect(screen.getByText('Schedule and meals')).toBeTruthy();
     expect(document.querySelector('[data-trip-section="plan"]')).toBeTruthy();
+  });
+
+  it('keeps non-destination headings clean by default', () => {
+    render(<TripPageHeader title="Field Log" description="Trip preparation feed" />);
+
+    const heading = screen.getByRole('heading', { level: 1, name: 'Field Log' });
+    expect(heading.classList.contains('display-distressed')).toBe(false);
+    expect(heading.classList.contains('display-distressed--light')).toBe(false);
   });
 
   it('keeps empty states announced inside the scoped visual system', () => {

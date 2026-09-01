@@ -30,7 +30,7 @@ export default function TripGearPage() {
 
   return (
     <TripSectionPage route="gear">
-      <TripPageHeader title="Gear" description="Checklist and readiness" />
+      <TripPageHeader title="Gear" description="Checklist and readiness" distressed />
       <div className="trip-operational-grid grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
         <div className="trip-gear-overall-readiness trip-section-surface trip-section-surface--secondary lg:order-2 lg:col-span-4">
           <ReadinessScoreCard readiness={readiness} />

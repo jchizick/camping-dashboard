@@ -18,6 +18,7 @@ export default function TripCrewPage() {
     <TripSectionPage route="crew">
       <TripPageHeader
         title="Crew"
+        distressed
         description={usesMobileCrewComposition ? 'People and responsibilities' : 'Roster and load balance'}
       />
       {data.settings.show_crew ? (

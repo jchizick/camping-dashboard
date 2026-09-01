@@ -17,6 +17,7 @@ export default function TripPlanPage() {
     <TripSectionPage route="plan">
       <TripPageHeader
         title="Plan"
+        distressed
         description={
           usesMobilePlanComposition
             ? 'Trip details, schedule and meals'

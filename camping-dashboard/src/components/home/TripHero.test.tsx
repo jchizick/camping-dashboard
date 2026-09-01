@@ -24,6 +24,8 @@ describe('TripHero', () => {
 
     const title = screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' });
     expect(title.classList.contains('trip-hero__title')).toBe(true);
+    expect(title.classList.contains('display-distressed')).toBe(true);
+    expect(title.classList.contains('display-distressed--light')).toBe(true);
     expect(document.querySelectorAll('h1')).toHaveLength(1);
     expect(screen.getByText('Maple Lake · Site 4')).toBeTruthy();
     expect(screen.getByText('Jul 27 – 29, 2026')).toBeTruthy();
