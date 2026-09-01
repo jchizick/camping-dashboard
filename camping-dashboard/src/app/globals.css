@@ -11060,6 +11060,23 @@ body {
 }
 
 @media (max-width: 767px) {
+  .display-distressed {
+    -webkit-mask-image: url("/distressed-mask.png");
+    mask-image: url("/distressed-mask.png");
+    -webkit-mask-size: 290px 290px;
+    mask-size: 290px 290px;
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+    -webkit-mask-position: 37% 43%;
+    mask-position: 37% 43%;
+    mask-mode: alpha;
+  }
+
+  .display-distressed--light {
+    -webkit-mask-size: 310px 310px;
+    mask-size: 310px 310px;
+  }
+
   .trips-landing::before,
   .authenticated-trips-loader::before,
   .trip-create::before,

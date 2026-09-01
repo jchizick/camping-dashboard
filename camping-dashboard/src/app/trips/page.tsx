@@ -184,7 +184,7 @@ function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: 
         </div>
       </div>
       <div className="trips-feature__content">
-        <h2 id="featured-trip-title" data-mobile-type-role="trip-title">{trip.name}</h2>
+        <h2 id="featured-trip-title" className="display-distressed display-distressed--light" data-mobile-type-role="trip-title">{trip.name}</h2>
         <p className="trips-feature__location"><MapPin size={18} aria-hidden="true" /> {getTripLocation(trip)}</p>
         <div className="trips-feature__meta">
           <span><CalendarDays size={17} aria-hidden="true" /> {dateLabel}</span>

@@ -14,7 +14,7 @@ export function TripsWelcome({
       {hasTrips ? (
         <>
           <div className="trips-welcome__copy">
-            <h1 data-mobile-type-role="page-title">Your Trips</h1>
+            <h1 className="display-distressed" data-mobile-type-role="page-title">Your Trips</h1>
             <p><strong>Welcome back, {firstName}.</strong> Pick up where you left off or start another trip.</p>
           </div>
           <Link href={NEW_TRIP_HREF} className="trips-primary-action"><Plus size={19} aria-hidden="true" /> Plan a New Trip</Link>
