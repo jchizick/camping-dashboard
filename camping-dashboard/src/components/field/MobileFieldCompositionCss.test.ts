@@ -17,6 +17,9 @@ describe('mobile Field CSS boundary', () => {
     expect(block).toContain('.mobile-field-essentials');
     expect(block).toContain('.mobile-field-notice[open]');
     expect(block).toContain('.mobile-field-prep__check');
+    expect(block).toContain('.mobile-field-notices .mobile-field-section__heading p');
+    expect(block).toContain('.mobile-field-notices__count');
+    expect(block).toContain('color: var(--workspace-brand-accent);');
     expect(block).toContain('min-height: 2.75rem');
   });
 });

@@ -169,8 +169,14 @@ function MobileFieldNotices({
       <div className="mobile-field-section__heading">
         <div>
           <p>Current information</p>
-          <h2 id="mobile-field-notices-title">
-            Notices{model.notices.length ? ` · ${model.notices.length}` : ''}
+          <h2
+            id="mobile-field-notices-title"
+            aria-label={model.notices.length ? `Notices · ${model.notices.length}` : 'Notices'}
+          >
+            Notices
+            {model.notices.length ? (
+              <span className="mobile-field-notices__count"> · {model.notices.length}</span>
+            ) : null}
           </h2>
         </div>
         <div className="mobile-field-section__actions">

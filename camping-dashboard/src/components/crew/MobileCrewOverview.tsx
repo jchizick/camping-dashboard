@@ -89,11 +89,16 @@ export default function MobileCrewOverview({
       </section>
 
       {unassignedRequiredGear.length > 0 ? (
-        <section className="mobile-crew-unassigned" aria-labelledby="mobile-crew-unassigned-title">
+        <section
+          className="mobile-crew-unassigned"
+          data-state="pending"
+          aria-labelledby="mobile-crew-unassigned-title"
+        >
           <div>
-            <p>Optional coordination</p>
+            <p className="mobile-crew-unassigned__eyebrow">Optional coordination</p>
             <h3 id="mobile-crew-unassigned-title">
-              {plural(unassignedRequiredGear.length, 'Required Gear item')} {unassignedRequiredGear.length === 1 ? 'has' : 'have'} no Crew owner
+              <span className="mobile-crew-unassigned__count">{unassignedRequiredGear.length}</span>{' '}
+              {unassignedRequiredGear.length === 1 ? 'Required Gear item has' : 'Required Gear items have'} no Crew owner
             </h3>
             <p className="mobile-crew-unassigned__guidance">
               {crew.length === 0

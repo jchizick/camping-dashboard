@@ -98,6 +98,11 @@
     font-weight: 780;
   }
 
+  .mobile-field-notices .mobile-field-section__heading p,
+  .mobile-field-notices__count {
+    color: var(--workspace-brand-accent);
+  }
+
   .mobile-field-section__heading strong {
     color: var(--workspace-accent-sage, var(--accent-green));
     font-family: var(--font-mono), monospace;
@@ -569,6 +574,13 @@
 }
 
 :root {
+  --field-protocol-yellow: #efb54d;
+  --workspace-brand-accent: var(--field-protocol-yellow);
+  --workspace-state-pending: var(--workspace-brand-accent);
+  --workspace-state-success: var(--workspace-accent-sage, var(--accent-green));
+  --workspace-state-warning: var(--workspace-warning-text, var(--status-attention));
+  --workspace-state-danger: var(--workspace-danger-text, var(--accent-red));
+  --workspace-state-info: var(--workspace-accent-info, var(--accent-blue));
   --app-bg: #F9FAFB;
   --card-bg: #FFFFFF;
   --card-hover: #F3F4F6;
@@ -8130,11 +8142,11 @@ body {
 }
 
 .gear-filter-marker--to-pack {
-  background: var(--workspace-accent-amber);
+  background: var(--workspace-state-pending);
 }
 
 .gear-filter-marker--required {
-  background: var(--workspace-accent-sage);
+  background: var(--workspace-state-success);
 }
 
 .gear-checklist-item__state,
@@ -8261,7 +8273,11 @@ body {
   .gear-mobile-brief__packing-progress > span {
     display: block;
     height: 100%;
-    background: var(--workspace-accent-sage);
+    background: var(--workspace-state-pending);
+  }
+
+  .gear-mobile-brief__packing-progress[data-state="complete"] > span {
+    background: var(--workspace-state-success);
   }
 
   .gear-mobile-brief__required {
@@ -8340,6 +8356,20 @@ body {
     min-height: 2.75rem;
     justify-content: center;
     padding-inline: 0.75rem;
+  }
+
+  .gear-filter-bar__options > button[data-filter="to-pack"][aria-pressed="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 48%,
+      var(--workspace-border-strong)
+    );
+    background: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 9%,
+      var(--workspace-glass-standard)
+    );
+    box-shadow: inset 0 -2px var(--workspace-state-pending);
   }
 
   .gear-checklist-card__items {
@@ -8431,6 +8461,25 @@ body {
     border: 1px solid var(--workspace-border-subtle);
     background: var(--workspace-glass-standard);
     opacity: 1 !important;
+  }
+
+  .gear-checklist-item[data-item-state="optional"]
+    .gear-checklist-item__acquired[aria-pressed="false"] > svg,
+  .gear-checklist-item[data-item-state="optional"] .gear-checklist-item__pack {
+    color: var(--workspace-state-pending);
+  }
+
+  .gear-checklist-item[data-item-state="optional"] .gear-checklist-item__pack {
+    border-color: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 34%,
+      var(--workspace-border-subtle)
+    );
+    background: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 6%,
+      var(--workspace-glass-standard)
+    );
   }
 
   .gear-checklist-item[data-item-state="packed"] .gear-checklist-item__pack {
@@ -8685,15 +8734,27 @@ body {
     font-size: 0.58rem;
   }
 
-  .mobile-plan-day-selector > button[aria-pressed="true"] {
+  .trip-section-page[data-trip-section="plan"]
+    .mobile-plan-day-selector
+    > button[aria-pressed="true"] {
     color: var(--workspace-text-primary);
-    border-color: var(--workspace-accent-sage);
+    border-color: color-mix(
+      in srgb,
+      var(--workspace-brand-accent) 52%,
+      var(--workspace-border-strong)
+    );
     background: color-mix(
       in srgb,
-      var(--workspace-accent-sage) 15%,
-      var(--workspace-glass-dense)
+      var(--workspace-text-primary) 7%,
+      var(--workspace-glass-standard)
     );
-    box-shadow: inset 0 -2px 0 var(--workspace-accent-sage);
+  }
+
+  .mobile-plan-day-selector > button[aria-pressed="true"] > span > svg,
+  .mobile-plan-day-selector > button[aria-pressed="true"] > small,
+  .mobile-plan-selected-day > p,
+  .mobile-plan-essentials > .mobile-plan-section-heading > div > p {
+    color: var(--workspace-brand-accent);
   }
 
   .mobile-plan-selected-day {
@@ -8744,7 +8805,11 @@ body {
 
   .mobile-plan-itinerary__list time {
     padding-top: 0.08rem;
-    color: var(--workspace-accent-sage);
+    color: color-mix(
+      in srgb,
+      var(--workspace-brand-accent) 78%,
+      var(--workspace-text-secondary)
+    );
     font-family: var(--font-mono), monospace;
     font-size: 0.66rem;
     font-variant-numeric: tabular-nums;
@@ -8757,7 +8822,7 @@ body {
     width: 0.52rem;
     height: 0.52rem;
     margin-top: 0.22rem;
-    border: 2px solid var(--workspace-accent-sage);
+    border: 2px solid var(--workspace-brand-accent);
     border-radius: 999px;
     background: var(--workspace-glass-dense);
   }
@@ -9048,7 +9113,17 @@ body {
   .mobile-crew-unassigned {
     padding: 0.9rem 1rem;
     border-color: var(--workspace-warning-border, color-mix(in srgb, var(--accent-yellow) 40%, transparent));
+    border-left: 3px solid var(--workspace-state-pending);
     background: var(--workspace-warning-surface, color-mix(in srgb, var(--accent-yellow) 8%, var(--card-bg)));
+  }
+
+  .mobile-crew-unassigned[data-state="pending"] .mobile-crew-unassigned__eyebrow,
+  .mobile-crew-unassigned__count {
+    color: var(--workspace-state-pending);
+  }
+
+  .mobile-crew-unassigned__count {
+    font-variant-numeric: tabular-nums;
   }
 
   .mobile-crew-unassigned h3 {
@@ -10145,15 +10220,14 @@ body {
   .mobile-plan-day-selector > button[aria-pressed="true"] {
     border-color: color-mix(
       in srgb,
-      var(--workspace-accent-sage) 58%,
-      var(--workspace-phase3-divider)
+      var(--workspace-brand-accent) 52%,
+      var(--workspace-border-strong)
     );
     background: color-mix(
       in srgb,
-      var(--workspace-accent-sage) 13%,
+      var(--workspace-text-primary) 7%,
       var(--workspace-phase3-surface-secondary)
     );
-    box-shadow: inset 0 -2px var(--workspace-accent-sage);
   }
 
   .mobile-plan-selected-day,
@@ -10218,6 +10292,20 @@ body {
     background: var(--workspace-phase3-surface-secondary);
   }
 
+  .gear-filter-bar__options > button[data-filter="to-pack"][aria-pressed="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 48%,
+      var(--workspace-border-strong)
+    );
+    background: color-mix(
+      in srgb,
+      var(--workspace-state-pending) 9%,
+      var(--workspace-phase3-surface-secondary)
+    );
+    box-shadow: inset 0 -2px var(--workspace-state-pending);
+  }
+
   .gear-checklist-card__items > div {
     padding-block: 0.75rem;
     border-color: var(--workspace-phase3-divider);
@@ -10246,7 +10334,7 @@ body {
 
   .mobile-crew-unassigned {
     border-color: var(--workspace-phase3-divider);
-    border-left: 3px solid var(--workspace-warning-text);
+    border-left-color: var(--workspace-state-pending);
     border-radius: var(--workspace-phase3-radius-secondary);
     background: color-mix(
       in srgb,
@@ -10507,6 +10595,7 @@ body {
   --entry-tertiary: #89968d;
   --entry-sage: #8ebf9b;
   --entry-sage-hover: #a5cfad;
+  --entry-brand-accent: var(--workspace-brand-accent, #efb54d);
   --entry-amber: #e0ae55;
   --entry-blue: #76b2cf;
   --entry-danger: #e07b65;
@@ -11109,21 +11198,21 @@ body {
   }
 
   .trips-welcome[data-trips-state="populated"] .trips-primary-action > svg {
-    color: color-mix(in srgb, var(--entry-amber) 45%, var(--trips-canvas));
+    color: color-mix(in srgb, var(--entry-brand-accent) 45%, var(--trips-canvas));
   }
 
   .trips-feature {
     min-height: 23rem;
     padding: 1.25rem;
-    border-color: color-mix(in srgb, var(--entry-amber) 48%, transparent);
+    border-color: color-mix(in srgb, var(--entry-brand-accent) 48%, transparent);
   }
 
   .trips-feature__status {
-    color: color-mix(in srgb, var(--entry-amber) 68%, var(--entry-muted));
+    color: color-mix(in srgb, var(--entry-brand-accent) 68%, var(--entry-muted));
   }
 
   .trips-feature__status > svg {
-    color: color-mix(in srgb, var(--entry-amber) 92%, var(--entry-ink));
+    color: color-mix(in srgb, var(--entry-brand-accent) 92%, var(--entry-ink));
   }
 
   .trips-feature__content {
@@ -11165,8 +11254,13 @@ body {
   .trips-feature__stat > svg {
     width: 1.75rem;
     height: 1.75rem;
-    color: var(--entry-amber);
+    color: var(--entry-brand-accent);
     stroke-width: 2;
+  }
+
+  .trips-status--upcoming {
+    color: color-mix(in srgb, var(--entry-brand-accent) 82%, var(--entry-ink));
+    background: color-mix(in srgb, var(--entry-brand-accent) 11%, transparent);
   }
 
   .trips-feature__stat-copy {

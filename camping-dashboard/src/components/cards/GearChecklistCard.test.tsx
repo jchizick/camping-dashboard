@@ -161,9 +161,28 @@ describe('GearChecklistCard', () => {
         ];
         renderChecklist(gear);
 
-        expect(screen.getByRole('progressbar', { name: 'Overall packing progress' }).getAttribute('aria-valuetext')).toBe('2 of 3 planned items packed');
+        const progress = screen.getByRole('progressbar', { name: 'Overall packing progress' });
+        expect(progress.getAttribute('aria-valuetext')).toBe('2 of 3 planned items packed');
+        expect(progress.getAttribute('data-state')).toBe('pending');
         expect(screen.getByText('Required gear ready')).toBeTruthy();
         expect(screen.queryByText(/required item.*needs packing/i)).toBeNull();
+    });
+
+    it('switches packing progress from pending to complete only at 100 percent', () => {
+        renderChecklist([
+            gearItem({ id: 'tent', acquired: true, packed: true }),
+            gearItem({ id: 'chair', name: 'Camp chair', priority: 'low', packed: false }),
+        ]);
+
+        expect(screen.getByRole('progressbar', { name: 'Overall packing progress' }).getAttribute('data-state')).toBe('pending');
+
+        cleanup();
+        renderChecklist([
+            gearItem({ id: 'tent', acquired: true, packed: true }),
+            gearItem({ id: 'chair', name: 'Camp chair', priority: 'low', acquired: true, packed: true }),
+        ]);
+
+        expect(screen.getByRole('progressbar', { name: 'Overall packing progress' }).getAttribute('data-state')).toBe('complete');
     });
 
     it('presents missing Required gear as a blocker and focuses the canonical list', () => {
@@ -215,6 +234,7 @@ describe('GearChecklistCard', () => {
         renderChecklist(gear);
 
         const toPack = screen.getByRole('button', { name: 'To pack' });
+        expect(toPack.getAttribute('data-filter')).toBe('to-pack');
         fireEvent.click(toPack);
         expect(toPack.getAttribute('aria-pressed')).toBe('true');
         expect(screen.queryByText('Packed tent')).toBeNull();

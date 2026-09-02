@@ -22,6 +22,12 @@ describe('Mobile Plan composition boundary', () => {
     expect(milestoneCss).toContain('@scope (html[data-phone-layout="true"])');
     expect(milestoneCss).toContain('.mobile-plan-overview');
     expect(milestoneCss).toContain('[data-trip-section="plan"]');
+    expect(milestoneCss).toContain('var(--workspace-brand-accent)');
+    expect(milestoneCss).toContain('.mobile-plan-itinerary__marker');
+    expect(milestoneCss).toContain('.mobile-plan-selected-day > p');
+    expect(css).not.toMatch(
+      /box-shadow:\s*inset 0 -2px(?: 0)? var\(--workspace-brand-accent\)/
+    );
     expect(milestoneCss).not.toContain('[data-trip-section="gear"]');
     expect(milestoneCss).not.toContain('@media (min-width:');
   });

@@ -133,6 +133,7 @@ describe('mobile Field composition', () => {
     expect(screen.getByText('Partial fire ban after 7 PM')).toBeTruthy();
     expect(screen.getByRole('link', { name: /call ranger or park contact/i }).getAttribute('href')).toBe('tel:7055550142');
     expect(screen.getByRole('heading', { name: 'Notices · 1' })).toBeTruthy();
+    expect(view.container.querySelector('.mobile-field-notices__count')?.textContent).toBe(' · 1');
 
     const disclosure = view.container.querySelector('details.mobile-field-notice') as HTMLDetailsElement;
     expect(disclosure.open).toBe(false);
@@ -157,6 +158,27 @@ describe('mobile Field composition', () => {
     expect(screen.queryByRole('button', { name: 'Add manual notice' })).toBeNull();
     expect(screen.getAllByRole('button', { name: /ready|not ready/i }).every((button) => button.hasAttribute('disabled'))).toBe(true);
     expect(screen.getByText('Boil or filter lake water.')).toBeTruthy();
+  });
+
+  it('keeps notice severity tones independent from the notices orientation accent', () => {
+    const severityModel = model();
+    const baseNotice = severityModel.notices[0];
+    severityModel.notices = (['info', 'warning', 'critical'] as const).map((severity) => ({
+      ...baseNotice,
+      alert: {
+        ...baseNotice.alert,
+        id: `notice-${severity}`,
+        severity,
+      },
+      displayTitle: `${severity} notice`,
+    }));
+
+    const view = render(<MobileFieldOverview model={severityModel} actions={null} />);
+    const tones = Array.from(view.container.querySelectorAll('details.mobile-field-notice'))
+      .map((notice) => notice.getAttribute('data-tone'));
+
+    expect(tones).toEqual(['info', 'warning', 'critical']);
+    expect(screen.getByRole('heading', { name: 'Notices · 3' })).toBeTruthy();
   });
 
   it('passes manual confirmations through the existing Field Prep mutation', () => {

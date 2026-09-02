@@ -37,13 +37,16 @@ describe('MobileCrewOverview', () => {
   it('puts participant Gear and Meal responsibilities ahead of secondary load details', () => {
     const { container } = render(<MobileCrewOverview crew={[member]} gear={gear} meals={meals} />);
     const person = screen.getByRole('article');
+    const unassigned = screen.getByRole('region', { name: '1 Required Gear item has no Crew owner' });
 
     expect(within(person).getByRole('heading', { name: 'Gear' })).toBeTruthy();
     expect(within(person).getByText('Tent')).toBeTruthy();
     expect(within(person).getByRole('heading', { name: 'Meal prep' })).toBeTruthy();
     expect(within(person).getByText('Chili')).toBeTruthy();
-    expect(screen.getByText('1 Required Gear item has no Crew owner')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '1 Required Gear item has no Crew owner' })).toBeTruthy();
     expect(screen.getByText('Assign responsibilities when planning with others.')).toBeTruthy();
+    expect(unassigned.getAttribute('data-state')).toBe('pending');
+    expect(unassigned.querySelector('.mobile-crew-unassigned__count')?.textContent).toBe('1');
     expect(container.querySelector('details')?.textContent).toContain('Assigned systems');
   });
 
@@ -76,7 +79,7 @@ describe('MobileCrewOverview', () => {
   it('keeps unassigned Required Gear explicitly optional for solo campers', () => {
     render(<MobileCrewOverview crew={[]} gear={[gear[1]]} meals={[]} />);
 
-    expect(screen.getByText('1 Required Gear item has no Crew owner')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '1 Required Gear item has no Crew owner' })).toBeTruthy();
     expect(screen.getByText('Travelling solo? Crew assignments are optional.')).toBeTruthy();
     expect(screen.queryByText(/needs an accountable person/i)).toBeNull();
   });

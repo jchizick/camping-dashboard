@@ -32,6 +32,32 @@ const workspaceTokens = [
 ] as const;
 
 describe('trip workspace visual tokens', () => {
+  it('defines controlled semantic state roles without remapping the legacy yellow alias', () => {
+    for (const mapping of [
+      '--field-protocol-yellow: #efb54d',
+      '--workspace-brand-accent: var(--field-protocol-yellow)',
+      '--workspace-state-pending: var(--workspace-brand-accent)',
+      '--workspace-state-success: var(--workspace-accent-sage, var(--accent-green))',
+      '--workspace-state-warning: var(--workspace-warning-text, var(--status-attention))',
+      '--workspace-state-danger: var(--workspace-danger-text, var(--accent-red))',
+      '--workspace-state-info: var(--workspace-accent-info, var(--accent-blue))',
+    ]) {
+      expect(css).toContain(mapping);
+    }
+
+    const routeStart = css.indexOf('.trip-section-page {');
+    const routeBlock = css.slice(routeStart, css.indexOf('}', routeStart));
+    expect(routeBlock).toContain('--accent-yellow: var(--workspace-accent-sage)');
+  });
+
+  it('limits Crew pending color to unresolved coordination cues', () => {
+    expect(css).toContain('border-left: 3px solid var(--workspace-state-pending)');
+    expect(css).toContain(
+      '.mobile-crew-unassigned[data-state="pending"] .mobile-crew-unassigned__eyebrow'
+    );
+    expect(css).toContain('.mobile-crew-unassigned__count');
+  });
+
   it('keeps variable-backed Tailwind utilities runtime scoped', () => {
     const inlineThemeStart = css.indexOf('@theme inline');
     const inlineTheme = css.slice(inlineThemeStart, css.indexOf('}', inlineThemeStart));

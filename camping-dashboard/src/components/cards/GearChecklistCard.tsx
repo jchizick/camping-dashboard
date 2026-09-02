@@ -199,6 +199,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
                 </div>
                 <div
                     className="gear-mobile-brief__packing-progress"
+                    data-state={packingPercent === 100 ? 'complete' : 'pending'}
                     role="progressbar"
                     aria-label="Overall packing progress"
                     aria-valuemin={0}
@@ -267,6 +268,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
                             <button
                                 key={f}
                                 type="button"
+                                data-filter={f}
                                 aria-pressed={isActive}
                                 className={`flex min-h-10 items-center gap-2 rounded-full border px-4 text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-yellow/60 ${
                                     isActive

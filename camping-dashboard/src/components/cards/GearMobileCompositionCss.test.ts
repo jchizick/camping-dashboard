@@ -21,6 +21,9 @@ describe('Mobile Gear composition CSS boundary', () => {
         expect(phoneCss).toContain('.gear-desktop-summary');
         expect(phoneCss).toContain('.gear-desktop-weight');
         expect(phoneCss).toContain('.gear-checklist-item__pack');
+        expect(phoneCss).toContain('var(--workspace-state-pending)');
+        expect(phoneCss).toContain('.gear-mobile-brief__packing-progress[data-state="complete"]');
+        expect(phoneCss).toContain('button[data-filter="to-pack"][aria-pressed="true"]');
         expect(milestoneCss).not.toContain('@media (min-width:');
         expect(milestoneCss).not.toContain(':has(');
     });
