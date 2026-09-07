@@ -107,6 +107,40 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('TripDraftGuardProvider', () => {
+  it('reselects an active desktop section through the draft guard without adding history', async () => {
+    const previousHref = window.location.href;
+    window.history.replaceState(null, '', '/trips/trip-1/plan');
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    try {
+      render(<TripDraftGuardProvider>
+        <DraftForm />
+        <div data-desktop-trip-workspace><div data-desktop-workspace-document data-workspace-trip-id="trip-1">
+          <h2 id="desktop-plan-title" tabIndex={-1}>Plan section</h2>
+          <GuardedTripLink href="/trips/trip-1/plan">Plan destination</GuardedTripLink>
+        </div></div>
+      </TripDraftGuardProvider>);
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Keep my draft' } });
+      fireEvent.click(screen.getByRole('link', { name: 'Plan destination' }));
+      expect(screen.getByRole('alertdialog')).toBeTruthy();
+      expect(navigation.push).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: 'Stay and continue editing' }));
+      expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('Keep my draft');
+      fireEvent.click(screen.getByRole('link', { name: 'Plan destination' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Discard changes and continue' }));
+      await waitFor(() => expect(document.activeElement?.id).toBe('desktop-plan-title'));
+      expect(navigation.push).not.toHaveBeenCalled();
+      expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+    } finally {
+      window.history.replaceState(null, '', previousHref);
+    }
+  });
+
+  it('passes query intents through guarded route navigation unchanged', () => {
+    render(<TripDraftGuardProvider><GuardedTripLink href="/trips/trip-1/gear?intent=add-required">Required gear</GuardedTripLink></TripDraftGuardProvider>);
+    fireEvent.click(screen.getByRole('link', { name: 'Required gear' }));
+    expect(navigation.push).toHaveBeenCalledWith('/trips/trip-1/gear?intent=add-required');
+  });
+
   it('allows clean navigation without opening a confirmation', () => {
     render(<TestSurface />);
     fireEvent.click(screen.getByRole('link', { name: 'Gear' }));

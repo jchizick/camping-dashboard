@@ -19,6 +19,8 @@ import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
 import { PhoneLayoutProvider, usePhoneLayout } from './PhoneLayoutProvider';
 import DesktopTripWorkspaceBoundary from './DesktopTripWorkspaceBoundary';
+import DesktopWorkspaceDocument from './DesktopWorkspaceDocument';
+import { desktopSectionHeading } from './desktopSectionNavigation';
 
 type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
@@ -51,6 +53,8 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   const isPhoneLayout = usePhoneLayout();
   const routePathname = usePathname();
   const pathname = navigationPath ?? routePathname;
+  const sectionHeading = !isPhoneLayout ? desktopSectionHeading(pathname, tripId) : null;
+  const workspaceReady = Boolean(data && trip && !roleLoading && !isLoading);
   const activeInfoDialog =
     openedInfoDialog?.pathname === pathname ? openedInfoDialog.name : null;
   const mainRef = useRef<HTMLElement>(null);
@@ -79,21 +83,24 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    if (!workspaceReady) return;
     if (initialPathRef.current === pathname) {
       initialPathRef.current = '';
-      return;
+      // A direct desktop deep link must target its section after data loads.
+      if (!sectionHeading) return;
     }
 
     const frame = window.requestAnimationFrame(() => {
       if (document.querySelector('[aria-modal="true"]')) return;
       const main = mainRef.current;
-      const destination = main?.querySelector<HTMLElement>('h1') ?? main;
+      const destination = (sectionHeading ? main?.querySelector<HTMLElement>(`#${sectionHeading}`) : null)
+        ?? main?.querySelector<HTMLElement>('h1') ?? main;
       destination?.focus({ preventScroll: true });
       destination?.scrollIntoView({ block: 'start', behavior: 'auto' });
       setRouteAnnouncement(`${routeLabel} loaded`);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [pathname, routeLabel]);
+  }, [pathname, routeLabel, sectionHeading, workspaceReady]);
 
   if (roleError) {
     return (
@@ -311,7 +318,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         ) : null}
-        {children}
+        {sectionHeading ? <DesktopWorkspaceDocument key={tripId} tripId={tripId} pathname={pathname} /> : children}
       </main>
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
@@ -45,6 +45,7 @@ vi.mock('@/components/ui/MissionBriefModal', () => ({
 }));
 
 import HomeOverview from './HomeOverview';
+import { TripWorkspaceStatusProvider } from '@/components/trip/TripWorkspaceStatus';
 
 function renderHomeOverview() {
   return render(
@@ -188,6 +189,57 @@ afterEach(() => {
 });
 
 describe('HomeOverview', () => {
+  it('keeps unavailable readiness distinct from zero and preserves the setup intent', () => {
+    const value = workspaceValue();
+    value.readiness = evaluateReadiness({
+      tripId: 'trip-1', tripDays: 1, gear: [], meals: [], timeline: [],
+      currentWeather: null, forecast: [], offlineStatus: null,
+      modules: { mealsEnabled: false, offlineEnabled: false },
+    });
+    value.trip = { ...value.trip!, park_name: null, lake_name: null, site_name: null };
+    workspace.value = value;
+    renderHomeOverview();
+    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.getByText('Not enough information to assess readiness.')).toBeTruthy();
+    expect(screen.getByText('Campsite unavailable')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Identify Required Gear' }).getAttribute('href'))
+      .toBe('/trips/trip-1/gear?intent=add-required');
+    expect(screen.queryByText('0%')).toBeNull();
+  });
+
+  it('labels saved conditions and notices without treating old sunset data as current', () => {
+    const value = workspaceValue(false);
+    value.data!.currentWeather = {
+      temperature_c: 18, condition_label: 'Mainly clear', sunset_time: '19:47',
+      updated_at: '2026-07-25T12:00:00Z',
+    } as NonNullable<typeof value.data>['currentWeather'];
+    workspace.value = value;
+    render(<TripWorkspaceStatusProvider value={{ source: 'cache', connectivity: 'offline',
+      cachedAt: null, lastOnlineVerifiedAt: null, reload: vi.fn() }}>
+      <PhoneLayoutProvider><HomeOverview /></PhoneLayoutProvider>
+    </TripWorkspaceStatusProvider>);
+    expect(document.querySelector('[data-desktop-workspace-overview]')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Previous conditions' })).toBeTruthy();
+    expect(screen.getByText(/Cached · updated/)).toBeTruthy();
+    expect(screen.getByText('18°C')).toBeTruthy();
+    expect(screen.getByText('Sunset (saved)')).toBeTruthy();
+    expect(screen.getByText('19:47')).toBeTruthy();
+    expect(screen.getByText('Saved notice')).toBeTruthy();
+    expect(screen.getByText('Cached · may have changed')).toBeTruthy();
+    expect(screen.getByTestId('map').getAttribute('data-editable')).toBe('false');
+  });
+
+  it('exposes refresh failure and partial coverage without implying full readiness', () => {
+    const value = workspaceValue();
+    value.readiness = { ...value.readiness!, assessmentCoverage: 'partial', statusLabel: 'Readiness Incomplete' };
+    value.data!.weatherRefresh = { status: 'failed' } as NonNullable<typeof value.data>['weatherRefresh'];
+    workspace.value = value;
+    renderHomeOverview();
+    expect(screen.getByText('Readiness Incomplete')).toBeTruthy();
+    expect(screen.getByText(/Partial assessment/)).toBeTruthy();
+    expect(screen.getByText('Weather unavailable · refresh needs attention')).toBeTruthy();
+  });
+
   it('refreshes trip status at local midnight without a domain context update', () => {
     vi.setSystemTime(new Date(2026, 6, 26, 23, 59, 59));
     const domainValue = workspace.value;
@@ -198,79 +250,39 @@ describe('HomeOverview', () => {
     expect(screen.getByText('Trip is underway')).toBeTruthy();
   });
 
-  it('renders the focused Home hierarchy without legacy full modules', () => {
+  it('renders a compact desktop summary using canonical readiness and guarded destinations', () => {
     renderHomeOverview();
-
+    expect(document.querySelector('[data-desktop-workspace-overview]')).toBeTruthy();
+    expect(document.querySelector('[data-home-composition="mobile"]')).toBeNull();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole('heading', { level: 1, name: 'Maple Lake Weekend' })).toBeTruthy();
-    expect(document.querySelector('.home-heading-region img')).toBeNull();
-    expect(screen.getByText('Trip is underway')).toBeTruthy();
-    const headingRegion = document.querySelector('.home-heading-region');
-    const hero = headingRegion?.querySelector('.trip-hero');
-    const situation = screen.getByRole('region', { name: 'Current trip situation' });
-    expect(headingRegion).toBeTruthy();
-    expect(hero).toBeTruthy();
-    expect(headingRegion?.contains(situation)).toBe(true);
-    expect(hero!.compareDocumentPosition(situation) & Node.DOCUMENT_POSITION_FOLLOWING)
-      .toBeTruthy();
-    expect(
-      Array.from(document.querySelectorAll('[data-home-module]')).map((module) =>
-        module.getAttribute('data-home-module')
-      )
-    ).toEqual(['map', 'weather', 'readiness', 'day-plan', 'trip-notice']);
-    expect(screen.getByTestId('map')).toBeTruthy();
-    const weatherSurface = within(
-      screen.getByRole('region', { name: 'Weather and forecast' })
-    );
-    expect(weatherSurface.getByTestId('weather').getAttribute('data-forecast-count')).toBe('1');
-    expect(weatherSurface.getAllByText('5-day forecast')).toHaveLength(1);
-    expect(weatherSurface.queryByRole('heading', { name: 'Forecast' })).toBeNull();
-    expect(screen.getByRole('progressbar', { name: 'Overall trip readiness' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'View gear' }).getAttribute('href')).toBe(
-      '/trips/trip-1/gear'
-    );
-    expect(screen.getByText('View gear').classList.contains(
-      'home-readiness-header-action__label'
-    )).toBe(true);
-    for (const category of ['Manual Prep', 'Gear', 'Meals']) {
-      expect(
-        screen.getByRole('progressbar', { name: `${category} readiness` })
-      ).toBeTruthy();
-    }
-    expect(screen.getByText('Today · Day 1')).toBeTruthy();
-    expect(screen.getByText('View full plan').closest('a')?.getAttribute('href')).toBe(
-      '/trips/trip-1/plan'
-    );
-    expect(screen.getByText('Wind advisory')).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 3, name: 'Launch' })).toBeTruthy();
-    expect(screen.getAllByText('09:00')).toHaveLength(2);
-    for (const legacyTitle of [
-      'Timeline',
-      'Meals',
-      'Crew Roster',
-      'Park Intel',
-      'Alerts',
-      'Offline Vault',
-      'Astronomy',
-      'Prep Feed',
-    ]) {
-      expect(screen.queryByRole('heading', { name: legacyTitle })).toBeNull();
-    }
-
-    expect(document.querySelector('.home-workspaces')).toBeNull();
-    expect(document.querySelector('.home-overview__footer')).toBeNull();
-    expect(screen.queryByText(/Workspace synced/)).toBeNull();
-    for (const label of ['Plan', 'Gear', 'Crew', 'Field', 'Field Log']) {
-      expect(screen.queryByRole('link', { name: `Open ${label}` })).toBeNull();
-    }
+    expect(screen.getByRole('heading', { name: 'Maple Lake Weekend' })).toBeTruthy();
+    expect(screen.getByText('Algonquin Park · Maple Lake · Site 4')).toBeTruthy();
+    expect(screen.getByText(/3 days · 2 nights/)).toBeTruthy();
+    expect(screen.getAllByTestId('map')).toHaveLength(1);
+    expect(screen.queryByTestId('weather')).toBeNull();
+    expect(screen.getAllByRole('progressbar')).toHaveLength(1);
+    expect(screen.getByRole('progressbar').getAttribute('aria-valuenow'))
+      .toBe(String(workspace.value!.readiness!.score));
+    expect(document.querySelectorAll('[data-readiness-segment]')).toHaveLength(20);
+    const priority = workspace.value!.readiness!.primaryPriority!;
+    expect(screen.getByRole('heading', { name: priority.title })).toBeTruthy();
+    expect(screen.getByRole('link', { name: priority.action!.label }).getAttribute('href'))
+      .toBe(priority.action!.href);
+    expect(screen.getByRole('link', { name: 'Open Plan' }).getAttribute('href')).toBe('/trips/trip-1/plan');
+    expect(screen.getByRole('link', { name: 'Review in Field' }).getAttribute('href')).toBe('/trips/trip-1/guide');
+    expect(screen.getByText('Today · Day 1 · planner order')).toBeTruthy();
+    expect(screen.getAllByText('Launch')).toHaveLength(1);
+    expect(screen.getAllByText('09:00')).toHaveLength(1);
+    expect(screen.queryByText('Next')).toBeNull();
+    expect(screen.getByText('Weather unavailable')).toBeTruthy();
+    expect(document.querySelector('.home-overview--desktop')).toBeNull();
   });
-
   it('keeps viewer Home readable and the retained map read-only', () => {
     workspace.value = workspaceValue(false);
     renderHomeOverview();
 
     expect(screen.getByTestId('map').getAttribute('data-editable')).toBe('false');
-    expect(screen.getByRole('link', { name: 'View gear' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Pack critical gear' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /add|edit|delete/i })).toBeNull();
   });
 
@@ -322,7 +334,7 @@ describe('HomeOverview', () => {
 
     expect(document.querySelector('[data-home-composition="desktop"]')).toBeTruthy();
     expect(document.querySelector('[data-home-composition="mobile"]')).toBeNull();
-    expect(screen.getByRole('region', { name: 'Current trip situation' })).toBeTruthy();
+    expect(document.querySelector('[data-desktop-workspace-overview]')).toBeTruthy();
   });
 
   it('renders empty operational states without restoring removed workspace summaries', () => {
@@ -335,7 +347,7 @@ describe('HomeOverview', () => {
     workspace.value = value;
     renderHomeOverview();
 
-    expect(screen.getByText('No active notices')).toBeTruthy();
+    expect(screen.queryByRole('complementary', { name: 'Trip notice' })).toBeNull();
     expect(document.querySelector('.home-workspaces')).toBeNull();
     expect(screen.queryByRole('link', { name: 'Open Crew' })).toBeNull();
   });
@@ -354,7 +366,7 @@ describe('HomeOverview', () => {
         'aria-valuenow'
       )
     ).toBe('100');
-    expect(screen.getAllByText('Locked In')).toHaveLength(2);
+    expect(screen.getAllByText('Locked In')).toHaveLength(1);
   });
 
   it('reflects canonical operational state immediately without calling reload', () => {
@@ -387,7 +399,7 @@ describe('HomeOverview', () => {
       </PhoneLayoutProvider>
     );
 
-    expect(screen.getAllByText('Portage')).toHaveLength(2);
+    expect(screen.getAllByText('Portage')).toHaveLength(1);
     expect(screen.getByText('Rain watch')).toBeTruthy();
     expect(screen.queryByText('Wind advisory')).toBeNull();
     expect(screen.getAllByText('88%').length).toBeGreaterThan(0);

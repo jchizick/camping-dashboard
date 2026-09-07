@@ -3,7 +3,7 @@
 import { useTripWorkspace } from '@/components/trip/TripWorkspaceProvider';
 import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 import { useTripCountdown } from '@/components/trip/useTripCountdown';
-import DesktopHomeOverview from './DesktopHomeOverview';
+import DesktopWorkspaceOverview from './DesktopWorkspaceOverview';
 import MobileHomeOverview from './MobileHomeOverview';
 import { createHomeViewModel } from './homeViewModel';
 
@@ -40,7 +40,7 @@ export default function HomeOverview() {
       canSetupRequiredGear={Boolean(editableActions?.addGearItem)}
     />
   ) : (
-    <DesktopHomeOverview
+    <DesktopWorkspaceOverview
       model={model}
       onSaveLocation={editableActions?.saveCampsite}
     />

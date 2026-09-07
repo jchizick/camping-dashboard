@@ -1,0 +1,88 @@
+/* Phase 4: local desktop presentation only. No shared/mobile token overrides. */
+@scope ([data-desktop-trip-workspace] .desktop-workspace-overview) {
+  :scope {
+    /* Keep the theme's luminance, with a neutral instrument-panel surface. */
+    --dwo-surface: hsl(from var(--workspace-glass-dense, var(--card-bg)) h 8% l);
+    --dwo-muted: var(--workspace-text-secondary, var(--text-muted));
+    --dwo-border: var(--workspace-border-subtle, var(--border-subtle));
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 1fr);
+    color: var(--workspace-text-primary, var(--text-main));
+    background: var(--dwo-surface);
+    border: 1px solid var(--dwo-border);
+    border-radius: 12px;
+    font-family: var(--font-ui-face), sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  h1, h2, .dwo-label, .dwo-score, .dwo-weather strong {
+    font-family: var(--font-display-face), sans-serif;
+    font-weight: 800;
+  }
+  h1 { margin: 4px 0; font-size: clamp(28px, 3vw, 40px); line-height: 1.05; text-transform: uppercase; letter-spacing: -0.02em; }
+  h2, .dwo-label { font-size: 16px; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.035em; }
+  h2 { margin-bottom: 8px; }
+  h3 { font: 600 14px/1.4 var(--font-ui-face), sans-serif; }
+  p { margin: 0; }
+  a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+  a:hover { color: var(--workspace-accent-sage, var(--accent-green)); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+  .dwo-identity, .dwo-readiness { padding: 24px; border-bottom: 1px solid var(--dwo-border); min-width: 0; }
+  .dwo-label span { margin-left: 12px; font: 400 12px/1.4 var(--font-ui-face), sans-serif; text-transform: none; letter-spacing: 0; color: var(--dwo-muted); }
+  .dwo-location { margin-top: 8px; }
+  .dwo-meta { color: var(--dwo-muted); font-size: 12px; margin-top: 4px; }
+  .dwo-readiness { border-left: 1px solid var(--dwo-border); }
+  .dwo-score-line { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .dwo-score { font-size: 48px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .dwo-map { padding: 16px; min-width: 0; }
+  .dwo-map > div { background: transparent; border: 0; border-radius: 0; }
+  .dwo-map > div > div:first-child { padding: 0 0 8px; background: transparent; border: 0; gap: 8px; }
+  .dwo-map > div > div:first-child > div:first-child { font: 800 16px/1.25 var(--font-display-face), sans-serif; color: inherit; }
+  .dwo-map > div > div:last-child { padding: 0; }
+  .dwo-map > div > div:last-child > div:first-child:not(.home-map-card__canvas) { display: none; }
+  /* Legacy Home sets !important map heights at several desktop widths. */
+  .dwo-map .home-map-card__canvas { height: 224px !important; min-height: 224px !important; flex: none; border-radius: 6px; background: color-mix(in srgb, var(--dwo-surface) 94%, currentColor); }
+  .dwo-map button { min-height: 32px; }
+  .dwo-map svg { color: var(--dwo-muted); }
+  .dwo-operations { padding: 20px 24px; border-left: 1px solid var(--dwo-border); min-width: 0; }
+  .dwo-attention[data-attention="true"] h2 { color: var(--workspace-state-warning, var(--accent-yellow)); }
+  .dwo-attention p { color: var(--dwo-muted); margin: 4px 0 8px; }
+  .dwo-schedule { border-top: 1px solid var(--dwo-border); margin-top: 16px; padding-top: 16px; }
+  .dwo-section-heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .dwo-section-heading h2 { margin: 0; }
+  .dwo-section-heading a { font-size: 12px; }
+  .dwo-schedule ol { list-style: none; margin: 8px 0 0; padding: 0; }
+  .dwo-schedule li { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 8px; margin-top: 6px; }
+  .dwo-event-time { color: var(--dwo-muted); font-variant-numeric: tabular-nums; }
+  .dwo-conditions { grid-column: 1 / -1; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--dwo-border); padding: 16px 24px; }
+  .dwo-conditions h2 { margin-bottom: 0; }
+  .dwo-weather { display: flex; align-items: baseline; gap: 12px; }
+  .dwo-weather strong { font-size: 28px; }
+  .dwo-sunset { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+  .dwo-sunset span { color: var(--dwo-muted); }
+  .dwo-notice { grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; padding: 12px 24px; border-top: 1px solid var(--dwo-border); }
+  .dwo-notice > a { margin-left: auto; white-space: nowrap; }
+  .dwo-notice[data-severity="critical"] .dwo-label { color: var(--workspace-state-danger); }
+  .dwo-notice[data-severity="warning"] .dwo-label { color: var(--workspace-state-warning); }
+  .dwo-notice small { color: var(--dwo-muted); }
+  /* Reuse the shared segmented gauge; only its desktop presentation lives here. */
+  .mobile-readiness-gauge { margin-top: 16px; }
+  .mobile-readiness-gauge__track { position: relative; }
+  .mobile-readiness-gauge__segments { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; }
+  [data-readiness-segment] { height: 12px; background: var(--dwo-border); border-radius: 1px; }
+  [data-readiness-segment].is-filled { background: var(--readiness-segment-color); }
+  .mobile-readiness-gauge__marker { position: absolute; top: -6px; transform: translateX(-50%); }
+  .mobile-readiness-gauge__marker-notch { display: block; width: 2px; height: 24px; background: currentColor; }
+  .mobile-readiness-gauge__landmarks { display: grid; grid-template-columns: repeat(4, 1fr); text-align: right; color: var(--dwo-muted); font-size: 10px; margin-top: 8px; }
+  @media (max-width: 1100px) {
+    :scope { grid-template-columns: minmax(0, 1fr) minmax(15rem, 1fr); }
+    .dwo-identity, .dwo-readiness, .dwo-operations { padding: 16px; }
+  }
+  @media (max-width: 850px) {
+    :scope { grid-template-columns: minmax(0, 1fr); }
+    .dwo-readiness, .dwo-operations { border-left: 0; }
+    .dwo-operations { border-top: 1px solid var(--dwo-border); }
+    .dwo-sunset { margin-left: 0; }
+  }
+}

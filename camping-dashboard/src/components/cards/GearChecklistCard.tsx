@@ -1,12 +1,13 @@
 'use client';
 
+import { getGearCategories, requiredGearBrief } from '@/components/gear/gearViewModel';
+
 import React, { useState, useMemo } from 'react';
 import type { CrewMember, GearItem } from '@/types';
 import { resolveCrewResponsibility } from '@/lib/crewResponsibility';
 import {
     calculateEstimatedGearWeight,
     formatEstimatedGearWeight,
-    groupBy,
 } from '@/lib/helpers';
 import type { ReadinessCategoryResult } from '@/lib/readiness';
 import { useTheme } from '@/lib/themeContext';
@@ -29,65 +30,6 @@ interface GearChecklistCardProps {
 }
 
 type FilterMode = 'all' | 'to-pack' | 'required';
-
-const CATEGORY_ORDER = [
-    'Shelter',
-    'Navigation',
-    'Cooking',
-    'Safety',
-    'Clothing',
-    'Lighting',
-    'Camp',
-    'Admin',
-    'Extras',
-];
-
-interface RequiredGearBrief {
-    tone: 'coverage' | 'blocker' | 'warning' | 'ready';
-    title: string;
-    detail: string;
-}
-
-function itemCount(count: number, noun: string) {
-    return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
-
-function requiredGearBrief(category: ReadinessCategoryResult): RequiredGearBrief {
-    if (category.availability !== 'scored') {
-        return {
-            tone: 'coverage',
-            title: 'Required gear not identified',
-            detail: 'Mark the gear you must have so Field Protocol can assess readiness.',
-        };
-    }
-
-    const blockerCount = category.issues.filter((issue) => issue.severity === 'blocker').length;
-    const warningCount = category.issues.filter((issue) => issue.severity === 'warning').length;
-
-    if (blockerCount > 0) {
-        return {
-            tone: 'blocker',
-            title: `${itemCount(blockerCount, 'required item')} missing`,
-            detail: warningCount > 0
-                ? `${itemCount(warningCount, 'acquired required item')} still ${warningCount === 1 ? 'needs' : 'need'} packing.`
-                : 'Acquire or replace the missing gear before departure.',
-        };
-    }
-
-    if (warningCount > 0) {
-        return {
-            tone: 'warning',
-            title: `${itemCount(warningCount, 'required item')} still ${warningCount === 1 ? 'needs' : 'need'} packing`,
-            detail: 'These items are on hand but are not physically packed yet.',
-        };
-    }
-
-    return {
-        tone: 'ready',
-        title: 'Required gear ready',
-        detail: 'Every identified Required item is packed.',
-    };
-}
 
 export default function GearChecklistCard({ gear, crew = [], categoryReadiness, onToggle, onTogglePacked, onAdd, onUpdate, onDelete, addIntent = null, onAddIntentConsumed }: GearChecklistCardProps) {
     const [filter, setFilter] = useState<FilterMode>('all');
@@ -119,14 +61,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
         return gear;
     }, [gear, filter]);
 
-    const grouped = useMemo(() => {
-        const normalizedGear = filtered.map(g => {
-            const rawCat = g.category || 'Extras';
-            const cat = rawCat.charAt(0).toUpperCase() + rawCat.slice(1).toLowerCase();
-            return { ...g, category: cat };
-        });
-        return groupBy(normalizedGear, (g) => g.category);
-    }, [filtered]);
+    const grouped = useMemo(() => getGearCategories(filtered), [filtered]);
 
     const packedCount = gear.filter((g) => g.packed).length;
     const packingPercent = gear.length === 0 ? 0 : Math.round((packedCount / gear.length) * 100);
@@ -312,15 +247,7 @@ export default function GearChecklistCard({ gear, crew = [], categoryReadiness, 
                 aria-label="Gear checklist categories and items"
                 tabIndex={0}
             >
-                {Object.entries(grouped)
-                    .sort(([a], [b]) => {
-                        const ai = CATEGORY_ORDER.indexOf(a);
-                        const bi = CATEGORY_ORDER.indexOf(b);
-                        const aIdx = ai === -1 ? CATEGORY_ORDER.indexOf('Extras') - 0.5 : ai;
-                        const bIdx = bi === -1 ? CATEGORY_ORDER.indexOf('Extras') - 0.5 : bi;
-                        return aIdx - bIdx;
-                    })
-                    .map(([category, items]) => (
+                {grouped.map(([category, items]) => (
                     <div key={category}>
                         <button
                             type="button"

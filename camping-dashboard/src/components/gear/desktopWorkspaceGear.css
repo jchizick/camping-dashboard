@@ -1,0 +1,52 @@
+/* Same local surface and typography contract as Overview and Plan. */
+@scope ([data-desktop-trip-workspace] .desktop-workspace-gear) {
+  :scope {
+    --dwg-surface: hsl(from var(--workspace-glass-dense, var(--card-bg)) h 8% l);
+    --dwg-border: var(--workspace-border-subtle, var(--border-subtle));
+    --dwg-muted: var(--workspace-text-secondary, var(--text-muted));
+    background: var(--dwg-surface); color: var(--workspace-text-primary, var(--text-main));
+    border: 1px solid var(--dwg-border); border-radius: 12px; margin-top: 24px; padding: 24px; min-width: 0;
+    font: 400 14px/1.5 var(--font-ui-face), sans-serif; overflow-wrap: anywhere;
+  }
+  h2, h3, dd { font-family: var(--font-display-face), sans-serif; font-weight: 800; }
+  h2 { font-size: 32px; line-height: 1; text-transform: uppercase; scroll-margin-top: 24px; }
+  h3 { font-size: 18px; }
+  h3 span { margin-left: 12px; font: 400 12px/1.5 var(--font-ui-face), sans-serif; color: var(--dwg-muted); }
+  h4 { display: inline; font: 600 14px/1.5 var(--font-ui-face), sans-serif; }
+  button { min-height: 32px; font: 500 12px/1.4 var(--font-ui-face), sans-serif; cursor: pointer; color: inherit; }
+  button:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 4px; }
+  button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+  button:disabled { cursor: default; }
+  .dwg-heading { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .dwg-heading > p { margin-left: auto; color: var(--dwg-muted); }
+  .dwg-metrics { display: flex; flex-wrap: wrap; gap: 16px 40px; margin: 20px 0; }
+  dt { font-size: 12px; color: var(--dwg-muted); }
+  dd { font-size: 28px; line-height: 1.25; }
+  .dwg-required { border-top: 1px solid var(--dwg-border); padding-top: 12px; }
+  .dwg-required[data-attention="true"] h3 { color: var(--workspace-state-warning); }
+  .dwg-required p, .dwg-empty { color: var(--dwg-muted); }
+  .dwg-views { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .dwg-views button { border: 1px solid var(--dwg-border); border-radius: 4px; padding: 8px 12px; }
+  .dwg-views button[aria-pressed="true"] { border-color: currentColor; background: color-mix(in srgb, currentColor 12%, var(--dwg-surface)); }
+  .dwg-items { list-style: none; padding: 0; margin: 8px 0 0; }
+  .dwg-items li { display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--dwg-border); padding: 8px 0; }
+  .dwg-item-copy { min-width: 0; flex: 1; }
+  .dwg-item-copy p { font-size: 12px; color: var(--dwg-muted); }
+  .dwg-required-label { font-size: 11px; margin-left: 12px; }
+  [data-required-incomplete="true"] .dwg-required-label { color: var(--workspace-state-warning); }
+  .dwg-item-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .dwg-item-actions button[aria-pressed] { border: 1px solid var(--dwg-border); border-radius: 4px; padding: 4px 8px; }
+  .dwg-disclosure { margin-top: 8px; text-decoration: underline; text-underline-offset: 4px; }
+  .dwg-systems { margin-top: 20px; }
+  .dwg-systems > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin-top: 8px; }
+  .dwg-systems button { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; text-align: left; padding: 10px 0; border-top: 1px solid var(--dwg-border); }
+  .dwg-systems button span:last-child { color: var(--dwg-muted); font-variant-numeric: tabular-nums; }
+  .dwg-systems button[aria-expanded="true"] { font-weight: 700; text-decoration: underline; }
+  .dwg-delete { margin-top: 16px; padding: 12px; border: 1px solid var(--workspace-state-warning); }
+  .dwg-delete button { margin-right: 16px; }
+  @media (max-width: 1100px) { :scope { padding: 16px; } }
+  @media (max-width: 850px) {
+    .dwg-items li { align-items: flex-start; flex-direction: column; gap: 4px; }
+    .dwg-systems > div { grid-template-columns: minmax(0, 1fr); }
+  }
+}
