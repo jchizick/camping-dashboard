@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import GuardedTripLink from './GuardedTripLink';
 import TripMoreMenu from './TripMoreMenu';
+import { useOptionalTripWorkspaceStatus } from './TripWorkspaceStatus';
 import {
   isTripDestinationActive,
   TRIP_PRIMARY_DESTINATIONS,
@@ -30,6 +31,8 @@ export default function TripSidebar({
   onSignOut,
 }: TripSidebarProps) {
   const pathname = usePathname();
+  const workspace = useOptionalTripWorkspaceStatus();
+  const navigationPath = workspace?.navigationPath ?? pathname;
 
   return (
     <aside className="trip-workspace-sidebar" data-testid="wide-trip-sidebar-shell">
@@ -49,7 +52,7 @@ export default function TripSidebar({
 
         <nav aria-label="Trip sections" className="trip-workspace-sidebar__nav">
           {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {
-            const active = isTripDestinationActive(pathname, tripId, segment);
+            const active = isTripDestinationActive(navigationPath, tripId, segment);
             return (
               <GuardedTripLink
                 key={label}
@@ -60,7 +63,7 @@ export default function TripSidebar({
                 }`}
               >
                 <Icon size={19} aria-hidden="true" />
-                <span>{label}</span>
+                <span>{segment === '' ? 'Overview' : label}</span>
                 {active ? <span className="sr-only">(current)</span> : null}
               </GuardedTripLink>
             );

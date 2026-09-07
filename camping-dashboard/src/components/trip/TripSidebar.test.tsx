@@ -36,8 +36,8 @@ describe('TripSidebar', () => {
     const sidebar = screen.getByTestId('wide-trip-sidebar-shell');
     const nav = within(sidebar).getByRole('navigation', { name: 'Trip sections' });
     expect(within(nav).getAllByRole('link').map((link) => link.textContent?.replace('(current)', '')))
-      .toEqual(TRIP_PRIMARY_DESTINATIONS.map(({ label }) => label));
-    expect(within(nav).getByRole('link', { name: /Home/ }).getAttribute('aria-current')).toBe('page');
+      .toEqual(TRIP_PRIMARY_DESTINATIONS.map(({ label, segment }) => segment === '' ? 'Overview' : label));
+    expect(within(nav).getByRole('link', { name: /Overview/ }).getAttribute('aria-current')).toBe('page');
     expect(within(nav).queryByRole('link', { name: 'Field Log' })).toBeNull();
 
     fireEvent.click(within(sidebar).getByRole('button', { name: 'More' }));
@@ -48,7 +48,7 @@ describe('TripSidebar', () => {
     mocks.pathname = '/trips/trip-1/guide/notices/notice-1';
     renderSidebar();
     expect(screen.getByRole('link', { name: /Field/ }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: /Home/ }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: /Overview/ }).getAttribute('aria-current')).toBeNull();
   });
 
   it('keeps long identity text present without changing its accessible content', () => {

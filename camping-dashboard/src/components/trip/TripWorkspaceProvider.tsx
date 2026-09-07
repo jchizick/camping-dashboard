@@ -11,7 +11,6 @@ import React, {
 } from 'react';
 import type {
   Alert,
-  CountdownResult,
   CrewMember,
   DashboardData,
   GearItem,
@@ -46,7 +45,6 @@ import type { TripRepositoryResult, TripRepositorySource } from '@/lib/tripRepos
 import { prepareOfflineShell } from '@/lib/offlineShell';
 import { TripWorkspaceStatusProvider } from './TripWorkspaceStatus';
 import { isExplicitWorkspaceDenial } from '@/lib/remoteWorkspaceError';
-import { getTripCountdown } from '@/lib/helpers';
 import {
   evaluateReadiness,
   type ReadinessResult,
@@ -190,7 +188,6 @@ export interface TripWorkspaceValue {
   parkIntel: ParkIntel | null;
   prepFeed: PrepFeedItem[];
   tripDays: number;
-  countdown: CountdownResult | null;
   readiness: ReadinessResult | null;
   permissions: TripWorkspacePermissions;
   source: TripRepositorySource;
@@ -269,7 +266,6 @@ export function TripWorkspaceProvider({
     cachedAt: initialCachedWorkspace?.cachedAt ?? null,
     lastOnlineVerifiedAt: initialCachedWorkspace?.lastOnlineVerifiedAt ?? null,
   });
-  const [countdownTick, setCountdownTick] = useState(0);
   const initialLoadTripRef = useRef<string | null>(null);
   const loadVersionRef = useRef(0);
   const canMutateRef = useRef(false);
@@ -411,14 +407,6 @@ export function TripWorkspaceProvider({
     verificationSource,
   ]);
 
-  useEffect(() => {
-    if (!trip) return;
-    const id = window.setInterval(() => {
-      setCountdownTick((current) => current + 1);
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [trip]);
-
   const revalidateWorkspace = useCallback(() => {
     if (revalidationPromiseRef.current) return revalidationPromiseRef.current;
     const revalidation = (async () => {
@@ -490,13 +478,6 @@ export function TripWorkspaceProvider({
         ? (getTripDuration(trip.start_date, trip.end_date)?.days ?? 0)
         : 0,
     [trip]
-  );
-  const countdown = useMemo(
-    () => {
-      void countdownTick;
-      return trip ? getTripCountdown(trip.start_date) : null;
-    },
-    [countdownTick, trip]
   );
   const readiness = useMemo(
     () =>
@@ -1023,7 +1004,6 @@ export function TripWorkspaceProvider({
     parkIntel,
     prepFeed,
     tripDays,
-    countdown,
     readiness,
     permissions: { role, canEdit: canMutateWorkspace, isOwner },
     source,

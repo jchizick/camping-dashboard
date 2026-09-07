@@ -30,6 +30,7 @@ import type { Alert, OfflineStatus, ParkIntel } from '@/types';
 import { FIELD_PREP_CHECKS } from './fieldPrepChecklist';
 import type { FieldNotice, FieldViewModel } from './fieldViewModel';
 import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
+import { useTripClockTick } from '@/components/trip/useTripCountdown';
 import {
   cachedNoticePresentation,
   cachedWeatherPresentation,
@@ -431,6 +432,8 @@ export default function MobileFieldOverview({
 }) {
   const [intelSheetOpen, setIntelSheetOpen] = useState(false);
   const workspace = useOptionalTripWorkspaceStatus();
+  // Also refreshes the nested notice ages, as the workspace tick did before.
+  useTripClockTick(workspace?.source === 'cache');
   const { essentials } = model;
   const cachedWeather = workspace?.source === 'cache'
     ? cachedWeatherPresentation(

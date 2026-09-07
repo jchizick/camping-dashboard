@@ -45,6 +45,9 @@ vi.mock('@/lib/tripContext', () => ({
 vi.mock('./TripWorkspaceProvider', () => ({
   useTripWorkspace: () => mocks.workspace,
 }));
+vi.mock('./TripWorkspaceStatus', () => ({
+  useOptionalTripWorkspaceStatus: () => mocks.workspace,
+}));
 
 vi.mock('@/components/ui/MissionBriefModal', () => ({
   default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
@@ -83,6 +86,7 @@ vi.mock('./TripAppearanceDialog', () => ({
 }));
 
 import TripAppShell from './TripAppShell';
+import { PHONE_LAYOUT_MEDIA_QUERY } from './PhoneLayoutProvider';
 
 function workspaceValue(): TripWorkspaceValue {
   return {
@@ -150,7 +154,72 @@ afterEach(() => {
 });
 
 describe('TripAppShell', () => {
-  it('uses semantic phone layout while preserving 768px tablet and 1280px sidebar contracts', () => {
+  it.each(['online', 'cache'] as const)(
+    'keeps one stable desktop root across current routes for the %s workspace',
+    (source) => {
+      installMatchMedia(false);
+      mocks.workspace = { ...workspaceValue(), source };
+      const view = render(<TripAppShell><h1>Home</h1></TripAppShell>);
+      const root = view.container.querySelector('[data-desktop-trip-workspace]');
+      expect(root).toBe(view.container.firstElementChild);
+      expect(root?.className).toBe('trip-workspace-shell min-h-[100dvh] text-text-main');
+      const main = screen.getByRole('main');
+      const rail = screen.getByTestId('wide-trip-sidebar-shell');
+      expect(main.parentElement).toBe(root);
+
+      for (const [segment, title] of [
+        ['', 'Home'], ['plan', 'Plan'], ['gear', 'Gear'],
+        ['crew', 'Crew'], ['guide', 'Field'],
+      ]) {
+        const pathname = `/trips/trip-1${segment ? `/${segment}` : ''}`;
+        if (source === 'cache') mocks.workspace.navigationPath = pathname;
+        else mocks.pathname = pathname;
+        view.rerender(<TripAppShell><h1>{title}</h1></TripAppShell>);
+        expect(view.container.querySelectorAll('[data-desktop-trip-workspace]')).toHaveLength(1);
+        expect(view.container.querySelector('[data-desktop-trip-workspace]')).toBe(root);
+        expect(screen.getByRole('main')).toBe(main);
+        expect(screen.getByTestId('wide-trip-sidebar-shell')).toBe(rail);
+        expect(main.hasAttribute('data-desktop-workspace-main')).toBe(true);
+        expect(screen.getAllByRole('navigation')).toHaveLength(1);
+        expect(screen.queryByTestId('mobile-trip-navigation')).toBeNull();
+        expect(screen.queryByRole('banner')).toBeNull();
+        const active = within(screen.getByRole('navigation')).getByRole('link', {
+          name: new RegExp(title === 'Home' ? 'Overview' : title),
+        });
+        expect(active.getAttribute('aria-current')).toBe('page');
+        expect(screen.getAllByRole('heading', { name: title })).toHaveLength(1);
+        expect(screen.getByRole('heading', { name: title }).parentElement).toBe(main);
+      }
+    },
+  );
+
+  it('uses phone state even at landscape-phone widths without remounting shared content', () => {
+    vi.stubGlobal('innerWidth', 956);
+    const media = installMatchMedia(true);
+    const view = render(
+      <TripAppShell><input aria-label="Existing draft" defaultValue="Unsaved" /></TripAppShell>,
+    );
+    const root = view.container.firstElementChild;
+    const draft = screen.getByRole('textbox');
+    fireEvent.change(draft, { target: { value: 'Keep this draft' } });
+    expect(window.matchMedia).toHaveBeenCalledWith(PHONE_LAYOUT_MEDIA_QUERY);
+    expect(root?.hasAttribute('data-desktop-trip-workspace')).toBe(false);
+    expect(screen.queryByTestId('wide-trip-sidebar-shell')).toBeNull();
+    expect(screen.getByTestId('mobile-trip-navigation')).toBeTruthy();
+    expect(document.documentElement.getAttribute('data-phone-layout')).toBe('true');
+
+    for (const isPhone of [false, true]) {
+      media.setMatches(isPhone);
+      expect(view.container.firstElementChild).toBe(root);
+      expect(root?.hasAttribute('data-desktop-trip-workspace')).toBe(!isPhone);
+      expect(screen.getAllByRole('textbox')).toHaveLength(1);
+      expect(screen.getByRole('textbox')).toBe(draft);
+      expect((draft as HTMLInputElement).value).toBe('Keep this draft');
+    }
+  });
+
+  it('preserves phone navigation and its existing responsive CSS contracts', () => {
+    installMatchMedia(true);
     const { container } = render(
       <TripAppShell>
         <h1>Plan</h1>
@@ -161,13 +230,12 @@ describe('TripAppShell', () => {
     const desktopMoreShell = screen.getByTestId('desktop-trip-more-shell');
     const mobileNav = screen.getByTestId('mobile-trip-navigation');
     const mobileMoreShell = screen.getByTestId('mobile-trip-more-shell');
-    const sidebarShell = screen.getByTestId('wide-trip-sidebar-shell');
 
     expect(desktopNavShell.classList.contains('trip-navigation-desktop')).toBe(true);
     expect(desktopMoreShell.classList.contains('trip-navigation-desktop')).toBe(true);
     expect(mobileNav.classList.contains('trip-navigation-mobile-bar')).toBe(true);
     expect(mobileMoreShell.classList.contains('trip-navigation-mobile-more')).toBe(true);
-    expect(sidebarShell.classList.contains('trip-workspace-sidebar')).toBe(true);
+    expect(screen.queryByTestId('wide-trip-sidebar-shell')).toBeNull();
     expect(container.querySelector('[data-testid="desktop-trip-navigation"]')?.classList.contains('hidden'))
       .toBe(false);
 
@@ -247,25 +315,25 @@ describe('TripAppShell', () => {
     await vi.waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 
-  it('renders one shared header, one main landmark, and canonical navigation', () => {
+  it('renders one desktop rail, one main landmark, and canonical guarded destinations', () => {
     render(
       <TripAppShell>
         <h1>Plan</h1>
       </TripAppShell>
     );
 
-    expect(screen.getAllByRole('banner')).toHaveLength(1);
+    expect(screen.queryByRole('banner')).toBeNull();
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1, name: 'Plan' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Skip to trip content' }).getAttribute('href'))
       .toBe('#trip-main');
-    expect(screen.getByRole('link', { name: 'Back to trips' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'Back to Trips' }).getAttribute('href')).toBe(
       '/trips'
     );
 
-    const expectedOrder = ['Home', 'Plan', 'Gear', 'Crew', 'Field'];
-    for (const testId of ['desktop-trip-navigation', 'mobile-trip-navigation']) {
-      const nav = within(screen.getByTestId(testId));
+    const expectedOrder = ['Overview', 'Plan', 'Gear', 'Crew', 'Field'];
+    for (const navElement of screen.getAllByRole('navigation')) {
+      const nav = within(navElement);
       expect(nav.getAllByRole('link').map((link) => link.textContent?.replace('(current)', '')))
         .toEqual(expectedOrder);
       expect(nav.getByRole('link', { name: 'Field' }).getAttribute('href')).toBe(
@@ -276,7 +344,7 @@ describe('TripAppShell', () => {
     const activePlanLinks = screen
       .getAllByRole('link', { name: /Plan/ })
       .filter((link) => link.getAttribute('aria-current') === 'page');
-    expect(activePlanLinks).toHaveLength(3);
+    expect(activePlanLinks).toHaveLength(1);
 
     for (const href of [
       '/trips/trip-1',
@@ -507,9 +575,9 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    const identity = container.querySelector('.trip-shell-identity');
+    const identity = container.querySelector('.trip-workspace-sidebar__identity');
     expect(identity?.getAttribute('title')).toContain(value.trip!.name);
-    expect(identity?.querySelector('p')?.classList.contains('truncate')).toBe(true);
+    expect(identity?.querySelector('.trip-workspace-sidebar__trip-name')).toBeTruthy();
     expect(identity?.textContent).toContain(value.trip!.name);
   });
 });

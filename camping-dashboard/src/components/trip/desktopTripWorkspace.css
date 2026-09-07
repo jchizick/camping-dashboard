@@ -1,0 +1,76 @@
+/* Desktop chassis only. Phone activation remains owned by usePhoneLayout. */
+[data-desktop-trip-workspace].trip-workspace-shell {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  grid-template-rows: auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell .trip-workspace-sidebar {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 1rem;
+  z-index: var(--layer-navigation);
+  height: calc(100dvh - 2rem);
+  min-height: 0;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell .trip-workspace-sidebar__surface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 1.25rem;
+  padding: 1rem;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell > .trip-source-status,
+[data-desktop-trip-workspace].trip-workspace-shell > main[data-desktop-workspace-main] {
+  grid-column: 2;
+  min-width: 0;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell > main[data-desktop-workspace-main] {
+  grid-row: 1;
+  min-height: calc(100dvh - 2rem);
+  padding-bottom: 0;
+  border-radius: var(--radius-hero);
+  scroll-padding-top: 1rem;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell:has(> .trip-source-status) .trip-workspace-sidebar {
+  grid-row: 1 / span 2;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell > .trip-source-status + main[data-desktop-workspace-main] {
+  grid-row: 2;
+}
+
+/* Retain each current page, but let its content participate in document flow. */
+[data-desktop-trip-workspace].trip-workspace-shell .trip-section-page:is([data-trip-section="plan"], [data-trip-section="gear"]) {
+  height: auto;
+}
+
+[data-desktop-trip-workspace].trip-workspace-shell [data-desktop-workspace-main] .trip-section-page .timeline-card__events,
+[data-desktop-trip-workspace].trip-workspace-shell [data-desktop-workspace-main] .trip-section-page .gear-checklist-card__items,
+[data-desktop-trip-workspace].trip-workspace-shell [data-desktop-workspace-main] .trip-section-page .meal-planner-card__entries {
+  max-height: none;
+  overflow-y: visible;
+}
+
+@media (min-width: 1440px) {
+  [data-desktop-trip-workspace].trip-workspace-shell {
+    grid-template-columns: 13rem minmax(0, 1fr);
+  }
+}
+
+/* An unbounded rail scrolls with the document on short screens; no clipped menu. */
+@media (max-height: 699px) {
+  [data-desktop-trip-workspace].trip-workspace-shell .trip-workspace-sidebar {
+    position: static;
+    height: auto;
+  }
+}

@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { evaluateOfflineCategory } from '@/lib/readiness';
 import type { FieldViewModel } from './fieldViewModel';
 import MobileFieldOverview from './MobileFieldOverview';
+import { TripWorkspaceStatusProvider } from '@/components/trip/TripWorkspaceStatus';
 
 vi.mock('@/components/cards/AlertFormSheet', () => ({
   default: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div data-testid="notice-sheet" /> : null,
@@ -15,7 +16,30 @@ vi.mock('@/components/cards/ParkIntelFormSheet', () => ({
   default: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div data-testid="intel-sheet" /> : null,
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
+
+it('refreshes cached notice age without receiving new workspace data', () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-08-23T12:00:59Z'));
+  const field = model();
+  field.alertRefreshStates = [{
+    last_success_at: '2026-08-23T12:00:00Z', status: 'success',
+  } as NonNullable<FieldViewModel['alertRefreshStates']>[number]];
+  const view = render(
+    <TripWorkspaceStatusProvider value={{
+      source: 'cache', connectivity: 'offline', cachedAt: null,
+      lastOnlineVerifiedAt: null, reload: vi.fn(),
+    }}>
+      <MobileFieldOverview model={field} actions={null} />
+    </TripWorkspaceStatusProvider>,
+  );
+  expect(view.container.textContent).toContain('Cached · last checked just now');
+  act(() => vi.advanceTimersByTime(1000));
+  expect(view.container.textContent).toContain('Cached · last checked 1m ago');
+});
 
 function model(): FieldViewModel {
   const offlineStatus = {

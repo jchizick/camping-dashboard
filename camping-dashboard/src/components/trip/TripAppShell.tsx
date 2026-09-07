@@ -18,6 +18,7 @@ import { useTripWorkspace } from './TripWorkspaceProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { useOptionalTripDraftGuard } from './TripDraftGuardProvider';
 import { PhoneLayoutProvider, usePhoneLayout } from './PhoneLayoutProvider';
+import DesktopTripWorkspaceBoundary from './DesktopTripWorkspaceBoundary';
 
 type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
@@ -138,7 +139,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   if (!data || !trip || roleLoading || isLoading) return <AuthenticatedTripsLoader />;
 
   return (
-    <div className="trip-workspace-shell min-h-[100dvh] text-text-main" data-trip-app-shell>
+    <DesktopTripWorkspaceBoundary>
       <TripWorkspaceBackground trip={trip} />
       <a
         href="#trip-main"
@@ -147,7 +148,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
         Skip to trip content
       </a>
 
-      <TripSidebar
+      {!isPhoneLayout && <TripSidebar
         tripId={tripId}
         tripName={trip.name}
         tripLocation={
@@ -165,9 +166,9 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
             : undefined
         }
         onSignOut={handleSignOut}
-      />
+      />}
 
-      <header className="trip-app-header relative z-[var(--layer-navigation)] border-b backdrop-blur md:sticky md:top-0">
+      {isPhoneLayout && <header className="trip-app-header relative z-[var(--layer-navigation)] border-b backdrop-blur md:sticky md:top-0">
         <div className="trip-shell-inner mx-auto flex max-w-[1600px] items-center gap-3 px-3 md:px-6 lg:px-8">
           <GuardedTripLink
             href="/trips"
@@ -242,7 +243,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
             ) : null}
           </div>
         </div>
-      </header>
+      </header>}
 
       {source === 'cache' || connectivity === 'checking' ? (
         <section
@@ -289,6 +290,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
       <main
         ref={mainRef}
         id="trip-main"
+        data-desktop-workspace-main={!isPhoneLayout ? '' : undefined}
         tabIndex={-1}
         aria-label={`${routeLabel} trip workspace`}
         className="trip-app-main relative scroll-mt-20"
@@ -316,7 +318,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
         {routeAnnouncement}
       </div>
 
-      <TripMobileNav tripId={tripId} />
+      {isPhoneLayout && <TripMobileNav tripId={tripId} />}
 
       <MissionBriefModal
         isOpen={activeInfoDialog === 'mission-brief'}
@@ -334,7 +336,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
           onClose={() => setOpenedInfoDialog(null)}
         />
       ) : null}
-    </div>
+    </DesktopTripWorkspaceBoundary>
   );
 }
 

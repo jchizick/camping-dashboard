@@ -133,6 +133,7 @@ import {
   useTripWorkspace,
 } from './TripWorkspaceProvider';
 import { useTheme } from '@/lib/themeContext';
+import { useTripCountdown } from './useTripCountdown';
 
 function gearItem(overrides: Partial<GearItem> = {}): GearItem {
   return {
@@ -582,6 +583,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   document.documentElement.classList.remove(
     'theme-expedition',
     'theme-clean',
@@ -592,6 +594,66 @@ afterEach(() => {
 });
 
 describe('TripWorkspaceProvider loading and state', () => {
+  it.each(['online', 'cache'] as const)(
+    'isolates countdown ticks from domain, readiness, actions and theme consumers (%s)',
+    async (source) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 6, 31, 12, 0, 0));
+      const data = dashboardData();
+      mocks.fetchDashboardData.mockResolvedValue(data);
+      if (source === 'cache') {
+        mocks.trip.verificationSource = 'cache';
+        mocks.trip.cachedWorkspace = {
+          source: 'cache', data, verifiedRole: 'owner',
+          cachedAt: '2026-07-31T12:00:00Z',
+          lastOnlineVerifiedAt: '2026-07-31T12:00:00Z',
+        };
+      }
+      const domainRender = vi.fn();
+      const themeRender = vi.fn();
+      const clockRender = vi.fn();
+      function DomainConsumer() {
+        const workspace = useTripWorkspace();
+        domainRender(workspace);
+        return <span>{workspace.trip?.name}</span>;
+      }
+      function ThemeConsumer() {
+        themeRender(useTheme());
+        return null;
+      }
+      function ClockConsumer() {
+        const { trip } = useTripWorkspace();
+        const countdown = useTripCountdown(trip?.start_date);
+        clockRender(countdown);
+        return <output data-testid="local-countdown">{countdown?.totalSeconds}</output>;
+      }
+      let view: ReturnType<typeof render>;
+      await act(async () => {
+        view = renderProvider(<><DomainConsumer /><ThemeConsumer /><ClockConsumer /></>);
+      });
+      expect(screen.getByText('Algonquin')).toBeTruthy();
+      const beforeSeconds = Number(screen.getByTestId('local-countdown').textContent);
+      expect(beforeSeconds).toBeGreaterThan(3);
+      const beforeDomain = domainRender.mock.calls.length;
+      const beforeTheme = themeRender.mock.calls.length;
+      const beforeClock = clockRender.mock.calls.length;
+      const workspace = domainRender.mock.lastCall![0];
+      expect(workspace.readiness).not.toBeNull();
+      expect(Boolean(workspace.editableActions)).toBe(source === 'online');
+
+      await act(async () => { vi.advanceTimersByTime(3000); });
+
+      expect(Number(screen.getByTestId('local-countdown').textContent)).toBe(beforeSeconds - 3);
+      expect(clockRender.mock.calls.length).toBeGreaterThan(beforeClock);
+      expect(domainRender).toHaveBeenCalledTimes(beforeDomain);
+      expect(themeRender).toHaveBeenCalledTimes(beforeTheme);
+      expect(domainRender.mock.lastCall![0]).toBe(workspace);
+      expect(mocks.loadOnlineTrip).toHaveBeenCalledTimes(source === 'online' ? 1 : 0);
+      view!.unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+
   it('accumulates independent Field Prep confirmations and preserves them after reload', async () => {
     let persistedStatus = {
       trip_id: 'trip-1',

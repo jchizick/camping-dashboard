@@ -7,6 +7,7 @@ import type { BadgeVariant } from '@/components/ui/Primitives';
 import PrepFeedFormSheet from './PrepFeedFormSheet';
 import PrepFeedLightbox from '@/components/ui/PrepFeedLightbox';
 import { useTheme } from '@/lib/themeContext';
+import { useTripClockTick } from '@/components/trip/useTripCountdown';
 import { Camera, Plus, Trash2, Clock, User } from 'lucide-react';
 
 // ── Category → badge variant mapping ────────────────────────
@@ -44,6 +45,8 @@ interface FieldPrepFeedCardProps {
 }
 
 export default function FieldPrepFeedCard({ items, onAdd, onDelete, defaultUploader }: FieldPrepFeedCardProps) {
+    // Keep relative timestamps (including the open lightbox) current locally.
+    useTripClockTick(items.length > 0);
     const [sheetOpen, setSheetOpen] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);

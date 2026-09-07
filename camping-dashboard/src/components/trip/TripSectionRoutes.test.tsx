@@ -99,11 +99,12 @@ import TripGearPage from '@/app/trips/[tripId]/gear/page';
 import TripCrewPage from '@/app/trips/[tripId]/crew/page';
 import TripGuidePage from '@/app/trips/[tripId]/guide/page';
 import TripFieldLogPage from '@/app/trips/[tripId]/field-log/page';
+import DesktopTripWorkspaceBoundary from './DesktopTripWorkspaceBoundary';
 
 function renderRoute(Page: React.ComponentType) {
   return render(
     <PhoneLayoutProvider>
-      <Page />
+      <DesktopTripWorkspaceBoundary><Page /></DesktopTripWorkspaceBoundary>
     </PhoneLayoutProvider>
   );
 }
@@ -197,6 +198,8 @@ describe('trip section routes', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
     expect(container.querySelector('[data-trip-section]')).toBeTruthy();
+    expect(container.querySelector('[data-trip-section]')?.parentElement)
+      .toBe(container.querySelector('[data-desktop-trip-workspace]'));
     expect(container.querySelector('.trip-section-header')).toBeTruthy();
     for (const moduleId of modules) expect(screen.getByTestId(moduleId)).toBeTruthy();
     expect(container.querySelectorAll('.trip-section-surface')).toHaveLength(modules.length);
@@ -270,6 +273,7 @@ describe('trip section routes', () => {
     renderRoute(TripPlanPage);
 
     expect(screen.getByTestId('mobile-plan')).toBeTruthy();
+    expect(document.querySelector('[data-desktop-trip-workspace]')).toBeNull();
     expect(screen.queryByTestId('timeline')).toBeNull();
     expect(screen.queryByTestId('meals')).toBeNull();
     expect(screen.getByText('Trip details, schedule and meals')).toBeTruthy();
@@ -291,6 +295,7 @@ describe('trip section routes', () => {
     renderRoute(TripGuidePage);
 
     expect(screen.getByTestId('mobile-field')).toBeTruthy();
+    expect(document.querySelector('[data-desktop-trip-workspace]')).toBeNull();
     expect(screen.queryByTestId('park')).toBeNull();
     expect(screen.queryByTestId('alerts')).toBeNull();
     expect(screen.queryByTestId('offline')).toBeNull();

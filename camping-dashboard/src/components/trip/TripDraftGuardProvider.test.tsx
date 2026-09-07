@@ -10,6 +10,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import GuardedTripLink from './GuardedTripLink';
+import TripSidebar from './TripSidebar';
 import {
   TripDraftGuardProvider,
   useTripDraftGuard,
@@ -81,14 +82,19 @@ function GuardState() {
   return <output>{hasDirtyDrafts ? 'dirty' : 'clean'}</output>;
 }
 
-function TestSurface({ multiple = false }: { multiple?: boolean }) {
+function TestSurface({ multiple = false, rail = false }: { multiple?: boolean; rail?: boolean }) {
   return (
     <TripDraftGuardProvider>
       <button type="button">Navigation origin</button>
       <DraftForm />
       {multiple ? <DraftForm id="draft-two" label="Campsite label" /> : null}
       <GuardState />
-      <GuardedTripLink href="/trips/trip-1/gear">Gear</GuardedTripLink>
+      {rail ? (
+        <TripSidebar
+          tripId="trip-1" tripName="Maple Lake" tripLocation="Algonquin"
+          onMissionBrief={vi.fn()} onProjectIntel={vi.fn()} onSignOut={vi.fn()}
+        />
+      ) : <GuardedTripLink href="/trips/trip-1/gear">Gear</GuardedTripLink>}
     </TripDraftGuardProvider>
   );
 }
@@ -109,8 +115,8 @@ describe('TripDraftGuardProvider', () => {
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
-  it('blocks dirty navigation, lets Stay preserve the form, then discards and continues', async () => {
-    render(<TestSurface />);
+  it.each([false, true])('blocks dirty navigation, preserves Stay, then discards and continues (rail: %s)', async (rail) => {
+    render(<TestSurface rail={rail} />);
     const input = screen.getByRole('textbox', { name: 'Trip title' });
     fireEvent.change(input, { target: { value: 'Changed title' } });
     fireEvent.click(screen.getByRole('link', { name: 'Gear' }));

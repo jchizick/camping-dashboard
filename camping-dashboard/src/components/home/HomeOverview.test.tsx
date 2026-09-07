@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
@@ -164,14 +164,6 @@ function workspaceValue(editable = true): TripWorkspaceValue {
     parkIntel: null,
     prepFeed: [],
     tripDays: 3,
-    countdown: {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      totalSeconds: 0,
-      isPast: true,
-    },
     readiness: readinessResult(),
     editableActions: editable ? { saveCampsite: vi.fn() } : null,
     permissions: {
@@ -196,6 +188,16 @@ afterEach(() => {
 });
 
 describe('HomeOverview', () => {
+  it('refreshes trip status at local midnight without a domain context update', () => {
+    vi.setSystemTime(new Date(2026, 6, 26, 23, 59, 59));
+    const domainValue = workspace.value;
+    renderHomeOverview();
+    expect(screen.getByText('Trip is approaching')).toBeTruthy();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(workspace.value).toBe(domainValue);
+    expect(screen.getByText('Trip is underway')).toBeTruthy();
+  });
+
   it('renders the focused Home hierarchy without legacy full modules', () => {
     renderHomeOverview();
 

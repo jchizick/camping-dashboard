@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 const projectRoot = process.cwd();
 const css = readFileSync(resolve(projectRoot, 'src/app/globals.css'), 'utf8');
 const destinationFiles = [
+  'src/components/trip/DesktopTripWorkspaceBoundary.tsx',
   'src/components/home/HomeOverview.tsx',
   'src/app/trips/[tripId]/plan/page.tsx',
   'src/app/trips/[tripId]/crew/page.tsx',

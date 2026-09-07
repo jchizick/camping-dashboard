@@ -6,6 +6,7 @@ import type { TripWorkspaceEditableActions } from '@/components/trip/TripWorkspa
 import type { FieldViewModel } from './fieldViewModel';
 import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
 import { cachedNoticePresentation } from '@/lib/offlineFreshness';
+import { useTripClockTick } from '@/components/trip/useTripCountdown';
 
 export default function DesktopFieldOverview({
   model,
@@ -15,6 +16,7 @@ export default function DesktopFieldOverview({
   actions: TripWorkspaceEditableActions | null;
 }) {
   const workspace = useOptionalTripWorkspaceStatus();
+  useTripClockTick(workspace?.source === 'cache');
   const cachedNotices = workspace?.source === 'cache'
     ? cachedNoticePresentation(model.alertRefreshStates)
     : null;
