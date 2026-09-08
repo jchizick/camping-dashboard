@@ -57,6 +57,12 @@ vi.mock('@/components/plan/DesktopWorkspacePlanSection', () => ({
 vi.mock('@/components/gear/DesktopWorkspaceGearSection', () => ({
   default: () => <section><h2 id="desktop-gear-title" tabIndex={-1}>Gear</h2></section>,
 }));
+vi.mock('@/components/crew/DesktopWorkspaceCrewSection', () => ({
+  default: () => <section><h2 id="desktop-crew-title" tabIndex={-1}>Crew</h2></section>,
+}));
+vi.mock('@/components/field/DesktopWorkspaceFieldSection', () => ({
+  default: () => <section><h2 id="desktop-field-title" tabIndex={-1}>Field</h2></section>,
+}));
 
 vi.mock('@/components/ui/MissionBriefModal', () => ({
   default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
@@ -176,7 +182,7 @@ describe('TripAppShell', () => {
     expect(overview.compareDocumentPosition(plan) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const state = screen.getByRole('textbox', { name: 'Persistent day selection' });
     fireEvent.change(state, { target: { value: 'Day 2' } });
-    for (const [path, id] of [['/trips/trip-1', 'desktop-overview-title'], ['/trips/trip-1/plan', 'desktop-plan-title'], ['/trips/trip-1/gear', 'desktop-gear-title'], ['/trips/trip-1/plan', 'desktop-plan-title']]) {
+    for (const [path, id] of [['/trips/trip-1', 'desktop-overview-title'], ['/trips/trip-1/plan', 'desktop-plan-title'], ['/trips/trip-1/gear', 'desktop-gear-title'], ['/trips/trip-1/crew', 'desktop-crew-title'], ['/trips/trip-1/guide', 'desktop-field-title'], ['/trips/trip-1/plan', 'desktop-plan-title']]) {
       if (source === 'cache') mocks.workspace.navigationPath = path;
       else mocks.pathname = path;
       view.rerender(<TripAppShell><h1>Legacy route body</h1></TripAppShell>);
@@ -187,14 +193,39 @@ describe('TripAppShell', () => {
     }
   });
 
-  it('waits for trip data before focusing an initial desktop deep link', async () => {
+  it.each(['plan', 'crew', 'guide'])('waits for trip data before focusing an initial desktop %s deep link', async section => {
+    const heading = section === 'guide' ? 'field' : section;
+    mocks.pathname = `/trips/trip-1/${section}`;
+    installMatchMedia(false);
     const ready = workspaceValue();
     mocks.workspace = { ...ready, data: null, trip: null, isLoading: true };
     const view = render(<TripAppShell><h1>Legacy route body</h1></TripAppShell>);
-    expect(document.querySelector('#desktop-plan-title')).toBeNull();
+    expect(document.querySelector(`#desktop-${heading}-title`)).toBeNull();
     mocks.workspace = ready;
     view.rerender(<TripAppShell><h1>Legacy route body</h1></TripAppShell>);
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('desktop-plan-title'));
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe(`desktop-${heading}-title`));
+  });
+
+  it.each([{ width: 390, route: 'crew' }, { width: 956, route: 'crew' }, { width: 390, route: 'guide' }, { width: 956, route: 'guide' }])('bypasses the desktop document for phone $route at $width px', ({ width, route }) => {
+    mocks.pathname = `/trips/trip-1/${route}`;
+    vi.stubGlobal('innerWidth', width);
+    installMatchMedia(true);
+    render(<TripAppShell><h1>Phone Crew route</h1></TripAppShell>);
+    expect(screen.getAllByRole('heading', { name: 'Phone Crew route' })).toHaveLength(1);
+    expect(document.querySelector('[data-desktop-workspace-document]')).toBeNull();
+    expect(document.querySelector('[data-desktop-trip-workspace]')).toBeNull();
+    expect(screen.getByTestId('mobile-trip-navigation')).toBeTruthy();
+  });
+
+  it.each(['online', 'cache'] as const)('keeps Field Log outside the five-domain document for %s', source => {
+    installMatchMedia(false);
+    mocks.pathname = '/trips/trip-1/field-log';
+    mocks.workspace = { ...workspaceValue(), source };
+    if (source === 'cache') mocks.workspace.navigationPath = '/trips/trip-1/field-log';
+    render(<TripAppShell><h1>Existing Field Log</h1></TripAppShell>);
+    expect(screen.getByRole('heading', { name: 'Existing Field Log' })).toBeTruthy();
+    expect(document.querySelector('[data-desktop-workspace-document]')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Field' })).toBeNull();
   });
 
   it.each(['online', 'cache'] as const)(
@@ -232,7 +263,7 @@ describe('TripAppShell', () => {
         expect(active.getAttribute('aria-current')).toBe('page');
         expect(screen.getAllByRole('heading', { name: title })).toHaveLength(1);
         expect(main.contains(screen.getByRole('heading', { name: title }))).toBe(true);
-        if (!segment || segment === 'plan' || segment === 'gear') {
+        if (!segment || segment === 'plan' || segment === 'gear' || segment === 'crew' || segment === 'guide') {
           expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
           expect(screen.getByRole('heading', { level: 2, name: 'Plan' })).toBeTruthy();
         }
@@ -241,7 +272,7 @@ describe('TripAppShell', () => {
   );
 
   it('uses phone state even at landscape-phone widths without remounting shared content', () => {
-    mocks.pathname = '/trips/trip-1/crew';
+    mocks.pathname = '/trips/trip-1/field-log';
     vi.stubGlobal('innerWidth', 956);
     const media = installMatchMedia(true);
     const view = render(
@@ -568,7 +599,7 @@ describe('TripAppShell', () => {
   });
 
   it('focuses the destination heading after a client route change but not on initial load', async () => {
-    mocks.pathname = '/trips/trip-1/crew';
+    mocks.pathname = '/trips/trip-1/field-log';
     const scrollIntoView = vi.fn();
     HTMLElement.prototype.scrollIntoView = scrollIntoView;
     const view = render(

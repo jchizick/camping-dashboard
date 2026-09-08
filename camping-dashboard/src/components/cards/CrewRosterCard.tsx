@@ -6,6 +6,8 @@ import { Badge, Card } from '@/components/ui/Primitives';
 import { useTheme } from '@/lib/themeContext';
 import CrewFormSheet from '@/components/cards/CrewFormSheet';
 import { Pencil, Plus, Scale, Trash2, User } from 'lucide-react';
+import { formatResponsibility, getCrewLoadBalance, getCrewLoadRows, splitResponsibilities } from '@/components/crew/crewViewModel';
+export { getCrewLoadRows, splitResponsibilities } from '@/components/crew/crewViewModel';
 
 interface CrewRosterCardProps {
     crew: CrewMember[];
@@ -23,27 +25,6 @@ const loadToneClasses = [
     'bg-text-main/55',
 ];
 
-export function splitResponsibilities(loadItem: string) {
-    return loadItem.split(/\s*\+\s*/).map((item) => item.trim()).filter(Boolean);
-}
-
-function formatResponsibility(value: string) {
-    if (value !== value.toUpperCase()) return value;
-    return value.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-export function getCrewLoadRows(crew: CrewMember[]) {
-    const totalLoad = crew.reduce((total, member) => total + (member.load_weight_kg || 0), 0);
-    return {
-        totalLoad,
-        rows: crew.map((member) => {
-            const weight = member.load_weight_kg || 0;
-            const rawPercentage = totalLoad > 0 ? (weight / totalLoad) * 100 : 0;
-            return { member, weight, rawPercentage, displayPercentage: Math.round(rawPercentage) };
-        }),
-    };
-}
-
 export default function CrewRosterCard({ crew, gear = [], meals = [], onAdd, onUpdate, onDelete }: CrewRosterCardProps) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<CrewMember | undefined>(undefined);
@@ -51,23 +32,9 @@ export default function CrewRosterCard({ crew, gear = [], meals = [], onAdd, onU
     const { labels } = useTheme();
     const { totalLoad, rows: loadRows } = getCrewLoadRows(crew);
 
-    const equalShare = crew.length > 0 ? 100 / crew.length : 0;
-    const maxDeviationPercent = totalLoad > 0
-        ? Math.max(...loadRows.map(({ rawPercentage }) => Math.abs(rawPercentage - equalShare)))
-        : 0;
-
-    let balanceStatus = 'Optimal Balance';
-    let statusColor = 'text-accent-green';
-    if (totalLoad === 0) {
-        balanceStatus = 'No Load Data';
-        statusColor = 'text-text-muted';
-    } else if (maxDeviationPercent >= 20) {
-        balanceStatus = 'Major Imbalance';
-        statusColor = 'text-accent-red';
-    } else if (maxDeviationPercent >= 10) {
-        balanceStatus = 'Slight Imbalance';
-        statusColor = 'text-accent-yellow';
-    }
+    const balance = getCrewLoadBalance({ totalLoad, rows: loadRows });
+    const balanceStatus = balance.label;
+    const statusColor = { ready: 'text-accent-green', unknown: 'text-text-muted', critical: 'text-accent-red', warning: 'text-accent-yellow' }[balance.tone];
 
     function openAdd() {
         setEditingMember(undefined);

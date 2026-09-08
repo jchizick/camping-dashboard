@@ -1,0 +1,55 @@
+/* Shared visual direction; strictly within the non-phone workspace boundary. */
+@scope ([data-desktop-trip-workspace] .desktop-workspace-field) {
+  :scope {
+    --dwf-surface: hsl(from var(--workspace-glass-dense, var(--card-bg)) h 8% l);
+    --dwf-border: var(--workspace-border-subtle, var(--border-subtle));
+    --dwf-muted: var(--workspace-text-secondary, var(--text-muted));
+    background: var(--dwf-surface); color: var(--workspace-text-primary, var(--text-main));
+    border: 1px solid var(--dwf-border); border-radius: 12px; margin-top: 24px; padding: 24px; min-width: 0;
+    font: 400 14px/1.5 var(--font-ui-face), sans-serif; overflow-wrap: anywhere;
+  }
+  h2, h3 { font-family: var(--font-display-face), sans-serif; font-weight: 800; }
+  h2 { font-size: 32px; line-height: 1; text-transform: uppercase; scroll-margin-top: 24px; }
+  h3 { font-size: 18px; }
+  h4 { font: 600 14px/1.5 var(--font-ui-face), sans-serif; }
+  button { min-height: 32px; font: 500 12px/1.4 var(--font-ui-face), sans-serif; cursor: pointer; color: inherit; }
+  button:hover:not(:disabled), a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+  button:disabled { cursor: default; }
+  .dwf-heading, .dwf-subheading, .dwf-actions { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .dwf-heading > p { margin-left: auto; color: var(--dwf-muted); }
+  .dwf-subheading > span, .dwf-subheading > button, .dwf-subheading > .dwf-actions { margin-left: auto; }
+  .dwf-subheading > span { font-size: 12px; color: var(--dwf-muted); }
+  .dwf-columns { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr); gap: 32px; margin-top: 20px; }
+  .dwf-columns > *, .dwf-essentials > section { min-width: 0; }
+  .dwf-meta, dt, .dwf-site { color: var(--dwf-muted); font-size: 12px; }
+  .dwf-checks { list-style: none; padding: 0; margin: 8px 0 0; }
+  .dwf-checks button { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; }
+  .dwf-checks button > span { width: 16px; font-size: 16px; color: var(--dwf-muted); }
+  .dwf-checks button[aria-pressed="true"] > span { color: var(--workspace-state-success); }
+  .dwf-intel { border-top: 1px solid var(--dwf-border); margin-top: 16px; padding-top: 12px; }
+  .dwf-intel:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+  dl { margin: 8px 0 0; }
+  dl > div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; padding: 6px 0; border-top: 1px solid var(--dwf-border); }
+  dd { font-size: 12px; }
+  dd a { text-decoration: underline; text-underline-offset: 3px; }
+  .dwf-site { margin-top: 12px; }
+  .dwf-site h4 { font-size: 12px; color: var(--workspace-text-primary, var(--text-main)); }
+  .dwf-notice-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .dwf-notice-list > li { border-top: 1px solid var(--dwf-border); padding: 10px 0; }
+  .dwf-severity { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dwf-muted); }
+  [data-severity="critical"] .dwf-severity { color: var(--workspace-state-danger); }
+  [data-severity="warning"] .dwf-severity, [data-severity="watch"] .dwf-severity, .dwf-stale { color: var(--workspace-state-warning); }
+  .dwf-excerpt, .dwf-stale { font-size: 12px; }
+  .dwf-excerpt { color: var(--dwf-muted); margin-top: 4px; }
+  .dwf-disclosure { text-decoration: underline; text-underline-offset: 4px; margin-right: 8px; }
+  .dwf-notice-detail { border-left: 1px solid var(--dwf-border); padding-left: 12px; margin: 8px 0; }
+  .dwf-full-text { white-space: pre-wrap; font-size: 12px; }
+  .dwf-original-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .dwf-notice-detail .dwf-meta { margin-top: 8px; }
+  .dwf-feedback { font-size: 12px; margin-top: 12px; }
+  .dwf-confirm { padding: 12px; border: 1px solid var(--workspace-state-warning); }
+  .dwf-confirm button { margin-right: 16px; }
+  @media (max-width: 1100px) { :scope { padding: 16px; } .dwf-columns { gap: 24px; } }
+  @media (max-width: 900px) { .dwf-columns { grid-template-columns: minmax(0, 1fr); } }
+}
