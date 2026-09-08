@@ -33,29 +33,11 @@ vi.mock('./TripWorkspaceProvider', () => ({
   useTripWorkspace: () => workspace.value,
 }));
 
-vi.mock('@/components/cards/TimelineCard', () => ({
-  default: ({ onAdd, tripDays }: { onAdd?: unknown; tripDays: number }) => (
-    <div
-      data-testid="timeline"
-      data-editable={String(Boolean(onAdd))}
-      data-days={tripDays}
-    />
-  ),
-}));
-vi.mock('@/components/cards/MealPlannerCard', () => ({
-  default: ({ onAdd, totalDays }: { onAdd?: unknown; totalDays: number }) => (
-    <div
-      data-testid="meals"
-      data-editable={String(Boolean(onAdd))}
-      data-days={totalDays}
-    />
-  ),
-}));
 vi.mock('@/components/plan/MobilePlanOverview', () => ({
-  default: () => <div data-testid="mobile-plan" data-plan-composition="mobile" />,
+  default: ({ onAddEvent, tripDays, showMeals }: { onAddEvent?: unknown; tripDays: number; showMeals: boolean }) => <div data-testid="mobile-plan" data-plan-composition="mobile" data-editable={String(Boolean(onAddEvent))} data-days={tripDays} data-meals={String(showMeals)} />,
 }));
 vi.mock('@/components/field/MobileFieldOverview', () => ({
-  default: () => <div data-testid="mobile-field" data-field-composition="mobile" />,
+  default: ({ actions }: { actions?: unknown }) => <div data-testid="mobile-field" data-field-composition="mobile" data-editable={String(Boolean(actions))} />,
 }));
 vi.mock('@/components/cards/GearChecklistCard', () => ({
   default: ({ onAdd }: { onAdd?: unknown }) => (
@@ -65,33 +47,14 @@ vi.mock('@/components/cards/GearChecklistCard', () => ({
 vi.mock('@/components/cards/ReadinessScoreCard', () => ({
   default: () => <div data-testid="readiness" />,
 }));
-vi.mock('@/components/cards/CrewRosterCard', () => ({
-  default: ({ onAdd }: { onAdd?: unknown }) => (
-    <div data-testid="crew" data-editable={String(Boolean(onAdd))} />
-  ),
-}));
-vi.mock('@/components/cards/ParkIntelCard', () => ({
-  default: ({ onUpdate }: { onUpdate?: unknown }) => (
-    <div data-testid="park" data-editable={String(Boolean(onUpdate))} />
-  ),
-}));
-vi.mock('@/components/cards/AlertsCard', () => ({
-  default: ({ onAddManual }: { onAddManual?: unknown }) => (
-    <div data-testid="alerts" data-editable={String(Boolean(onAddManual))} />
-  ),
-}));
-vi.mock('@/components/cards/OfflineVaultCard', () => ({
-  default: ({ onToggle }: { onToggle?: unknown }) => (
-    <div data-testid="offline" data-editable={String(Boolean(onToggle))} />
-  ),
-}));
-vi.mock('@/components/cards/AstroCard', () => ({
-  default: () => <div data-testid="astro" />,
-}));
 vi.mock('@/components/cards/FieldPrepFeedCard', () => ({
   default: ({ onAdd }: { onAdd?: unknown }) => (
     <div data-testid="field-log" data-editable={String(Boolean(onAdd))} />
   ),
+}));
+
+vi.mock('@/components/crew/MobileCrewOverview', () => ({
+  default: ({ onAdd }: { onAdd?: unknown }) => <div data-testid="mobile-crew" data-editable={String(Boolean(onAdd))} />,
 }));
 
 import TripPlanPage from '@/app/trips/[tripId]/plan/page';
@@ -101,7 +64,8 @@ import TripGuidePage from '@/app/trips/[tripId]/guide/page';
 import TripFieldLogPage from '@/app/trips/[tripId]/field-log/page';
 import DesktopTripWorkspaceBoundary from './DesktopTripWorkspaceBoundary';
 
-function renderRoute(Page: React.ComponentType) {
+function renderRoute(Page: React.ComponentType, phone = true) {
+  vi.stubGlobal('matchMedia', vi.fn((media: string) => ({ matches: phone && media === PHONE_LAYOUT_MEDIA_QUERY, media, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   return render(
     <PhoneLayoutProvider>
       <DesktopTripWorkspaceBoundary><Page /></DesktopTripWorkspaceBoundary>
@@ -185,10 +149,10 @@ afterEach(() => {
 
 describe('trip section routes', () => {
   const routes = [
-    ['Plan', TripPlanPage, ['timeline', 'meals']],
+    ['Plan', TripPlanPage, ['mobile-plan']],
     ['Gear', TripGearPage, ['readiness', 'gear']],
-    ['Crew', TripCrewPage, ['crew']],
-    ['Field', TripGuidePage, ['park', 'alerts', 'offline', 'astro']],
+    ['Crew', TripCrewPage, ['mobile-crew']],
+    ['Field', TripGuidePage, ['mobile-field']],
     ['Field Log', TripFieldLogPage, ['field-log']],
   ] as const;
 
@@ -198,11 +162,9 @@ describe('trip section routes', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
     expect(container.querySelector('[data-trip-section]')).toBeTruthy();
-    expect(container.querySelector('[data-trip-section]')?.parentElement)
-      .toBe(container.querySelector('[data-desktop-trip-workspace]'));
+    expect(container.querySelector('[data-desktop-trip-workspace]')).toBeNull();
     expect(container.querySelector('.trip-section-header')).toBeTruthy();
     for (const moduleId of modules) expect(screen.getByTestId(moduleId)).toBeTruthy();
-    expect(container.querySelectorAll('.trip-section-surface')).toHaveLength(modules.length);
   });
 
   it.each(['owner', 'editor', 'viewer'] as const)(
@@ -232,20 +194,16 @@ describe('trip section routes', () => {
     });
 
     const plan = renderRoute(TripPlanPage);
-    expect(screen.getByTestId('timeline')).toBeTruthy();
-    expect(screen.queryByTestId('meals')).toBeNull();
+    expect(screen.getByTestId('mobile-plan').getAttribute('data-meals')).toBe('false');
     plan.unmount();
 
     const crew = renderRoute(TripCrewPage);
-    expect(screen.queryByTestId('crew')).toBeNull();
+    expect(screen.queryByTestId('mobile-crew')).toBeNull();
     expect(screen.getByText('The crew module is hidden for this trip.')).toBeTruthy();
     crew.unmount();
 
     renderRoute(TripGuidePage);
-    expect(screen.getByTestId('park')).toBeTruthy();
-    expect(screen.getByTestId('alerts')).toBeTruthy();
-    expect(screen.queryByTestId('offline')).toBeNull();
-    expect(screen.queryByTestId('astro')).toBeNull();
+    expect(screen.getByTestId('mobile-field')).toBeTruthy();
   });
 
   it('passes every inclusive trip day to the timeline and meal planner', () => {
@@ -253,8 +211,7 @@ describe('trip section routes', () => {
 
     renderRoute(TripPlanPage);
 
-    expect(screen.getByTestId('timeline').getAttribute('data-days')).toBe('5');
-    expect(screen.getByTestId('meals').getAttribute('data-days')).toBe('5');
+    expect(screen.getByTestId('mobile-plan').getAttribute('data-days')).toBe('5');
   });
 
   it('mounts only the consolidated Plan composition below 768px', () => {
@@ -303,24 +260,10 @@ describe('trip section routes', () => {
     expect(screen.getByText('Conditions, notices and field essentials')).toBeTruthy();
   });
 
-  it('marks only Plan and Gear as operational workspaces', () => {
+  it.each([TripPlanPage, TripCrewPage, TripGuidePage])('leaves non-phone composition to TripAppShell', Page => {
     workspace.value = workspaceValue('owner');
-
-    const plan = renderRoute(TripPlanPage);
-    expect(plan.container.querySelector('.trip-operational-grid')).toBeTruthy();
-    expect(plan.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
-    expect(plan.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
-    plan.unmount();
-
-    const gear = renderRoute(TripGearPage);
-    expect(gear.container.querySelector('.trip-operational-grid')).toBeTruthy();
-    expect(gear.container.querySelectorAll('.trip-section-surface--primary')).toHaveLength(1);
-    expect(gear.container.querySelectorAll('.trip-section-surface--secondary')).toHaveLength(1);
-    gear.unmount();
-
-    const crew = renderRoute(TripCrewPage);
-    expect(crew.container.querySelector('.trip-operational-grid')).toBeNull();
-    expect(crew.container.querySelector('.trip-section-surface--primary')).toBeNull();
-    expect(crew.container.querySelector('.trip-section-surface--secondary')).toBeNull();
+    const { container } = renderRoute(Page, false);
+    expect(container.querySelector('[data-trip-section]')).toBeNull();
+    expect(container.querySelector('[data-testid]')).toBeNull();
   });
 });

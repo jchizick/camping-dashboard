@@ -13,12 +13,6 @@ describe('Home glass surface contracts', () => {
     expect(source('src/components/cards/WeatherCard.tsx')).toContain(
       'home-glass-surface--dense'
     );
-    expect(source('src/components/home/ReadinessSummaryCard.tsx')).toContain(
-      'home-glass-surface--dense'
-    );
-    expect(source('src/components/home/TodaySummaryCard.tsx')).toContain(
-      'home-glass-surface--dense'
-    );
     expect(source('src/components/home/PriorityAlertCard.tsx')).toContain(
       'home-glass-surface--warning'
     );

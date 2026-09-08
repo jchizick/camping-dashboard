@@ -36,9 +36,9 @@ describe('Mobile Plan composition boundary', () => {
     expect(page).toContain("import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider'");
     expect(page).toContain('const usesMobilePlanComposition = usePhoneLayout()');
     expect(page).not.toContain('matchMedia(');
-    expect(page).toContain('usesMobilePlanComposition ? (');
+    expect(page).toContain('!usesMobilePlanComposition) return null;');
     expect(page).toContain('<MobilePlanOverview');
-    expect(page).toContain('data-plan-composition="desktop"');
+    expect(page).not.toContain('data-plan-composition="desktop"');
     expect(page).not.toContain('hidden md:');
   });
 });

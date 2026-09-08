@@ -1,6 +1,5 @@
 'use client';
 
-import DesktopFieldOverview from '@/components/field/DesktopFieldOverview';
 import MobileFieldOverview from '@/components/field/MobileFieldOverview';
 import { createFieldViewModel } from '@/components/field/fieldViewModel';
 import TripPageHeader, { TripSectionPage } from '@/components/trip/TripPageHeader';
@@ -19,7 +18,8 @@ export default function TripGuidePage() {
   } = useTripWorkspace();
   const usesMobileFieldComposition = usePhoneLayout();
 
-  if (!data || !trip || !readiness) return null;
+  // Primary desktop routes are composed by TripAppShell, online and offline.
+  if (!data || !trip || !readiness || !usesMobileFieldComposition) return null;
 
   const model = createFieldViewModel({
     data,
@@ -35,17 +35,9 @@ export default function TripGuidePage() {
       <TripPageHeader
         title="Field"
         distressed
-        description={
-          usesMobileFieldComposition
-            ? 'Conditions, notices and field essentials'
-            : 'Park information and advisories'
-        }
+        description="Conditions, notices and field essentials"
       />
-      {usesMobileFieldComposition ? (
-        <MobileFieldOverview model={model} actions={editableActions} />
-      ) : (
-        <DesktopFieldOverview model={model} actions={editableActions} />
-      )}
+      <MobileFieldOverview model={model} actions={editableActions} />
     </TripSectionPage>
   );
 }
