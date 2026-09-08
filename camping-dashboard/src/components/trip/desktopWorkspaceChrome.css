@@ -1,0 +1,75 @@
+/* The main's legacy app-background is light in Expedition. Only the five-domain
+   desktop document exposes the existing environmental background beneath it. */
+[data-desktop-trip-workspace] > main[data-desktop-workspace-main]:has(> [data-desktop-workspace-document]) {
+  background: transparent;
+}
+
+/* CrudSheet portals into body. Require the live desktop document as well as the
+   authoritative phone contract; auxiliary routes and mobile retain their chrome. */
+@scope (html:not([data-phone-layout="true"]):has([data-desktop-trip-workspace] [data-desktop-workspace-document])) {
+  .crud-sheet__panel--workspace {
+    --desktop-sheet-surface: hsl(from var(--workspace-glass-dense) h 8% l);
+    --card-bg: var(--desktop-sheet-surface);
+    --app-bg: color-mix(in srgb, var(--desktop-sheet-surface) 78%, #000);
+    --card-hover: color-mix(in srgb, var(--workspace-text-primary) 6%, var(--desktop-sheet-surface));
+    --focus-ring: var(--workspace-text-primary);
+    background: var(--desktop-sheet-surface);
+    color: var(--workspace-text-primary);
+    border-color: var(--workspace-border-subtle);
+    font-family: var(--font-ui-face), sans-serif;
+    color-scheme: dark;
+  }
+
+  .crud-sheet__panel--workspace .crud-sheet__title {
+    font: 700 24px/1.2 var(--font-display-face), sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .crud-sheet__panel--workspace :is(.crud-form__label, .crud-form__input, .crud-form__select, .crud-form__textarea, .crud-form__btn) {
+    font-family: var(--font-ui-face), sans-serif;
+  }
+
+  .crud-sheet__panel--workspace :is(.crud-form__input, .crud-form__select, .crud-form__textarea) {
+    min-width: 0;
+    max-width: 100%;
+    background: var(--app-bg);
+    color: var(--workspace-text-primary);
+    border-color: var(--workspace-border-strong);
+  }
+
+  .crud-sheet__panel--workspace .crud-form__row > .crud-form__field {
+    min-width: 0;
+  }
+
+  .crud-sheet__panel--workspace :is(.crud-form__input, .crud-form__select, .crud-form__textarea):focus {
+    border-color: var(--workspace-text-primary);
+  }
+
+  .crud-sheet__panel--workspace :is(button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--workspace-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* Target Save explicitly, never all buttons or semantic danger tokens. */
+  .crud-sheet__panel--workspace .crud-form__btn--save {
+    background: var(--workspace-text-primary);
+    color: var(--desktop-sheet-surface);
+  }
+
+  .crud-sheet__panel--workspace .crud-form__btn--cancel {
+    background: transparent;
+    color: var(--workspace-text-secondary);
+    border-color: var(--workspace-border-subtle);
+  }
+
+  .crud-sheet__panel--workspace .crud-form__btn--cancel:hover {
+    background: var(--card-hover);
+    color: var(--workspace-text-primary);
+  }
+
+  .crud-sheet__panel--workspace .crud-sheet__close {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
