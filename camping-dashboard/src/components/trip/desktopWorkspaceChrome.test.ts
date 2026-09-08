@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-const css = readFileSync(resolve(process.cwd(), 'src/components/trip/desktopWorkspaceChrome.css'), 'utf8');
+const css = readFileSync(resolve(process.cwd(), 'src/components/trip/desktopWorkspaceChrome.css'), 'utf8').replace(/\r\n/g, '\n');
 const scope = 'html:not([data-phone-layout="true"]):has([data-desktop-trip-workspace] [data-desktop-workspace-document])';
 const main = '[data-desktop-trip-workspace] > main[data-desktop-workspace-main]:has(> [data-desktop-workspace-document])';
 afterEach(() => {
