@@ -170,6 +170,17 @@ afterEach(() => {
 });
 
 describe('TripAppShell', () => {
+  it('isolates neutral rail states and visible focus inside the desktop boundary', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/trip/desktopTripWorkspace.css'), 'utf8');
+    const rail = css.slice(css.indexOf('@scope'), css.indexOf('[data-desktop-trip-workspace].trip-workspace-shell .trip-workspace-sidebar {'));
+    expect(rail).toContain('@scope ([data-desktop-trip-workspace] .trip-workspace-sidebar)');
+    expect(rail).toContain('[aria-current="page"]');
+    expect(rail).toContain('backdrop-filter: none');
+    expect(rail).toContain(':focus-visible');
+    expect(rail).toContain('outline: 2px solid var(--rail-foreground)');
+    expect(rail).not.toMatch(/accent-sage|state-success|state-warning|state-danger|outline:\s*none/);
+  });
+
   it.each(['online', 'cache'] as const)('targets sections on initial load and forward/back route changes for %s', async source => {
     installMatchMedia(false);
     mocks.workspace = { ...workspaceValue(), source };

@@ -1,0 +1,20 @@
+/* Only canonical command-centre destinations; never shared/mobile headings. */
+@scope ([data-desktop-trip-workspace] [data-desktop-workspace-document]) {
+  :is(#desktop-overview-title, #desktop-plan-title, #desktop-gear-title, #desktop-crew-title, #desktop-field-title):focus-visible {
+    /* A text destination cue, with no box or change to layout/scroll geometry. */
+    outline: 2px solid transparent;
+    outline-offset: 4px;
+    text-decoration-line: underline;
+    text-decoration-color: currentColor;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+    text-decoration-skip-ink: none;
+  }
+
+  @media (forced-colors: active) {
+    :is(#desktop-overview-title, #desktop-plan-title, #desktop-gear-title, #desktop-crew-title, #desktop-field-title):focus-visible {
+      outline-color: CanvasText;
+      text-decoration-color: CanvasText;
+    }
+  }
+}

@@ -8,6 +8,62 @@
   padding: 1rem;
 }
 
+/* Neutral navigation states are distinct from readiness/completion colors. */
+@scope ([data-desktop-trip-workspace] .trip-workspace-sidebar) {
+  :scope {
+    --rail-surface: hsl(from var(--workspace-glass-dense, var(--card-bg)) h 8% l);
+    --rail-foreground: var(--workspace-text-primary, var(--text-main));
+    --rail-muted: var(--workspace-text-secondary, var(--text-muted));
+    --rail-border: var(--workspace-border-subtle, var(--border-subtle));
+    font-family: var(--font-ui-face), sans-serif;
+  }
+
+  .trip-workspace-sidebar__surface {
+    background: var(--rail-surface);
+    border-color: var(--rail-border);
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .trip-workspace-sidebar__nav-link,
+  .trip-workspace-sidebar__back,
+  .trip-workspace-sidebar__more .trip-shell-control {
+    color: var(--rail-muted);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    border-radius: 6px;
+  }
+
+  .trip-workspace-sidebar__back,
+  .trip-workspace-sidebar__more .trip-shell-control {
+    font-weight: 500;
+  }
+
+  .trip-workspace-sidebar__nav-link:hover,
+  .trip-workspace-sidebar__back:hover,
+  .trip-workspace-sidebar__more .trip-shell-control:hover {
+    color: var(--rail-foreground);
+    background: color-mix(in srgb, var(--rail-foreground) 6%, var(--rail-surface));
+  }
+
+  .trip-workspace-sidebar__nav-link[aria-current="page"] {
+    color: var(--rail-foreground);
+    background: color-mix(in srgb, var(--rail-foreground) 12%, var(--rail-surface));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rail-foreground) 20%, var(--rail-surface));
+    font-weight: 700;
+  }
+
+  .trip-workspace-sidebar__nav-link:focus-visible,
+  .trip-workspace-sidebar__back:focus-visible,
+  .trip-workspace-sidebar__more .trip-shell-control:focus-visible {
+    outline: 2px solid var(--rail-foreground);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+
 [data-desktop-trip-workspace].trip-workspace-shell .trip-workspace-sidebar {
   display: block;
   grid-column: 1;
@@ -73,4 +129,10 @@
     position: static;
     height: auto;
   }
+}
+
+/* Preserve laptop proportions; center only the five-domain document in surplus space. */
+[data-desktop-trip-workspace] [data-desktop-workspace-document] {
+  max-width: 1240px;
+  margin-inline: auto;
 }

@@ -1,0 +1,77 @@
+/* Presentation roles for the five-domain document only; excludes shared sheets and phones. */
+@scope ([data-desktop-trip-workspace]) {
+  [data-desktop-workspace-document] {
+    --workspace-action-muted: var(--workspace-text-secondary, var(--text-muted));
+    --workspace-action-foreground: var(--workspace-text-primary, var(--text-main));
+  }
+
+  /* Section labels retain condensed display type, without domain-title casing. */
+  [data-desktop-workspace-document] :is(.desktop-workspace-plan, .desktop-workspace-gear, .desktop-workspace-crew, .desktop-workspace-field) h3,
+  [data-desktop-workspace-document] .desktop-workspace-overview :is(h2, .dwo-label) {
+    font: 800 18px/1.3 var(--font-display-face), sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  [data-desktop-workspace-document] .dwc-member-copy h3 {
+    font: 600 14px/1.5 var(--font-ui-face), sans-serif;
+  }
+
+  /* Primary totals keep their existing scale; recorded member weights are secondary. */
+  [data-desktop-workspace-document] .dwc-member-load strong { font-size: 24px; }
+  [data-desktop-workspace-document] :is(.dwc-member-load strong, .dwc-load-heading > strong, .dwg-metrics dd, .dwp-total) {
+    font-variant-numeric: tabular-nums;
+  }
+  [data-desktop-workspace-document] .dwp-total { font-size: 13px; }
+  [data-desktop-workspace-document] .dwp-total strong { font-weight: 700; }
+
+  /* Operational facts get a little more room; timestamps and tertiary metadata stay compact. */
+  [data-desktop-workspace-document] :is(.dwf-essentials dd, .dwf-excerpt, .dwf-full-text, .dwf-site, .dwc-systems, .dwf-subheading > span) {
+    font-size: 13px;
+  }
+  [data-desktop-workspace-document] .dwf-severity { font-size: 12px; letter-spacing: 0.04em; }
+  [data-desktop-workspace-document] .mobile-readiness-gauge__landmarks { font-size: 11px; }
+
+  /* Quiet administration stays visible, with unchanged hit areas and keyboard focus. */
+  [data-desktop-workspace-document] :is(
+    .dwp-item-actions button, .dwp-section-heading > button, .dwp-day-heading > button,
+    .dwg-item-actions button:not([aria-pressed]), .dwg-heading > button,
+    .dwc-actions button, .dwc-heading > button,
+    .dwf-actions button, .dwf-subheading > button
+  ) {
+    color: var(--workspace-action-muted);
+    font: 500 12px/1.4 var(--font-ui-face), sans-serif;
+  }
+
+  /* Operational toggles lead the adjacent administration without decorative semantic color. */
+  [data-desktop-workspace-document] .dwg-item-actions button[aria-pressed] {
+    font-weight: 600;
+    background: color-mix(in srgb, var(--workspace-action-foreground) 6%, var(--dwg-surface));
+  }
+  [data-desktop-workspace-document] .dwf-checks button { font-size: 13px; font-weight: 600; }
+
+  /* Navigation and disclosure have related, but distinct emphasis. */
+  [data-desktop-workspace-document] :is(.desktop-workspace-overview a, .dwc-exception a, .dwf-notice-detail a) {
+    color: var(--workspace-action-foreground);
+    font: 600 13px/1.5 var(--font-ui-face), sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  [data-desktop-workspace-document] :is(.dwp-disclosure, .dwp-details button, .dwg-disclosure, .dwc-member-copy summary, .dwf-disclosure) {
+    color: var(--workspace-action-muted);
+    font: 500 12px/1.5 var(--font-ui-face), sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  [data-desktop-workspace-document] :is(
+    .desktop-workspace-overview a, .dwc-exception a, .dwf-notice-detail a,
+    .dwp-disclosure, .dwp-details button, .dwg-disclosure, .dwc-member-copy summary, .dwf-disclosure,
+    .dwp-item-actions button, .dwp-section-heading > button, .dwp-day-heading > button,
+    .dwg-item-actions button:not([aria-pressed]), .dwg-heading > button,
+    .dwc-actions button, .dwc-heading > button, .dwf-actions button, .dwf-subheading > button
+  ):hover {
+    color: var(--workspace-action-foreground);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}

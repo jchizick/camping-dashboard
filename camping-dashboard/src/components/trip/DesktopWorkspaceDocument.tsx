@@ -5,6 +5,8 @@ import DesktopWorkspacePlanSection from '@/components/plan/DesktopWorkspacePlanS
 import DesktopWorkspaceGearSection from '@/components/gear/DesktopWorkspaceGearSection';
 import DesktopWorkspaceCrewSection from '@/components/crew/DesktopWorkspaceCrewSection';
 import DesktopWorkspaceFieldSection from '@/components/field/DesktopWorkspaceFieldSection';
+import './desktopWorkspaceHierarchy.css';
+import './desktopSectionFocus.css';
 
 /** The persistent route-content slot for migrated desktop sections. */
 export default function DesktopWorkspaceDocument({ pathname, tripId }: { pathname: string; tripId: string }) {
