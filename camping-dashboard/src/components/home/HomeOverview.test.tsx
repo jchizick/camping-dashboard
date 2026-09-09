@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
@@ -166,7 +166,7 @@ function workspaceValue(editable = true): TripWorkspaceValue {
     prepFeed: [],
     tripDays: 3,
     readiness: readinessResult(),
-    editableActions: editable ? { saveCampsite: vi.fn() } : null,
+    editableActions: editable ? { saveCampsite: vi.fn(), refreshWeather: vi.fn().mockResolvedValue(undefined) } : null,
     permissions: {
       role: editable ? 'owner' : 'viewer',
       canEdit: editable,
@@ -189,6 +189,12 @@ afterEach(() => {
 });
 
 describe('HomeOverview', () => {
+  it('uses the workspace manual weather action', async () => {
+    renderHomeOverview();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Refresh weather' })); });
+    expect(workspace.value!.editableActions!.refreshWeather).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps unavailable readiness distinct from zero and preserves the setup intent', () => {
     const value = workspaceValue();
     value.readiness = evaluateReadiness({

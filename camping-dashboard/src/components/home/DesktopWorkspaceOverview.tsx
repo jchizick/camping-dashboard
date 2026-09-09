@@ -6,7 +6,7 @@ import type { CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import { formatPlanDateRange } from '@/components/plan/planViewModel';
 import GuardedTripLink from '@/components/trip/GuardedTripLink';
 import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
-import { cachedWeatherPresentation } from '@/lib/offlineFreshness';
+import DesktopConditions from './DesktopConditions';
 import { formatTripDuration, getTripDuration } from '@/lib/tripDuration';
 import type { HomeViewModel } from './homeViewModel';
 import './desktopWorkspaceOverview.css';
@@ -43,19 +43,17 @@ function DesktopReadinessGauge({ score, statusLabel }: { score: number; statusLa
 }
 
 /** Summary-only desktop composition; domain state and priority remain canonical. */
-export default function DesktopWorkspaceOverview({ model, onSaveLocation }: {
+export default function DesktopWorkspaceOverview({ model, onSaveLocation, onRefreshWeather }: {
   model: HomeViewModel;
+  onRefreshWeather?: () => Promise<void>;
   onSaveLocation?: (selection: CampsiteSelection) => Promise<void>;
 }) {
   const workspace = useOptionalTripWorkspaceStatus();
   const cached = workspace?.source === 'cache';
   const { trip, readiness, schedule, conditions } = model;
-  const { currentWeather: weather, weatherRefresh } = conditions;
   const duration = getTripDuration(trip.start_date, trip.end_date);
   const priority = readiness.primaryPriority;
   const attention = priority ?? model.setup;
-  const freshness = cachedWeatherPresentation(weather, weatherRefresh, conditions.forecast);
-  const stale = weatherRefresh?.status === 'failed' || weatherRefresh?.status === 'retry';
   const status = schedule.label === 'Next up' ? 'Trip is approaching'
     : schedule.label === 'Trip complete' ? 'Trip complete' : 'Trip is underway';
   // These events are in planner order for the selected day, not future-time order.
@@ -104,13 +102,7 @@ export default function DesktopWorkspaceOverview({ model, onSaveLocation }: {
         </section>
       </div>
 
-      <section className="dwo-conditions" aria-labelledby="dwo-conditions-title">
-        <div><h2 id="dwo-conditions-title">{cached && freshness.isPrevious ? 'Previous conditions' : 'Conditions'}</h2>
-          <p className="dwo-meta">{cached ? freshness.label : weatherRefresh?.status === 'refreshing' ? 'Refreshing weather…' : stale ? (weather ? 'Stale weather · refresh needs attention' : 'Weather unavailable · refresh needs attention') : weather ? freshness.label.replace('Cached · updated', 'Updated').replace('Cached · update', 'Update') : 'Weather unavailable'}</p>
-        </div>
-        <p className="dwo-weather"><strong>{weather && Number.isFinite(weather.temperature_c) ? `${Math.round(weather.temperature_c)}°C` : '—'}</strong><span>{weather?.condition_label || 'Conditions unavailable'}</span></p>
-        <p className="dwo-sunset"><span>Sunset{cached && freshness.isPrevious ? ' (saved)' : ''}</span><strong>{weather?.sunset_time || 'Unavailable'}</strong></p>
-      </section>
+      <DesktopConditions conditions={conditions} onRefresh={onRefreshWeather} />
       {model.notice && <aside className="dwo-notice" aria-label="Trip notice" data-severity={model.notice.severity}>
         <span className="dwo-label">{cached ? 'Saved notice' : 'Trip notice'}</span>
         <span>{model.notice.title}</span>

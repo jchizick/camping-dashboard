@@ -57,6 +57,17 @@
   .dwo-event-time { color: var(--dwo-muted); font-variant-numeric: tabular-nums; }
   .dwo-conditions { grid-column: 1 / -1; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--dwo-border); padding: 16px 24px; }
   .dwo-conditions h2 { margin-bottom: 0; }
+  .dwo-weather-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .dwo-weather-actions button { font: 500 12px/1.5 var(--font-ui-face), sans-serif; color: var(--dwo-muted); background: transparent; border: 0; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+  .dwo-weather-actions button:hover { color: var(--workspace-text-primary); }
+  .dwo-weather-actions button:disabled { opacity: 0.6; cursor: wait; }
+  .dwo-forecast, .dwo-weather-error { flex-basis: 100%; min-width: 0; }
+  .dwo-weather-error { color: var(--workspace-danger-text); font-size: 12px; }
+  .dwo-forecast { border-top: 1px solid var(--dwo-border); padding-top: 12px; }
+  .dwo-forecast ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px 20px; list-style: none; margin: 0; padding: 0; }
+  .dwo-forecast li { min-width: 0; font-size: 12px; }
+  .dwo-forecast time { color: var(--dwo-muted); }
+  .dwo-forecast strong { font-size: 16px; font-variant-numeric: tabular-nums; }
   .dwo-weather { display: flex; align-items: baseline; gap: 12px; }
   .dwo-weather strong { font-size: 28px; }
   .dwo-sunset { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }

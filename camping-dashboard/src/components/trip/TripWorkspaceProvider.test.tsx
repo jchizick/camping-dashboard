@@ -955,6 +955,22 @@ describe('TripWorkspaceProvider loading and state', () => {
     expect(mocks.fetchDashboardData).toHaveBeenCalledTimes(2);
   });
 
+  it('refreshes weather through the existing request and reloads data without access remounting', async () => {
+    const fetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetch);
+    mocks.fetchDashboardData.mockResolvedValue(dashboardData());
+    function WeatherProbe() {
+      const value = useTripWorkspace();
+      return <button disabled={!value.editableActions} onClick={() => void value.editableActions?.refreshWeather()}>Weather refresh</button>;
+    }
+    renderProvider(<WeatherProbe />);
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Weather refresh' }) as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(screen.getByRole('button', { name: 'Weather refresh' }));
+    await waitFor(() => expect(mocks.fetchDashboardData).toHaveBeenCalledTimes(2));
+    expect(fetch).toHaveBeenCalledWith('/api/refresh-weather', expect.objectContaining({ method: 'POST', body: JSON.stringify({ tripId: 'trip-1' }) }));
+    expect(mocks.trip.revalidateAccess).not.toHaveBeenCalled();
+  });
+
   it('preserves every section mutation when navigating back Home without refetching', async () => {
     const offlineStatus = {
       trip_id: 'trip-1',

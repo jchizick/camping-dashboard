@@ -1,5 +1,7 @@
 'use client';
 
+import { requestWeatherRefresh } from '@/lib/weatherPresentation';
+
 import React, {
   createContext,
   useCallback,
@@ -151,6 +153,7 @@ export interface TripWorkspaceEditableActions {
   deleteAlert: (id: string) => Promise<void>;
   dismissAlert: (id: string) => Promise<void>;
   refreshAlerts: () => Promise<void>;
+  refreshWeather: () => Promise<void>;
   updateParkIntel: (
     patch: Partial<Omit<ParkIntel, 'trip_id' | 'updated_at'>>
   ) => Promise<void>;
@@ -758,6 +761,17 @@ export function TripWorkspaceProvider({
     );
   }
 
+  async function handleWeatherRefresh() {
+    const response = await requestWeatherRefresh(tripId);
+    if (!response.ok) {
+      const result = await response.json().catch(() => null);
+      throw new Error(result?.error || 'Weather could not be refreshed. Existing weather remains available.');
+    }
+    // The authenticated endpoint has checked editor access. Reload the existing
+    // data source without unmounting the document through access revalidation.
+    await loadWorkspace('reload');
+  }
+
   async function handleAlertRefresh() {
     const response = await fetch('/api/refresh-alerts', {
       method: 'POST',
@@ -972,6 +986,7 @@ export function TripWorkspaceProvider({
         deleteAlert: guardWorkspaceMutation(canMutateRef, handleAlertDelete),
         dismissAlert: guardWorkspaceMutation(canMutateRef, handleAlertDismiss),
         refreshAlerts: guardWorkspaceMutation(canMutateRef, handleAlertRefresh),
+        refreshWeather: guardWorkspaceMutation(canMutateRef, handleWeatherRefresh),
         updateParkIntel: guardWorkspaceMutation(canMutateRef, handleParkIntelUpdate),
         addPrepFeedItem: guardWorkspaceMutation(canMutateRef, handlePrepFeedAdd),
         deletePrepFeedItem: guardWorkspaceMutation(canMutateRef, handlePrepFeedDelete),

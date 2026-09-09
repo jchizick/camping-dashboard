@@ -14,6 +14,7 @@ import { useTheme } from '@/lib/themeContext';
 import { useTrip } from '@/lib/tripContext';
 import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceStatus';
 import { cachedWeatherPresentation } from '@/lib/offlineFreshness';
+import { requestWeatherRefresh, forecastDayLabel } from '@/lib/weatherPresentation';
 import {
     AlertCircle,
     Check,
@@ -115,12 +116,7 @@ function updatedTime(
     })}`;
 }
 
-function dayLabel(date: string): string {
-    const parsed = new Date(`${date}T12:00:00`);
-    return Number.isNaN(parsed.getTime())
-        ? date
-        : parsed.toLocaleDateString('en-CA', { weekday: 'short' });
-}
+
 
 interface WeatherGlyphProps {
     icon: string | null;
@@ -202,11 +198,7 @@ export default function WeatherCard({
         setRefreshState('loading');
 
         try {
-            const result = await fetch('/api/refresh-weather', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tripId }),
-            });
+            const result = await requestWeatherRefresh(tripId);
             if (!result.ok) {
                 setRefreshState('error');
                 return;
@@ -409,7 +401,7 @@ export default function WeatherCard({
                                         }`}
                                     >
                                         <p className="home-weather-forecast-day__name">
-                                            {dayLabel(day.forecast_date)}
+                                            {forecastDayLabel(day.forecast_date)}
                                         </p>
                                         <WeatherGlyph
                                             icon={day.icon}

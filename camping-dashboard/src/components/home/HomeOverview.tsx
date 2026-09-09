@@ -43,6 +43,7 @@ export default function HomeOverview() {
     <DesktopWorkspaceOverview
       model={model}
       onSaveLocation={editableActions?.saveCampsite}
+      onRefreshWeather={editableActions?.refreshWeather}
     />
   );
 }
