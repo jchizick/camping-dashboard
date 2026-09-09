@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import type { TripMapStyle } from '@/types';
 import CampsiteMapSelector, { type CampsiteSelection } from './CampsiteMapSelector';
 import CrudSheet from '@/components/ui/CrudSheet';
+import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 import { draftValuesEqual, useTripDraftForm } from '@/components/trip/useTripDraftForm';
 
 interface CampsiteLocationSheetProps {
@@ -24,10 +25,45 @@ export default function CampsiteLocationSheet({
     onSave,
 }: CampsiteLocationSheetProps) {
     const draftId = React.useId();
+    const isPhoneLayout = usePhoneLayout();
     const [selection, setSelection] = useState<CampsiteSelection | null>(initialValue);
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!isOpen || isPhoneLayout || !document.querySelector('[data-desktop-workspace-document]')) return;
+        const panel = document.querySelector('.campsite-location-sheet');
+        if (!panel) return;
+        // The SDK geocoder exposes no CSS parts; keep its shadow styles local and
+        // conditional on the same desktop contract as the portaled sheet theme.
+        const themeSearch = () => {
+            const root = panel.querySelector('maptiler-geocoder')?.shadowRoot;
+            if (!root || root.querySelector('[data-workspace-search-theme]')) return;
+            const style = document.createElement('style');
+            style.dataset.workspaceSearchTheme = '';
+            style.textContent = `
+              form[class] {
+                background: var(--app-bg); border: 1px solid var(--workspace-border-strong);
+                box-shadow: none; font-family: var(--font-ui-face), sans-serif;
+                --color-text: var(--workspace-text-primary); --color-icon-button: var(--workspace-text-secondary);
+              }
+              input[placeholder] {
+                color: var(--workspace-text-primary); background: transparent; font-size: 16px;
+              }
+              input[placeholder]::placeholder { color: var(--workspace-text-secondary); }
+              form[class]:focus-within { outline: 2px solid var(--workspace-text-primary); outline-offset: 2px; }
+            `;
+            root.append(style);
+        };
+        themeSearch();
+        const observer = new MutationObserver(themeSearch);
+        observer.observe(panel, { childList: true, subtree: true });
+        return () => {
+            observer.disconnect();
+            panel.querySelector('maptiler-geocoder')?.shadowRoot?.querySelector('[data-workspace-search-theme]')?.remove();
+        };
+    }, [isOpen, isPhoneLayout]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -70,7 +106,8 @@ export default function CampsiteLocationSheet({
             isOpen={isOpen}
             onClose={close}
             title={initialValue ? 'Reposition campsite' : 'Set campsite location'}
-            panelClassName="max-w-3xl"
+            surface="workspace"
+            panelClassName="max-w-3xl campsite-location-sheet"
         >
                     {isProvisional && (
                         <p className="mb-4 text-xs text-accent-yellow">
@@ -88,7 +125,7 @@ export default function CampsiteLocationSheet({
                         className="h-[430px] min-h-[320px]"
                     />
 
-                    <div className="type-technical mt-4 rounded-lg border border-border-subtle bg-app-bg/50 p-3 text-xs text-text-muted" aria-live="polite">
+                    <div className="campsite-location-sheet__coordinates type-technical mt-4 rounded-lg border border-border-subtle bg-app-bg/50 p-3 text-xs text-text-muted" aria-live="polite">
                         {selection ? (
                             <>
                                 Latitude <span className="text-text-main">{selection.latitude.toFixed(6)}</span>

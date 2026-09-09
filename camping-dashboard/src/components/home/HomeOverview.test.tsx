@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   Alert,
@@ -283,6 +285,70 @@ describe('HomeOverview', () => {
     expect(screen.getByText('Weather unavailable')).toBeTruthy();
     expect(document.querySelector('.home-overview--desktop')).toBeNull();
   });
+  it.each([0, 1, 2, 4])('renders %i supplied schedule events as at most two informational rows', (count) => {
+    workspace.value!.timeline = Array.from({ length: count }, (_, index) => timelineEvent({
+      id: `schedule-${index}`, title: `Activity ${index}`, sort_order: index,
+    }));
+    renderHomeOverview();
+    const schedule = screen.getByRole('region', { name: 'Schedule' });
+    expect(within(schedule).queryAllByRole('listitem')).toHaveLength(Math.min(count, 2));
+    expect(within(schedule).queryAllByRole('list')).toHaveLength(count ? 1 : 0);
+    expect(within(schedule).queryByText('More in Plan') !== null).toBe(count > 2);
+    expect(within(schedule).queryAllByRole('button')).toHaveLength(0);
+    expect(within(schedule).getAllByRole('link')).toHaveLength(1);
+    expect(schedule.querySelectorAll('[tabindex]')).toHaveLength(0);
+    if (!count) expect(within(schedule).getByText('No events are planned for this day yet.')).toBeTruthy();
+  });
+
+  it('preserves planner order, full titles and missing times', () => {
+    const title = 'Walk the long shoreline route to the sheltered campsite beyond the northern portage';
+    workspace.value!.timeline = [
+      timelineEvent({ id: 'later', title: 'Earlier clock time', event_time: '07:30', sort_order: 20 }),
+      timelineEvent({ id: 'first', title, event_time: '', sort_order: 10 }),
+      timelineEvent({ id: 'hidden', title: 'Third activity', sort_order: 30 }),
+    ];
+    renderHomeOverview();
+    const schedule = screen.getByRole('region', { name: 'Schedule' });
+    const items = within(schedule).getAllByRole('listitem');
+    expect(items.map(item => item.querySelector('h3')?.textContent)).toEqual([title, 'Earlier clock time']);
+    expect(items[0].querySelector('h3')?.hasAttribute('title')).toBe(false);
+    expect(items[0].querySelector('.dwo-event-time')?.textContent).toBe('');
+    expect(items[1].querySelector('.dwo-event-time')?.textContent).toBe('07:30');
+    expect(within(schedule).queryByText('Third activity')).toBeNull();
+  });
+
+  it.each([
+    [26, 'First planned day · Day 1 · planner order', 1],
+    [28, 'Today · Day 2 · planner order', 2],
+    [30, 'Final day · Day 3 · planner order', 3],
+  ] as const)('preserves selected day context on July %i', (date, context, day) => {
+    vi.setSystemTime(new Date(2026, 6, date, 12));
+    workspace.value!.timeline = [1, 2, 3].map(day_number => timelineEvent({
+      id: `day-${day_number}`, day_number, title: `Day ${day_number} activity`,
+    }));
+    renderHomeOverview();
+    const schedule = screen.getByRole('region', { name: 'Schedule' });
+    expect(within(schedule).getByText(context)).toBeTruthy();
+    expect(within(schedule).getByRole('heading', { level: 3 }).textContent).toBe(`Day ${day} activity`);
+  });
+
+  it('preserves the completed-trip empty state', () => {
+    vi.setSystemTime(new Date(2026, 6, 30, 12));
+    workspace.value!.timeline = [];
+    renderHomeOverview();
+    expect(screen.getByText('No events were recorded for the final trip day.')).toBeTruthy();
+  });
+
+  it('keeps desktop rows aligned with non-wrapping times and naturally wrapping titles', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/components/home/desktopWorkspaceOverview.css'), 'utf8');
+    expect(css).toContain('@scope ([data-desktop-trip-workspace] .desktop-workspace-overview)');
+    expect(css).toContain('grid-template-columns: 3.5rem minmax(0, 1fr)');
+    expect(css).toMatch(/\.dwo-event-time \{[^}]*white-space: nowrap/);
+    expect(css).not.toContain('overview-schedule');
+    expect(css).not.toMatch(/\.dwo-schedule li h3/);
+    expect(css).toContain('overflow-wrap: anywhere');
+  });
+
   it('keeps viewer Home readable and the retained map read-only', () => {
     workspace.value = workspaceValue(false);
     renderHomeOverview();

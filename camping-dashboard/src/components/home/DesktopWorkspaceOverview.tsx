@@ -99,6 +99,7 @@ export default function DesktopWorkspaceOverview({ model, onSaveLocation, onRefr
           <p className="dwo-meta">{scheduleLabel} · Day {schedule.dayNumber} · planner order</p>
           {schedule.events.length ? <ol>{schedule.events.slice(0, 2).map(event => <li key={event.id}><span className="dwo-event-time">{event.event_time}</span><h3>{event.title}</h3></li>)}</ol> :
             <p>{schedule.label === 'Trip complete' ? 'No events were recorded for the final trip day.' : 'No events are planned for this day yet.'}</p>}
+          {schedule.events.length > 2 && <p className="dwo-meta">More in Plan</p>}
         </section>
       </div>
 

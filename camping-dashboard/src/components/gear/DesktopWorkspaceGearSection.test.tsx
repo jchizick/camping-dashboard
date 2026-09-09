@@ -39,6 +39,17 @@ beforeEach(() => { mocks.value = fixture(); mocks.search = new URLSearchParams()
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe('compact desktop Gear', () => {
+  it('limits packing attention styling to the selected remaining view', () => {
+    render(<DesktopWorkspaceGearSection navigationPath="/trips/trip-1/gear" />);
+    const remaining = screen.getByRole('button', { name: 'Needs packing' });
+    expect(remaining.getAttribute('data-gear-view')).toBe('remaining');
+    expect(remaining.getAttribute('aria-pressed')).toBe('true');
+    expect(document.getElementById('desktop-gear-items-title')?.getAttribute('data-needs-packing')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Required' }));
+    expect(remaining.getAttribute('aria-pressed')).toBe('false');
+    expect(document.getElementById('desktop-gear-items-title')?.getAttribute('data-needs-packing')).toBe('false');
+  });
+
   it('uses canonical Gear readiness, weight and separate packing/acquisition state with limited DOM', () => {
     render(<DesktopWorkspaceGearSection navigationPath="/trips/trip-1/gear" />);
     expect(document.querySelectorAll('[data-gear-item]')).toHaveLength(6);

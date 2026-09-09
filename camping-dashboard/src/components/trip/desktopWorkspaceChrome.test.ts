@@ -12,6 +12,17 @@ afterEach(() => {
 });
 
 describe('desktop workspace chrome boundary', () => {
+  it('shares the desktop sheet material with confirmation and the campsite marker with Reposition', () => {
+    expect(css).toContain('.crud-sheet__panel--workspace, .trip-draft-dialog__panel');
+    expect(css).toContain(':is(.dwo-map, .campsite-location-sheet) .campsite-selected-marker');
+    expect(css).toContain('.trip-draft-dialog__discard { color: var(--workspace-danger-text)');
+    expect(css).toContain('.trip-draft-dialog__warning { color: #f2c77f');
+    const sheet = readFileSync(resolve(process.cwd(), 'src/components/maps/CampsiteLocationSheet.tsx'), 'utf8');
+    expect(sheet).toContain('surface="workspace"');
+    expect(sheet).toContain('isPhoneLayout = usePhoneLayout()');
+    expect(sheet).toContain("!isOpen || isPhoneLayout || !document.querySelector('[data-desktop-workspace-document]')");
+    expect(sheet).toContain('observer.disconnect()');
+  });
   it('themes only the desktop document scrollbar without changing its width or gutter', () => {
     expect(css).toContain('scrollbar-color: #77837b #18201c');
     expect(css).toContain(':scope::-webkit-scrollbar-track { background: #18201c; }');

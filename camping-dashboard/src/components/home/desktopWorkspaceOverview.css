@@ -92,22 +92,6 @@
   .dwo-map .maplibregl-ctrl-attrib a { color: inherit; font-weight: 400; }
   .dwo-map .maplibregl-ctrl-attrib a:hover { color: #fff; }
   .dwo-map .maplibregl-ctrl-attrib-button { filter: invert(1); }
-  /* Desktop-only campsite marker test; retain SDK positioning and hit area. */
-  .dwo-map .campsite-selected-marker {
-    background: #202923;
-    color: #e3c28a;
-    border: 2px solid #c8ad79;
-    border-radius: 12px 12px 50% 50% / 12px 12px 65% 65%;
-    box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
-  }
-  .dwo-map .campsite-selected-marker > span {
-    width: 25px;
-    height: 25px;
-    font-size: 0;
-    transform: translateY(-2px);
-    background: currentColor;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 20 12 4l9 16H3Zm5 0 4-8 4 8M2 20h20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  }
   .dwo-operations { padding: 20px 24px; border-left: 1px solid var(--dwo-border); min-width: 0; }
   .dwo-attention[data-attention="true"] h2 { color: var(--workspace-state-warning, var(--accent-yellow)); }
   .dwo-attention p { color: var(--dwo-muted); margin: 4px 0 8px; }
@@ -117,7 +101,7 @@
   .dwo-section-heading a { font-size: 12px; }
   .dwo-schedule ol { list-style: none; margin: 8px 0 0; padding: 0; }
   .dwo-schedule li { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 8px; margin-top: 6px; }
-  .dwo-event-time { color: var(--dwo-muted); font-variant-numeric: tabular-nums; }
+  .dwo-event-time { color: var(--dwo-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .dwo-conditions { grid-column: 1 / -1; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--dwo-border); padding: 16px 24px; }
   .dwo-conditions h2 { margin-bottom: 0; }
   .dwo-weather-actions { display: flex; gap: 16px; flex-wrap: wrap; }

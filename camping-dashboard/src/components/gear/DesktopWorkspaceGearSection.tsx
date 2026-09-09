@@ -85,11 +85,11 @@ function GearContent({ navigationPath }: { navigationPath: string }) {
     </div>
     <div className="dwg-views" role="group" aria-label="Gear views">
       {(['remaining', 'required', 'packed', 'all'] as const).map(option => <button key={option} type="button"
-        aria-pressed={!category && view === option} onClick={() => { setView(option); setCategory(null); setShowAll(false); }}>
+        data-gear-view={option} aria-pressed={!category && view === option} onClick={() => { setView(option); setCategory(null); setShowAll(false); }}>
         {{ remaining: 'Needs packing', required: 'Required', packed: 'Packed', all: 'All gear' }[option]}</button>)}
     </div>
     <section aria-labelledby="desktop-gear-items-title">
-      <h3 id="desktop-gear-items-title" tabIndex={-1}>{title} <span>{selected.length} items</span></h3>
+      <h3 id="desktop-gear-items-title" data-needs-packing={!category && view === 'remaining'} tabIndex={-1}>{title} <span>{selected.length} items</span></h3>
       {error && <p role="alert">{error}</p>}
       <ul id="desktop-gear-items" className="dwg-items">
         {(showAll ? selected : selected.slice(0, 6)).map(item => {

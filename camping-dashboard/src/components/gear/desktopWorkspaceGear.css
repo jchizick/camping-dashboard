@@ -28,6 +28,12 @@
   .dwg-views { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
   .dwg-views button { border: 1px solid var(--dwg-border); border-radius: 4px; padding: 8px 12px; }
   .dwg-views button[aria-pressed="true"] { border-color: currentColor; background: color-mix(in srgb, currentColor 12%, var(--dwg-surface)); }
+  .dwg-views button[data-gear-view="remaining"][aria-pressed="true"] {
+    color: #f2c77f;
+    border-color: color-mix(in srgb, #f2c77f 45%, var(--dwg-border));
+    background: color-mix(in srgb, #f2c77f 6%, var(--dwg-surface));
+  }
+  h3[data-needs-packing="true"] { color: #f2c77f; }
   .dwg-items { list-style: none; padding: 0; margin: 8px 0 0; }
   .dwg-items li { display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--dwg-border); padding: 8px 0; }
   .dwg-item-copy { min-width: 0; flex: 1; }

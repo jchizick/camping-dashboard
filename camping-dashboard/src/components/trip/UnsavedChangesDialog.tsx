@@ -50,7 +50,7 @@ export default function UnsavedChangesDialog({
         className="trip-draft-dialog__panel"
       >
         <div className="flex items-start gap-3">
-          <span className="rounded-full bg-accent-yellow/15 p-2 text-accent-yellow">
+          <span className="trip-draft-dialog__warning rounded-full bg-accent-yellow/15 p-2 text-accent-yellow">
             <AlertTriangle size={20} aria-hidden="true" />
           </span>
           <div>
@@ -76,14 +76,14 @@ export default function UnsavedChangesDialog({
             ref={stayButtonRef}
             type="button"
             onClick={onStay}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border-subtle px-4 text-sm font-semibold text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="trip-draft-dialog__stay inline-flex min-h-11 items-center justify-center rounded-lg border border-border-subtle px-4 text-sm font-semibold text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             Stay and continue editing
           </button>
           <button
             type="button"
             onClick={onDiscard}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-accent-red px-4 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="trip-draft-dialog__discard inline-flex min-h-11 items-center justify-center rounded-lg bg-accent-red px-4 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             Discard changes and continue
           </button>
