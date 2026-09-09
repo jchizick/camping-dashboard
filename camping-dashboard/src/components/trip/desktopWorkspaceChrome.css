@@ -7,6 +7,18 @@
 /* CrudSheet portals into body. Require the live desktop document as well as the
    authoritative phone contract; auxiliary routes and mobile retain their chrome. */
 @scope (html:not([data-phone-layout="true"]):has([data-desktop-trip-workspace] [data-desktop-workspace-document])) {
+  :scope {
+    scrollbar-color: #77837b #18201c;
+    scrollbar-width: auto;
+  }
+  :scope::-webkit-scrollbar-track { background: #18201c; }
+  :scope::-webkit-scrollbar-thumb { background: #77837b; }
+  :scope::-webkit-scrollbar-thumb:hover { background: #99a59d; }
+  /* Chromium supports both APIs; prefer its hover-capable native pseudo-elements. */
+  @supports selector(::-webkit-scrollbar) {
+    :scope { scrollbar-color: auto; }
+  }
+
   .crud-sheet__panel--workspace {
     --desktop-sheet-surface: hsl(from var(--workspace-glass-dense) h 8% l);
     --card-bg: var(--desktop-sheet-surface);

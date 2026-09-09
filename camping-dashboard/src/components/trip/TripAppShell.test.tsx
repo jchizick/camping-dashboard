@@ -181,6 +181,25 @@ describe('TripAppShell', () => {
     expect(rail).not.toMatch(/accent-sage|state-success|state-warning|state-danger|outline:\s*none/);
   });
 
+  it('leaves initial Overview restoration alone, then targets deliberate navigation', async () => {
+    installMatchMedia(false);
+    mocks.pathname = '/trips/trip-1';
+    const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    const view = render(<React.StrictMode><TripAppShell><div /></TripAppShell></React.StrictMode>);
+    await act(async () => { await new Promise(resolve => requestAnimationFrame(resolve)); });
+    expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+    expect(scroll).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    mocks.pathname = '/trips/trip-1/gear';
+    view.rerender(<React.StrictMode><TripAppShell><div /></TripAppShell></React.StrictMode>);
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('desktop-gear-title'));
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    mocks.pathname = '/trips/trip-1';
+    view.rerender(<React.StrictMode><TripAppShell><div /></TripAppShell></React.StrictMode>);
+    await vi.waitFor(() => expect(scroll).toHaveBeenCalledWith({ top: 0, behavior: 'instant' }));
+  });
+
   it.each(['online', 'cache'] as const)('targets sections on initial load and forward/back route changes for %s', async source => {
     installMatchMedia(false);
     mocks.workspace = { ...workspaceValue(), source };

@@ -32,7 +32,21 @@
   .dwo-label span { margin-left: 12px; font: 400 12px/1.4 var(--font-ui-face), sans-serif; text-transform: none; letter-spacing: 0; color: var(--dwo-muted); }
   .dwo-location { margin-top: 8px; }
   .dwo-meta { color: var(--dwo-muted); font-size: 12px; margin-top: 4px; }
-  .dwo-readiness { border-left: 1px solid var(--dwo-border); }
+  .dwo-readiness { position: relative; isolation: isolate; border-left: 1px solid var(--dwo-border); }
+  /* Decorative crest impression: no layout footprint or accessible content. */
+  .dwo-readiness::before, .dwo-readiness::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 72px;
+    height: 72px;
+    pointer-events: none;
+    mask: url('/logo.svg') center / contain no-repeat;
+  }
+  .dwo-readiness::before { background: rgb(255 255 255 / 4%); transform: translateY(1px); }
+  .dwo-readiness::after { background: rgb(0 0 0 / 32%); }
+  .dwo-readiness > * { position: relative; z-index: 1; }
   .dwo-score-line { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .dwo-score { font-size: 48px; line-height: 1; font-variant-numeric: tabular-nums; }
   .dwo-map { padding: 16px; min-width: 0; }
@@ -45,6 +59,55 @@
   .dwo-map .home-map-card__canvas { height: 224px !important; min-height: 224px !important; flex: none; border-radius: 6px; background: color-mix(in srgb, var(--dwo-surface) 94%, currentColor); }
   .dwo-map button { min-height: 32px; }
   .dwo-map svg { color: var(--dwo-muted); }
+  /* Desktop map finish; the outer canvas is the sole clipping/border owner. */
+  .dwo-map > div > div:first-child button {
+    background: color-mix(in srgb, var(--dwo-surface) 88%, transparent);
+    border: 1px solid var(--dwo-border);
+    color: var(--dwo-muted);
+  }
+  .dwo-map > div > div:first-child button:hover {
+    background: color-mix(in srgb, var(--dwo-surface) 92%, var(--workspace-text-primary));
+    color: var(--workspace-text-primary);
+  }
+  .dwo-map > div > div:first-child button:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+  .dwo-map .home-map-card__canvas {
+    border: 1px solid var(--dwo-border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--dwo-surface);
+  }
+  .dwo-map .home-map-card__canvas > .campsite-map-selector {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .dwo-map .maplibregl-ctrl-attrib {
+    background: rgb(18 24 21 / 88%);
+    color: #c5cec8;
+    font: 400 11px/1.5 var(--font-ui-face), sans-serif;
+  }
+  .dwo-map .maplibregl-ctrl-attrib a { color: inherit; font-weight: 400; }
+  .dwo-map .maplibregl-ctrl-attrib a:hover { color: #fff; }
+  .dwo-map .maplibregl-ctrl-attrib-button { filter: invert(1); }
+  /* Desktop-only campsite marker test; retain SDK positioning and hit area. */
+  .dwo-map .campsite-selected-marker {
+    background: #202923;
+    color: #e3c28a;
+    border: 2px solid #c8ad79;
+    border-radius: 12px 12px 50% 50% / 12px 12px 65% 65%;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  }
+  .dwo-map .campsite-selected-marker > span {
+    width: 25px;
+    height: 25px;
+    font-size: 0;
+    transform: translateY(-2px);
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 20 12 4l9 16H3Zm5 0 4-8 4 8M2 20h20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
   .dwo-operations { padding: 20px 24px; border-left: 1px solid var(--dwo-border); min-width: 0; }
   .dwo-attention[data-attention="true"] h2 { color: var(--workspace-state-warning, var(--accent-yellow)); }
   .dwo-attention p { color: var(--dwo-muted); margin: 4px 0 8px; }

@@ -85,10 +85,14 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!workspaceReady) return;
     if (initialPathRef.current === pathname) {
+      // Overview is already at the document start. Leave initial/reload history
+      // restoration to the browser; do not align its inset heading to the viewport.
+      if (sectionHeading === 'desktop-overview-title') return;
       initialPathRef.current = '';
       // A direct desktop deep link must target its section after data loads.
       if (!sectionHeading) return;
     }
+    initialPathRef.current = '';
 
     const frame = window.requestAnimationFrame(() => {
       if (document.querySelector('[aria-modal="true"]')) return;
@@ -96,7 +100,11 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
       const destination = (sectionHeading ? main?.querySelector<HTMLElement>(`#${sectionHeading}`) : null)
         ?? main?.querySelector<HTMLElement>('h1') ?? main;
       destination?.focus({ preventScroll: true });
-      destination?.scrollIntoView({ block: 'start', behavior: 'auto' });
+      if (sectionHeading === 'desktop-overview-title') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      } else {
+        destination?.scrollIntoView({ block: 'start', behavior: 'auto' });
+      }
       setRouteAnnouncement(`${routeLabel} loaded`);
     });
     return () => window.cancelAnimationFrame(frame);

@@ -12,6 +12,13 @@ afterEach(() => {
 });
 
 describe('desktop workspace chrome boundary', () => {
+  it('themes only the desktop document scrollbar without changing its width or gutter', () => {
+    expect(css).toContain('scrollbar-color: #77837b #18201c');
+    expect(css).toContain(':scope::-webkit-scrollbar-track { background: #18201c; }');
+    expect(css).toContain(':scope::-webkit-scrollbar-thumb:hover');
+    expect(css).not.toContain('scrollbar-gutter:');
+    expect(css).not.toContain('scrollbar-width: none');
+  });
   it('reaches portaled workspace sheets only with the desktop document mounted', () => {
     document.body.innerHTML = '<div data-desktop-trip-workspace><main data-desktop-workspace-main><div data-desktop-workspace-document></div></main></div><div class="crud-sheet__panel--workspace"></div>';
     expect(document.querySelector(scope)).toBe(document.documentElement);
