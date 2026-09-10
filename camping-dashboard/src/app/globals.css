@@ -7721,7 +7721,7 @@ body {
   }
 }
 
-@media (max-width: 767px) {
+@scope ([data-phone-signed-out]) {
   [data-signed-out-landing] {
     min-height: 100dvh;
     overflow-x: clip;
@@ -8078,8 +8078,8 @@ body {
   }
 }
 
-@media (max-width: 767px) and (max-height: 720px) {
-  .signed-out-intro__copy {
+@media (max-height: 720px) {
+  [data-phone-signed-out] .signed-out-intro__copy {
     margin-top: 1.5rem;
   }
 }

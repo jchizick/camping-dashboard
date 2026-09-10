@@ -13,7 +13,10 @@ import {
   ShieldCheck,
   Trees,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+import { PhoneLayoutProvider, usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
+import AuthenticatedTripsLoader from './AuthenticatedTripsLoader';
+import { DesktopSignedOutLanding } from './DesktopSignedOutLanding';
 
 import {
   READINESS_STATUS_LABELS,
@@ -134,7 +137,17 @@ function FieldProtocolMark() {
   );
 }
 
-export function SignedOutLanding({ error, onSignIn }: SignedOutLandingProps) {
+const subscribeToHydration = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
+
+export function SignedOutLanding(props: SignedOutLandingProps) {
+  return <PhoneLayoutProvider><SignedOutComposition {...props} /></PhoneLayoutProvider>;
+}
+
+function SignedOutComposition({ error, onSignIn }: SignedOutLandingProps) {
+  const isPhoneLayout = usePhoneLayout();
+  const isReady = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   const [isStartingSignIn, setIsStartingSignIn] = useState(false);
 
   async function handleSignIn() {
@@ -147,8 +160,14 @@ export function SignedOutLanding({ error, onSignIn }: SignedOutLandingProps) {
     }
   }
 
+  if (!isReady) return <AuthenticatedTripsLoader />;
+  if (!isPhoneLayout) {
+    return <DesktopSignedOutLanding error={error} pending={isStartingSignIn} onSignIn={handleSignIn} />;
+  }
+
   return (
     <main
+      data-phone-signed-out
       className="signed-out-landing"
       data-signed-out-landing
       data-signed-out-type-system="editorial-operational-bridge"

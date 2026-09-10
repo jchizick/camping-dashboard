@@ -1,0 +1,156 @@
+/* Non-phone presentation only; classification belongs to PhoneLayoutProvider. */
+[data-desktop-signed-out] {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: auto auto minmax(180px, 1fr);
+  height: 100svh;
+  min-height: 100svh;
+  padding: 28px 32px 0;
+  color: #f3f2ee;
+  background: radial-gradient(ellipse at 50% 20%, #202323 0%, #141717 55%, #101313 100%);
+  font-family: var(--font-ui-face), sans-serif;
+}
+
+@scope ([data-desktop-signed-out]) {
+  .desktop-landing__topo {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+    background: url('/topo-map-bg.svg') center top / 760px auto repeat;
+    opacity: 0.075;
+    filter: grayscale(1);
+  }
+
+  .desktop-landing__brand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1240px;
+    margin-inline: auto;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+  }
+
+  .desktop-landing__hero {
+    width: 100%;
+    max-width: 960px;
+    margin: clamp(48px, 7svh, 72px) auto 0;
+    text-align: center;
+  }
+
+  .desktop-landing__eyebrow {
+    margin: 0 0 18px;
+    color: #c5ad84;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display-face), sans-serif;
+    font-size: clamp(48px, 5.4vw, 80px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .desktop-landing__copy {
+    max-width: 660px;
+    margin: 22px auto 0;
+    color: #b8bdbb;
+    font-size: clamp(18px, 1.4vw, 20px);
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .desktop-landing__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 52px;
+    width: 248px;
+    max-width: 100%;
+    padding: 12px 20px;
+    border: 1px solid #d4d7d4;
+    border-radius: 8px;
+    background: #f3f3ef;
+    color: #171b19;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover:not(:disabled) { background: #fff; }
+  button:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 4px; }
+  button:disabled { cursor: wait; opacity: 0.75; }
+
+  .desktop-landing__helper {
+    margin: 14px 0 0;
+    color: #a5adaa;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .desktop-landing__error {
+    max-width: 660px;
+    margin: 20px auto 0;
+    padding: 12px 16px;
+    border: 1px solid #806950;
+    border-radius: 6px;
+    color: #f2c77f;
+    background: #25221d;
+    overflow-wrap: anywhere;
+  }
+
+  /* Only product evidence is clipped. Hero rows retain their natural height. */
+  .desktop-landing__preview {
+    position: relative;
+    width: min(100%, 1240px);
+    min-height: 148px;
+    margin: 32px auto 0;
+    overflow: clip;
+    border: 1px solid #454a48;
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+    background: #141715;
+  }
+
+  .desktop-landing__preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+  }
+
+  @media (prefers-reduced-transparency: reduce), (prefers-reduced-data: reduce) {
+    .desktop-landing__topo { display: none; }
+  }
+}
+
+@media (max-width: 1024px) {
+  [data-desktop-signed-out] { padding-inline: 24px; }
+}
+
+/* Tall tablets can fit the entire scaled capture; avoid an empty image frame. */
+@media (max-width: 900px) {
+  [data-desktop-signed-out] .desktop-landing__preview {
+    max-height: calc((100vw - 48px) * 0.625);
+    border-bottom: 1px solid #454a48;
+    border-radius: 12px;
+  }
+}

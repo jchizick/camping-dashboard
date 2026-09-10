@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 
 import React from 'react';
+import { renderToString } from 'react-dom/server';
+import { PHONE_LAYOUT_MEDIA_QUERY } from '@/components/trip/PhoneLayoutProvider';
 import fs from 'node:fs';
 import path from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/image', () => ({
   // eslint-disable-next-line @next/next/no-img-element
@@ -13,7 +15,10 @@ vi.mock('next/image', () => ({
 
 import { SignedOutLanding } from './SignedOutLanding';
 
-afterEach(cleanup);
+beforeEach(() => {
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+});
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('SignedOutLanding', () => {
   it('renders both responsive hero copy contracts with one heading and one Google action', () => {
@@ -180,4 +185,74 @@ describe('SignedOutLanding', () => {
     render(<SignedOutLanding error="Google sign-in could not start." onSignIn={vi.fn()} />);
     expect(screen.getByRole('alert').textContent).toBe('Google sign-in could not start.');
   });
+});
+
+
+describe('desktop signed-out composition', () => {
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  });
+
+  it('renders the exact desktop hero with one auth surface and no old preview', () => {
+    const { container } = render(<SignedOutLanding error="Callback failed" onSignIn={vi.fn()} />);
+    expect(screen.getByText('YOUR OUTDOOR COMMAND CENTRE')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Trip readiness, made clear.');
+    expect(screen.getByText('Plan, pack, and coordinate every trip in one workspace designed for clarity before you head out.')).toBeTruthy();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeTruthy();
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(container.querySelector('[data-desktop-signed-out]')).toBeTruthy();
+    expect(container.querySelector('.signed-out-preview')).toBeNull();
+    const preview = container.querySelector('[data-desktop-landing-preview]');
+    const image = preview?.querySelector('img');
+    expect(image?.getAttribute('src')).toBe('/trips/desktop-workspace-preview.webp');
+    expect(image?.getAttribute('width')).toBe('2560');
+    expect(image?.getAttribute('height')).toBe('1600');
+    expect(image?.getAttribute('loading')).toBe('eager');
+    expect(image?.getAttribute('alt')).toContain('Field Protocol trip workspace');
+    expect(preview?.querySelectorAll('button, a, [tabindex]').length).toBe(0);
+    expect(container.querySelector('[data-phone-signed-out]')).toBeNull();
+    expect(container.textContent).not.toContain('Email');
+  });
+
+  it('retains pending protection on desktop', async () => {
+    let finish!: () => void;
+    const signIn = vi.fn(() => new Promise<void>(resolve => { finish = resolve; }));
+    render(<SignedOutLanding error={null} onSignIn={signIn} />);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(signIn).toHaveBeenCalledOnce();
+    expect(button.hasAttribute('disabled')).toBe(true);
+    expect(button.textContent).toBe('Connecting…');
+    finish();
+    await waitFor(() => expect(button.textContent).toBe('Sign in with Google'));
+  });
+
+  it('scopes charcoal and sans typography without clipping the document', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/components/trips/desktopSignedOutLanding.css'), 'utf8');
+    expect(css).toContain('@scope ([data-desktop-signed-out])');
+    expect(css).toContain('var(--font-display-face)');
+    expect(css).toContain('var(--font-ui-face)');
+    expect(css).not.toContain('--font-trip-display');
+    expect(css).not.toContain('overflow: hidden');
+    expect(css).toContain('min-height: 100svh');
+  });
+});
+
+it('uses the canonical query for qualifying landscape phones', () => {
+  const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+  expect(window.matchMedia).toHaveBeenCalledWith(PHONE_LAYOUT_MEDIA_QUERY);
+  expect(container.querySelector('[data-phone-signed-out]')).toBeTruthy();
+  expect(container.querySelector('[data-desktop-signed-out]')).toBeNull();
+  expect(container.querySelector('[data-desktop-landing-preview]')).toBeNull();
+  expect(container.querySelector('img[src="/trips/desktop-workspace-preview.webp"]')).toBeNull();
+  expect(screen.getAllByRole('button')).toHaveLength(1);
+});
+
+it('renders the existing loader on the server rather than a guessed desktop hero', () => {
+  const html = renderToString(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+  expect(html).toContain('data-authenticated-trips-loader');
+  expect(html).not.toContain('data-desktop-signed-out');
+  expect(html).not.toContain('Sign in with Google');
 });
