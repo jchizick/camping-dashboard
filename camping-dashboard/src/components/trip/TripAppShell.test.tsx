@@ -421,10 +421,10 @@ describe('TripAppShell', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'More trip actions' }));
-    expect(screen.getByRole('menu')).toBeTruthy();
+    expect(screen.getByRole('dialog')).toBeTruthy();
 
     media.setMatches(false);
-    await vi.waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('renders one desktop rail, one main landmark, and canonical guarded destinations', () => {
@@ -440,8 +440,8 @@ describe('TripAppShell', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Plan' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Skip to trip content' }).getAttribute('href'))
       .toBe('#trip-main');
-    expect(screen.getByRole('link', { name: 'Back to Trips' }).getAttribute('href')).toBe(
-      '/trips'
+    expect(screen.getByRole('link', { name: 'Field Protocol — current trip Overview' }).getAttribute('href')).toBe(
+      '/trips/trip-1'
     );
 
     const expectedOrder = ['Overview', 'Plan', 'Gear', 'Crew', 'Field'];
@@ -488,44 +488,22 @@ describe('TripAppShell', () => {
     expect(mocks.reload).toHaveBeenCalledOnce();
   });
 
-  it('keeps Field Log and all existing secondary actions in More', () => {
-    render(
-      <TripAppShell>
-        <h1>Plan</h1>
-      </TripAppShell>
-    );
-
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
-    expect(screen.getByRole('menuitem', { name: 'Field Log' }).getAttribute('href')).toBe(
-      '/trips/trip-1/field-log'
-    );
-    expect(screen.queryByRole('menuitem', { name: /Settings/i })).toBeNull();
-    expect(screen.getByRole('menuitem', { name: 'Appearance' })).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Appearance' }));
-    expect(screen.getByText('Appearance dialog')).toBeTruthy();
-    expect(screen.getAllByRole('dialog')).toHaveLength(1);
-    expect(screen.queryByRole('menu')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Close Appearance dialog' }));
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
-
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
-    expect(screen.getByText('Mission Brief dialog')).toBeTruthy();
-    expect(screen.getAllByRole('dialog')).toHaveLength(1);
-    expect(screen.queryByRole('menu')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Close Mission Brief dialog' }));
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'About this app' }));
+  it('separates trip extras from account actions without exposing obsolete controls', () => {
+    render(<TripAppShell><h1>Plan</h1></TripAppShell>);
+    fireEvent.click(screen.getByRole('button', { name: 'Trip Extras' }));
+    expect(screen.getByRole('link', { name: 'Field Log' }).getAttribute('href')).toBe('/trips/trip-1/field-log');
+    expect(screen.queryByText('Appearance')).toBeNull();
+    expect(screen.queryByText('Mission Brief')).toBeNull();
+    expect(screen.queryByText('Sign out')).toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Account: Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'About Field Protocol' }));
     expect(screen.getByText('Project Intel dialog')).toBeTruthy();
     expect(screen.getAllByRole('dialog')).toHaveLength(1);
-    expect(screen.queryByRole('menu')).toBeNull();
-
     fireEvent.click(screen.getByRole('button', { name: 'Close About dialog' }));
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }));
-    expect(mocks.signOut).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Account: Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(mocks.signOut).toHaveBeenCalledOnce();
   });
 
   it('hides Appearance from read-only members in every More placement', () => {
@@ -542,9 +520,9 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    for (const trigger of screen.getAllByRole('button', { name: /More/ })) {
+    for (const trigger of screen.getAllByRole('button', { name: /Trip Extras/ })) {
       fireEvent.click(trigger);
-      expect(screen.queryByRole('menuitem', { name: 'Appearance' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Appearance' })).toBeNull();
       fireEvent.keyDown(document, { key: 'Escape' });
     }
   });
@@ -556,8 +534,8 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Mission Brief' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Account: Account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'About Field Protocol' }));
     expect(screen.getAllByRole('dialog')).toHaveLength(1);
 
     mocks.pathname = '/trips/trip-1/gear';
@@ -625,9 +603,9 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    fireEvent.click(screen.getAllByRole('button', { name: /More/ })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Trip Extras/ })[0]);
     expect(
-      screen.getByRole('menuitem', { name: 'Field Log' }).getAttribute('aria-current')
+      screen.getByRole('link', { name: 'Field Log' }).getAttribute('aria-current')
     ).toBe('page');
   });
 
@@ -665,13 +643,13 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    const trigger = screen.getAllByRole('button', { name: /More/ })[0];
+    const trigger = screen.getAllByRole('button', { name: /Trip Extras/ })[0];
     trigger.focus();
     fireEvent.click(trigger);
-    expect(screen.getByRole('menu')).toBeTruthy();
+    expect(screen.getByRole('dialog')).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
 
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
 

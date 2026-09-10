@@ -2,12 +2,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useTrip } from '@/lib/tripContext';
-import MissionBriefModal from '@/components/ui/MissionBriefModal';
 import ProjectIntelModal from '@/components/ui/ProjectIntelModal';
-import TripAppearanceDialog from './TripAppearanceDialog';
+import WorkspaceBrand from './WorkspaceBrand';
 import TripMobileNav from './TripMobileNav';
 import TripMoreMenu from './TripMoreMenu';
 import TripPrimaryNav from './TripPrimaryNav';
@@ -24,7 +22,7 @@ import { desktopSectionHeading } from './desktopSectionNavigation';
 import { TripListProvider } from '@/components/trips/TripListProvider';
 import TripSwitcher from '@/components/trips/TripSwitcher';
 
-type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
+type AppInfoDialogName = 'about';
 interface ActiveAppInfoDialog {
   name: AppInfoDialogName;
   pathname: string;
@@ -41,7 +39,6 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   const {
     data,
     trip,
-    editableActions,
     error,
     isLoading,
     isReloading,
@@ -173,28 +170,13 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
           trip.park_name ||
           'Campsite unavailable'
         }
-        onMissionBrief={() =>
-          setOpenedInfoDialog({ name: 'mission-brief', pathname })
-        }
         onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
-        onAppearance={
-          editableActions
-            ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
-            : undefined
-        }
         onSignOut={handleSignOut}
       />}
 
       {isPhoneLayout && <header className="trip-app-header relative z-[var(--layer-navigation)] border-b backdrop-blur md:sticky md:top-0">
         <div className="trip-shell-inner mx-auto flex max-w-[1600px] items-center gap-3 px-3 md:px-6 lg:px-8">
-          <GuardedTripLink
-            href="/trips"
-            aria-label="Back to trips"
-            className="trip-shell-control inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border px-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <ArrowLeft size={18} aria-hidden="true" />
-            <span className="hidden text-sm font-medium xl:inline">Back to Trips</span>
-          </GuardedTripLink>
+          <WorkspaceBrand tripId={tripId} compact />
 
           <TripSwitcher tripId={tripId} tripName={trip.name} tripLocation={
             [trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || trip.park_name || 'Campsite unavailable'
@@ -215,15 +197,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
               <TripMoreMenu
                 id="desktop-trip-more"
                 tripId={tripId}
-                onMissionBrief={() =>
-                  setOpenedInfoDialog({ name: 'mission-brief', pathname })
-                }
                 onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
-                onAppearance={
-                  editableActions
-                    ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
-                    : undefined
-                }
                 onSignOut={handleSignOut}
               />
             ) : null}
@@ -237,15 +211,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
               <TripMoreMenu
                 id="mobile-trip-more"
                 tripId={tripId}
-                onMissionBrief={() =>
-                  setOpenedInfoDialog({ name: 'mission-brief', pathname })
-                }
                 onProjectIntel={() => setOpenedInfoDialog({ name: 'about', pathname })}
-                onAppearance={
-                  editableActions
-                    ? () => setOpenedInfoDialog({ name: 'appearance', pathname })
-                    : undefined
-                }
                 onSignOut={handleSignOut}
                 mobile
               />
@@ -329,22 +295,10 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
 
       {isPhoneLayout && <TripMobileNav tripId={tripId} />}
 
-      <MissionBriefModal
-        isOpen={activeInfoDialog === 'mission-brief'}
-        onClose={() => setOpenedInfoDialog(null)}
-      />
       <ProjectIntelModal
         isOpen={activeInfoDialog === 'about'}
         onClose={() => setOpenedInfoDialog(null)}
       />
-      {activeInfoDialog === 'appearance' && editableActions ? (
-        <TripAppearanceDialog
-          isOpen
-          currentTheme={data.settings.theme_variant}
-          onSelect={editableActions.updateThemeVariant}
-          onClose={() => setOpenedInfoDialog(null)}
-        />
-      ) : null}
     </DesktopTripWorkspaceBoundary>
   );
 }

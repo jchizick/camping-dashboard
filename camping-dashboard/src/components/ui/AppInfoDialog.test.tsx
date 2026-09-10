@@ -94,10 +94,10 @@ describe('AppInfoDialog', () => {
     );
 
     expect(
-      screen.getByRole('dialog', { name: 'Camping Dashboard' })
+      screen.getByRole('dialog', { name: 'About Field Protocol' })
     ).toBeTruthy();
     expect(
-      screen.getByRole('heading', { level: 3, name: 'Application foundation' })
+      screen.getByRole('heading', { level: 3, name: 'Plan together' })
     ).toBeTruthy();
     expect(screen.getAllByRole('list').length).toBeGreaterThan(0);
     expect(screen.queryByText(/##/)).toBeNull();

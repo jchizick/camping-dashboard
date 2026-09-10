@@ -1,165 +1,35 @@
 'use client';
-
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  BookOpenText,
-  ChevronDown,
-  FileText,
-  LogOut,
-  MoreHorizontal,
-  Palette,
-  Radio,
-} from 'lucide-react';
+import { BookOpenText, MoreHorizontal } from 'lucide-react';
 import GuardedTripLink from './GuardedTripLink';
 import { tripDestinationHref } from './tripNavigation';
+import CrudSheet from '@/components/ui/CrudSheet';
+import WorkspacePopover from './WorkspacePopover';
+import { AccountActions } from './WorkspaceAccount';
 
 interface TripMoreMenuProps {
-  id: string;
-  tripId: string;
-  onMissionBrief: () => void;
-  onProjectIntel: () => void;
-  onAppearance?: () => void;
-  onSignOut: () => Promise<void>;
-  mobile?: boolean;
-  placement?: 'below' | 'sidebar';
+  id: string; tripId: string; onProjectIntel: () => void; onSignOut: () => Promise<void>;
+  mobile?: boolean; placement?: 'below' | 'sidebar';
 }
-
-export default function TripMoreMenu({
-  id,
-  tripId,
-  onMissionBrief,
-  onProjectIntel,
-  onAppearance,
-  onSignOut,
-  mobile = false,
-  placement = 'below',
-}: TripMoreMenuProps) {
+export default function TripMoreMenu({ id, tripId, onProjectIntel, onSignOut, mobile = false }: TripMoreMenuProps) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const fieldLogHref = tripDestinationHref(tripId, 'field-log');
-  const fieldLogActive = pathname === fieldLogHref;
-
-  useEffect(() => {
-    if (!open) return;
-
-    function closeOnOutsideClick(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    document.addEventListener('pointerdown', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsideClick);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [open]);
-
-  function runAction(action: () => void | Promise<void>) {
-    setOpen(false);
-    triggerRef.current?.focus();
-    void action();
-  }
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={mobile ? 'More trip actions' : undefined}
-        aria-expanded={open}
-        aria-controls={`${id}-menu`}
-        onClick={() => setOpen((current) => !current)}
-        className={`trip-shell-control inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card-bg ${
-          placement === 'sidebar' ? 'w-full justify-between' : ''
-        } ${
-          fieldLogActive
-            ? 'border-accent-yellow/40 bg-accent-yellow/15 text-accent-yellow'
-            : ''
-        }`}
-      >
-        <span className="inline-flex items-center gap-2">
-          <MoreHorizontal size={18} aria-hidden="true" />
-          {!mobile && 'More'}
-        </span>
-        <ChevronDown
-          size={14}
-          aria-hidden="true"
-          className={`transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {open && (
-        <div
-          id={`${id}-menu`}
-          role="menu"
-          aria-label="More trip actions"
-          className={`trip-more-menu absolute z-[var(--layer-menu)] w-64 overflow-hidden rounded-2xl border p-2 ${
-            placement === 'sidebar'
-              ? 'bottom-0 left-[calc(100%+0.75rem)]'
-              : 'right-0 top-[calc(100%+0.5rem)]'
-          }`}
-        >
-          <GuardedTripLink
-            href={fieldLogHref}
-            role="menuitem"
-            aria-current={fieldLogActive ? 'page' : undefined}
-            onClick={() => setOpen(false)}
-            className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <BookOpenText size={17} aria-hidden="true" />
-            Field Log
-          </GuardedTripLink>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onMissionBrief)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <Radio size={17} aria-hidden="true" />
-            Mission Brief
-          </button>
-          {onAppearance ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => runAction(onAppearance)}
-              className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            >
-              <Palette size={17} aria-hidden="true" />
-              Appearance
-            </button>
-          ) : null}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onProjectIntel)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-text-main hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <FileText size={17} aria-hidden="true" />
-            About this app
-          </button>
-          <div className="my-1 border-t border-border-subtle" />
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onSignOut)}
-            className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm text-accent-red hover:bg-accent-red/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <LogOut size={17} aria-hidden="true" />
-            Sign out
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  function run(action: () => void | Promise<void>) { setOpen(false); void action(); }
+  // Fixed Mission Brief media has no explicit trip association. Hide until data-driven.
+  const extras = <GuardedTripLink href={fieldLogHref} aria-current={pathname === fieldLogHref ? 'page' : undefined}
+    className="workspace-extra-link" onClick={() => setOpen(false)}><BookOpenText size={17} aria-hidden="true" />Field Log</GuardedTripLink>;
+  return <div>
+    <button ref={trigger} type="button" aria-label={mobile ? 'More trip actions' : undefined} aria-haspopup="dialog"
+      aria-expanded={open} onClick={() => setOpen(true)}
+      className="trip-shell-control inline-flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2">
+      <MoreHorizontal size={18} aria-hidden="true" />{!mobile && 'Trip Extras'}
+    </button>
+    {open && (mobile ? <CrudSheet isOpen title="More" onClose={() => setOpen(false)} surface="workspace" panelClassName="workspace-secondary-sheet">
+      <section aria-labelledby={id + '-extras'}><h3 id={id + '-extras'}>Trip Extras</h3>{extras}</section>
+      <section aria-label="Account"><h3>Account</h3><AccountActions onAbout={() => run(onProjectIntel)} onSignOut={() => run(onSignOut)} /></section>
+    </CrudSheet> : <WorkspacePopover anchor={trigger} title="Trip Extras" onClose={() => setOpen(false)}>{extras}</WorkspacePopover>)}
+  </div>;
 }

@@ -1,9 +1,10 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import GuardedTripLink from './GuardedTripLink';
 import TripMoreMenu from './TripMoreMenu';
+import WorkspaceBrand from './WorkspaceBrand';
+import WorkspaceAccount from './WorkspaceAccount';
 import TripSwitcher from '@/components/trips/TripSwitcher';
 import { useOptionalTripWorkspaceStatus } from './TripWorkspaceStatus';
 import {
@@ -16,9 +17,7 @@ interface TripSidebarProps {
   tripId: string;
   tripName: string;
   tripLocation: string;
-  onMissionBrief: () => void;
   onProjectIntel: () => void;
-  onAppearance?: () => void;
   onSignOut: () => Promise<void>;
 }
 
@@ -26,9 +25,7 @@ export default function TripSidebar({
   tripId,
   tripName,
   tripLocation,
-  onMissionBrief,
   onProjectIntel,
-  onAppearance,
   onSignOut,
 }: TripSidebarProps) {
   const pathname = usePathname();
@@ -38,13 +35,7 @@ export default function TripSidebar({
   return (
     <aside className="trip-workspace-sidebar" data-testid="wide-trip-sidebar-shell">
       <div className="trip-workspace-sidebar__surface">
-        <GuardedTripLink
-          href="/trips"
-          className="trip-workspace-sidebar__back trip-workspace-sidebar__control"
-        >
-          <ArrowLeft size={18} aria-hidden="true" />
-          <span>Back to Trips</span>
-        </GuardedTripLink>
+        <WorkspaceBrand tripId={tripId} />
 
         <TripSwitcher tripId={tripId} tripName={tripName} tripLocation={tripLocation} />
 
@@ -72,12 +63,11 @@ export default function TripSidebar({
           <TripMoreMenu
             id="sidebar-trip-more"
             tripId={tripId}
-            onMissionBrief={onMissionBrief}
             onProjectIntel={onProjectIntel}
-            onAppearance={onAppearance}
             onSignOut={onSignOut}
             placement="sidebar"
           />
+          <WorkspaceAccount onAbout={onProjectIntel} onSignOut={onSignOut} />
         </div>
       </div>
     </aside>

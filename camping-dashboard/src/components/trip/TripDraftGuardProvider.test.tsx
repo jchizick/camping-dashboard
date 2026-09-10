@@ -24,6 +24,8 @@ const navigation = vi.hoisted(() => ({
 
 vi.mock('@/components/trips/TripSwitcher', () => ({ default: () => <span>Trip identity</span> }));
 
+vi.mock('@/lib/authContext', () => ({ useAuth: () => ({ user: null, identity: null }) }));
+
 vi.mock('next/navigation', () => ({
   usePathname: () => window.location.pathname,
   useRouter: () => ({ push: navigation.push, replace: navigation.replace }),
@@ -94,7 +96,7 @@ function TestSurface({ multiple = false, rail = false }: { multiple?: boolean; r
       {rail ? (
         <TripSidebar
           tripId="trip-1" tripName="Maple Lake" tripLocation="Algonquin"
-          onMissionBrief={vi.fn()} onProjectIntel={vi.fn()} onSignOut={vi.fn()}
+          onProjectIntel={vi.fn()} onSignOut={vi.fn()}
         />
       ) : <GuardedTripLink href="/trips/trip-1/gear">Gear</GuardedTripLink>}
     </TripDraftGuardProvider>

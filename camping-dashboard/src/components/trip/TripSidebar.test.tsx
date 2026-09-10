@@ -7,6 +7,8 @@ import { TRIP_PRIMARY_DESTINATIONS } from './tripNavigation';
 
 const mocks = vi.hoisted(() => ({ pathname: '/trips/trip-1' }));
 
+vi.mock('@/lib/authContext', () => ({ useAuth: () => ({ user: null, identity: null }) }));
+
 vi.mock('next/navigation', () => ({ usePathname: () => mocks.pathname }));
 vi.mock('@/components/trips/TripSwitcher', () => ({
   default: ({ tripName, tripLocation }: { tripName: string; tripLocation: string }) =>
@@ -27,7 +29,6 @@ function renderSidebar() {
       tripId="trip-1"
       tripName="Maple Lake Weekend"
       tripLocation="Maple Lake · Site 4"
-      onMissionBrief={vi.fn()}
       onProjectIntel={vi.fn()}
       onSignOut={vi.fn()}
     />
@@ -44,15 +45,15 @@ describe('TripSidebar', () => {
     expect(within(nav).getByRole('link', { name: /Overview/ }).getAttribute('aria-current')).toBe('page');
     expect(within(nav).queryByRole('link', { name: 'Field Log' })).toBeNull();
 
-    fireEvent.click(within(sidebar).getByRole('button', { name: 'More' }));
-    expect(within(sidebar).getByRole('menuitem', { name: 'Field Log' })).toBeTruthy();
+    fireEvent.click(within(sidebar).getByRole('button', { name: 'Trip Extras' }));
+    expect(screen.getByRole('link', { name: 'Field Log' })).toBeTruthy();
   });
 
   it('uses the shared nested-route active-state helper', () => {
     mocks.pathname = '/trips/trip-1/guide/notices/notice-1';
     renderSidebar();
-    expect(screen.getByRole('link', { name: /Field/ }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('link', { name: /Overview/ }).getAttribute('aria-current')).toBeNull();
+    expect(within(screen.getByRole('navigation', { name: 'Trip sections' })).getByRole('link', { name: /Field/ }).getAttribute('aria-current')).toBe('page');
+    expect(within(screen.getByRole('navigation', { name: 'Trip sections' })).getByRole('link', { name: /Overview/ }).getAttribute('aria-current')).toBeNull();
   });
 
   it('keeps long identity text present without changing its accessible content', () => {
@@ -61,7 +62,6 @@ describe('TripSidebar', () => {
         tripId="trip-1"
         tripName="A deliberately long Algonquin backcountry expedition name"
         tripLocation="A deliberately long campsite location near Maple Leaf Lake · Site 4"
-        onMissionBrief={vi.fn()}
         onProjectIntel={vi.fn()}
         onSignOut={vi.fn()}
       />
