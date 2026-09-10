@@ -12,7 +12,8 @@ const LOCAL_SHELL_ASSETS = [
 ];
 
 function isProtectedTripNavigation(url) {
-  return /^\/trips\/[^/]+(?:\/(?:plan|gear|crew|guide))?\/?$/.test(url.pathname);
+  return url.origin === self.location.origin && (url.pathname === '/trips' ||
+    /^\/trips\/(?!new(?:\/|$)|all(?:\/|$))[A-Za-z0-9_-]+(?:\/(?:plan|gear|crew|guide))?\/?$/.test(url.pathname));
 }
 
 function isVersionedNextAsset(url) {

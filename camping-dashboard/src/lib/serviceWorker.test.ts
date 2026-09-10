@@ -214,3 +214,17 @@ describe('Field Protocol service worker', () => {
     expect(worker.stores.size).toBe(0);
   });
 });
+
+it('serves the shell for generic entry only on transport failure', async () => {
+ const worker=createWorkerHarness(); await worker.dispatch('install');
+ const request={method:'GET',mode:'navigate',url:'https://field-protocol.test/trips?launch=pwa'};
+ expect(await (await worker.dispatch('fetch',{request}))?.text()).toBe('network');
+ worker.fetchMock.mockRejectedValueOnce(new TypeError('offline'));
+ expect(await (await worker.dispatch('fetch',{request}))?.text()).toContain('/_next/static/app.js');
+ worker.fetchMock.mockResolvedValueOnce(new Response('Denied',{status:403}));
+ expect((await worker.dispatch('fetch',{request}))?.status).toBe(403);
+});
+it.each(['/trips/new','/trips/all','/trips/a/field-log','/trips/%ZZ','/trips//a'])('does not serve a cached target for %s', async path=>{
+ const worker=createWorkerHarness();
+ expect(await worker.dispatch('fetch',{request:{method:'GET',mode:'navigate',url:'https://field-protocol.test'+path}})).toBeNull();
+});

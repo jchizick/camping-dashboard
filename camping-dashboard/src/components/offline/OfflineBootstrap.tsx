@@ -12,6 +12,8 @@ import { TripWorkspaceProvider } from '@/components/trip/TripWorkspaceProvider';
 import { AuthProvider } from '@/lib/authContext';
 import {
   offlineTargetFromLocation,
+  isOfflineTripsEntry,
+  parseOfflineTarget,
   type OfflineDestination,
   type OfflineTarget,
 } from '@/lib/offlineTarget';
@@ -58,27 +60,39 @@ function OfflineUnavailable({ status }: { status: OfflineTripAccessResult['statu
 }
 
 export default function OfflineBootstrap() {
-  const [target] = useState<OfflineTarget | null | undefined>(() =>
+  const [genericEntry] = useState(() => typeof window !== 'undefined' && isOfflineTripsEntry(window.location.pathname));
+  const [target, setTarget] = useState<OfflineTarget | null | undefined>(() =>
     typeof window === 'undefined'
       ? undefined
       : offlineTargetFromLocation(window.location)
   );
   const [access, setAccess] = useState<OfflineTripAccessResult | null>(null);
 
+  const requestedTripId = genericEntry ? undefined : target?.tripId;
   useEffect(() => {
-    if (!target) return;
+    if (!requestedTripId && !genericEntry) return;
     let cancelled = false;
     void tripRepository
-      .readOfflineTrip({ tripId: target.tripId, requirePreparedShell: true })
+      .readOfflineTrip({ tripId: requestedTripId, requirePreparedShell: true })
       .then((result) => {
-        if (!cancelled) setAccess(result);
+        if (cancelled) return;
+        if (genericEntry && result.status === 'available') {
+          const savedTarget = parseOfflineTarget('/trips/' + encodeURIComponent(result.workspace.data.trip.id));
+          if (!savedTarget) { setAccess({ status: 'no-snapshot', identity: null, workspace: null }); return; }
+          // Keep the offline shell mounted; replace the resolver entry, not browser history.
+          window.history.replaceState(window.history.state, '', savedTarget.pathname);
+          setTarget(savedTarget);
+        }
+        setAccess(result);
+      }).catch(() => {
+        if (!cancelled) setAccess({ status: 'no-snapshot', identity: null, workspace: null });
       });
     return () => {
       cancelled = true;
     };
-  }, [target]);
+  }, [genericEntry, requestedTripId]);
 
-  if (target === null) return <OfflineUnavailable status="invalid-target" />;
+  if (target === null && !genericEntry) return <OfflineUnavailable status="invalid-target" />;
   if (target === undefined || !access) {
     return (
       <main className="relative z-10 flex min-h-[100dvh] items-center justify-center p-6" role="status">
@@ -89,6 +103,8 @@ export default function OfflineBootstrap() {
   if (access.status !== 'available') {
     return <OfflineUnavailable status={access.status} />;
   }
+
+  if (!target) return <OfflineUnavailable status="invalid-target" />;
 
   return (
     <div data-offline-bootstrap="private-data-from-indexeddb">

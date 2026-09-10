@@ -95,3 +95,24 @@ describe('OfflineBootstrap', () => {
     await waitFor(() => expect(mocks.readOfflineTrip).not.toHaveBeenCalled());
   });
 });
+
+describe('generic offline Trips launch', () => {
+  it('uses canonical eligibility and replaces the entry with the saved Overview', async () => {
+    window.history.replaceState({}, '', '/trips?launch=pwa');
+    const length = window.history.length;
+    mocks.readOfflineTrip.mockResolvedValue(available);
+    render(<OfflineBootstrap />);
+    expect(await screen.findByRole('heading', { name: 'Home destination' })).toBeTruthy();
+    expect(window.location.pathname).toBe('/trips/trip-1');
+    expect(window.history.length).toBe(length);
+    expect(mocks.readOfflineTrip).toHaveBeenCalledExactlyOnceWith({tripId: undefined, requirePreparedShell: true});
+  });
+  it.each(['no-identity','no-snapshot','expired','shell-not-prepared','wrong-trip'])('fails closed for %s without rewriting history', async status => {
+    window.history.replaceState({}, '', '/trips');
+    mocks.readOfflineTrip.mockResolvedValue({status,identity:null,workspace:null});
+    render(<OfflineBootstrap />);
+    await screen.findByRole('heading');
+    expect(screen.queryByTestId('shared-trip-shell')).toBeNull();
+    expect(window.location.pathname).toBe('/trips');
+  });
+});

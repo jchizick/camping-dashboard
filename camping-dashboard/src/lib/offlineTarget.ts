@@ -23,6 +23,7 @@ export function parseOfflineTarget(value: string): OfflineTarget | null {
     return null;
   }
   if (url.origin !== OFFLINE_TARGET_BASE.origin) return null;
+  if (!/^\/trips\/(?!new(?:\/|$)|all(?:\/|$))[A-Za-z0-9_-]+(?:\/(?:plan|gear|crew|guide))?\/?$/.test(url.pathname)) return null;
   const segments = url.pathname.split('/').filter(Boolean);
   if (segments[0] !== 'trips' || segments.length < 2 || segments.length > 3) {
     return null;
@@ -44,4 +45,12 @@ export function parseOfflineTarget(value: string): OfflineTarget | null {
 export function offlineTargetFromLocation(location: Location): OfflineTarget | null {
   const explicitTarget = new URLSearchParams(location.search).get('target');
   return parseOfflineTarget(explicitTarget ?? location.pathname);
+}
+
+/** Generic launch is distinct from an explicit trip identity. */
+export function isOfflineTripsEntry(value: string): boolean {
+  try {
+    const url = new URL(value, OFFLINE_TARGET_BASE);
+    return url.origin === OFFLINE_TARGET_BASE.origin && url.pathname === '/trips';
+  } catch { return false; }
 }

@@ -569,3 +569,29 @@ describe('cached readiness semantics', () => {
     await cache.close();
   });
 });
+
+describe('generic offline entry eligibility', () => {
+ it.each(['available','account-change','denial','missing-verification','incomplete'])('reuses persisted policy for %s', async mode => {
+  const name=databaseName('generic-'+mode);
+  const {repository,cache}=repositoryHarness(name,async()=>remote(dashboard()));
+  await repository.loadOnlineTrip({tripId:'trip-1',userId:'user-a',verifiedRole:'owner'});
+  await repository.markShellPrepared({userId:'user-a'});
+  if(mode==='denial') await repository.clearCachedTrip({userId:'user-a',tripId:'trip-1'});
+  if(['account-change','missing-verification','incomplete'].includes(mode)) {
+   const db=await openDB(name);
+   if(mode==='incomplete') {
+    const records=await db.getAll(ACTIVE_TRIP_STORE_NAME);
+    const record=records[0]; delete record.snapshot.data.trip;
+    await db.put(ACTIVE_TRIP_STORE_NAME,record);
+   } else {
+    const identity=await db.get(OFFLINE_IDENTITY_STORE_NAME,'https://project-a.supabase.co');
+    if(mode==='account-change') identity.activeUserId='user-b'; else identity.lastVerifiedAt='invalid';
+    await db.put(OFFLINE_IDENTITY_STORE_NAME,identity);
+   }
+   db.close();
+  }
+  const result=await repository.readOfflineTrip({requirePreparedShell:true});
+  expect(result.status).toBe(mode==='available'?'available':mode==='denial'||mode==='missing-verification'?'no-identity':'no-snapshot');
+  await cache.close();
+ });
+});

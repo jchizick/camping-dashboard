@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseOfflineTarget } from './offlineTarget';
+import { isOfflineTripsEntry, parseOfflineTarget } from './offlineTarget';
 
 describe('offline destination targets', () => {
   it.each([
@@ -31,4 +31,9 @@ describe('offline destination targets', () => {
   ])('rejects malicious or non-canonical target %s', (target) => {
     expect(parseOfflineTarget(target)).toBeNull();
   });
+});
+
+it.each(['/trips','/trips?launch=pwa','/trips#saved'])('recognizes only generic entry %s', path => expect(isOfflineTripsEntry(path)).toBe(true));
+it.each(['/trips/new','/trips/all','/trips/a/field-log','/trips/%ZZ','/trips/a%2Fb','//evil.example/trips','/trips//a'])('rejects reserved or malformed target %s', path => {
+ expect(parseOfflineTarget(path)).toBeNull(); expect(isOfflineTripsEntry(path)).toBe(false);
 });
