@@ -5,6 +5,8 @@ import * as maptilersdk from '@maptiler/sdk';
 import { GeocodingControl, type PickEvent } from '@maptiler/geocoding-control/maptilersdk';
 import type { TripMapStyle } from '@/types';
 import { AlertCircle, Loader2, MapPin, RefreshCw, Search } from 'lucide-react';
+import { integrateDesktopGeocoder } from './desktopGeocoder';
+import './desktopCampsiteMarker.css';
 
 export interface CampsiteSelection {
     latitude: number;
@@ -22,6 +24,9 @@ interface CampsiteMapSelectorProps {
     visible?: boolean;
     className?: string;
     onManualEntry?: () => void;
+    /** Opt in to responsive style changes without replacing the map instance. */
+    liveMapStyle?: boolean;
+    desktopChrome?: boolean;
 }
 
 interface SearchMetadata {
@@ -72,6 +77,8 @@ export default function CampsiteMapSelector({
     visible = true,
     className = '',
     onManualEntry,
+    liveMapStyle = false,
+    desktopChrome = false,
 }: CampsiteMapSelectorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maptilersdk.Map | null>(null);
@@ -88,6 +95,18 @@ export default function CampsiteMapSelector({
     const [searching, setSearching] = useState(false);
     const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
     const editable = Boolean(onChange);
+
+    useEffect(() => {
+        if (!liveMapStyle || initialStyleRef.current === mapStyle) return;
+        initialStyleRef.current = mapStyle;
+        // setStyle changes the basemap in place; DOM markers, camera and geocoder survive.
+        mapRef.current?.setStyle(resolveStyle(mapStyle));
+    }, [liveMapStyle, mapStyle]);
+
+    useEffect(() => {
+        if (!desktopChrome || !containerRef.current) return;
+        return integrateDesktopGeocoder(containerRef.current);
+    }, [desktopChrome, attempt]);
 
     useEffect(() => {
         valueRef.current = value;
@@ -312,7 +331,7 @@ export default function CampsiteMapSelector({
     const showBlockingFailure = missingKey || mapState === 'error';
 
     return (
-        <div className={`campsite-map-selector relative overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${className}`}>
+        <div data-desktop-map-chrome={desktopChrome ? '' : undefined} className={`campsite-map-selector relative overflow-hidden rounded-xl border border-border-subtle bg-card-hover ${className}`}>
             <div
                 ref={containerRef}
                 className="absolute inset-0 h-full w-full"

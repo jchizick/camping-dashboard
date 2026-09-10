@@ -84,23 +84,6 @@
     min-width: 40px;
     min-height: 40px;
   }
-  /* Desktop-only campsite marker test; retain SDK positioning and hit area. */
-  :is(.dwo-map, .campsite-location-sheet) .campsite-selected-marker {
-    background: #202923;
-    color: #e3c28a;
-    border: 2px solid #c8ad79;
-    border-radius: 12px 12px 50% 50% / 12px 12px 65% 65%;
-    box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
-  }
-  :is(.dwo-map, .campsite-location-sheet) .campsite-selected-marker > span {
-    width: 25px;
-    height: 25px;
-    font-size: 0;
-    transform: translateY(-2px);
-    background: currentColor;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 20 12 4l9 16H3Zm5 0 4-8 4 8M2 20h20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  }
-
   .campsite-location-sheet__coordinates { background: var(--app-bg); color: var(--workspace-text-secondary); border-color: var(--workspace-border-subtle); }
   .campsite-location-sheet__coordinates span { color: var(--workspace-text-primary); }
   .trip-draft-dialog__backdrop { background: rgb(0 0 0 / 50%); backdrop-filter: blur(4px); }

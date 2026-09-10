@@ -1,0 +1,120 @@
+/* The new action grouping is layout-transparent in the existing phone form. */
+.trip-create__footer-actions { display: contents; }
+
+/* Semantic phone classification owns this boundary; container width only arranges it. */
+[data-desktop-create-trip].trip-create {
+  --create-surface: hsl(from var(--workspace-glass-dense, var(--card-bg)) h 8% l);
+  --create-inset: color-mix(in srgb, var(--create-surface) 78%, black);
+  --create-text: var(--workspace-text-primary, var(--text-main));
+  --create-muted: var(--workspace-text-secondary, var(--text-muted));
+  --create-border: var(--workspace-border-subtle, var(--border-subtle));
+  background: color-mix(in srgb, var(--create-surface) 68%, black);
+  color: var(--create-text);
+  font-family: var(--font-ui-face);
+}
+[data-desktop-create-trip].trip-create::before { opacity: .10; }
+[data-desktop-create-trip] .trip-create__canvas {
+  width: min(100%, 1168px);
+  padding: 24px 24px 40px;
+  container: create-trip / inline-size;
+}
+[data-desktop-create-trip] .trip-create__header { gap: 16px; margin-bottom: 20px; }
+[data-desktop-create-trip] .trip-create__utility,
+[data-desktop-create-trip] .trip-create__account,
+[data-desktop-create-trip] .trip-create__brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+[data-desktop-create-trip] .trip-create__utility { justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; }
+[data-desktop-create-trip] .trip-create__brand { gap: 10px; font-family: var(--font-display-face); font-size: 18px; font-weight: 700; letter-spacing: .05em; }
+[data-desktop-create-trip] .trip-create__brand img { flex: none; }
+[data-desktop-create-trip] .workspace-account-identity { padding: 0; max-width: 240px; color: var(--create-muted); font-size: 12px; }
+[data-desktop-create-trip] .workspace-account-identity strong { color: var(--create-text); font-size: 12px; }
+[data-desktop-create-trip] .trip-create__back { color: var(--create-muted); }
+[data-desktop-create-trip] .trip-create__identity { gap: 6px; }
+[data-desktop-create-trip] .trip-create__identity h1 { font-family: var(--font-display-face); font-size: 40px; line-height: 1; color: var(--create-text); }
+[data-desktop-create-trip] .trip-create__identity > span { color: var(--create-muted); font-size: 14px; }
+[data-desktop-create-trip] .trip-create__form {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  background: var(--create-surface);
+  border: 1px solid var(--create-border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+[data-desktop-create-trip] .trip-create__surface { min-width: 0; padding: 24px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+[data-desktop-create-trip] .trip-create__details { gap: 16px; }
+[data-desktop-create-trip] .trip-create__location { border-top: 1px solid var(--create-border); }
+[data-desktop-create-trip] .trip-create__section-heading h2 { color: var(--create-text); font-family: var(--font-display-face); font-size: 22px; line-height: 1.1; }
+[data-desktop-create-trip] .trip-create__section-heading p { color: var(--create-muted); font-size: 12px; line-height: 1.5; }
+[data-desktop-create-trip] .trip-create__section-heading--map { margin-bottom: 16px; }
+[data-desktop-create-trip] .trip-create__section-heading--map svg { color: var(--create-muted); }
+[data-desktop-create-trip] .trip-create__field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+[data-desktop-create-trip] .trip-create__destination-fields { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+[data-desktop-create-trip] .trip-create__label { color: var(--create-muted); font-size: 11px; }
+[data-desktop-create-trip] .trip-create__input,
+[data-desktop-create-trip] .manual-campsite-entry__input {
+  min-width: 0; min-height: 44px; padding: 10px 12px;
+  border: 1px solid var(--create-border); border-radius: 7px;
+  background: var(--create-inset); color: var(--create-text);
+  font-family: var(--font-ui-face); font-size: 14px; line-height: 22px;
+  box-shadow: none; color-scheme: dark;
+}
+[data-desktop-create-trip] .trip-create__input::placeholder { color: var(--create-muted); opacity: .75; }
+[data-desktop-create-trip] .trip-create__map { height: 340px; min-height: 320px; }
+[data-desktop-create-trip] .trip-create__manual-toggle,
+[data-desktop-create-trip] .trip-create__cancel,
+[data-desktop-create-trip] .manual-campsite-entry__action {
+  min-height: 44px; padding: 10px 14px; border: 1px solid var(--create-border); border-radius: 7px;
+  background: transparent; color: var(--create-text); font-size: 13px; font-weight: 600; box-shadow: none;
+}
+[data-desktop-create-trip] .trip-create__manual-toggle { margin-top: 12px; }
+[data-desktop-create-trip] .trip-create__reset { color: var(--create-muted); }
+[data-desktop-create-trip] .manual-campsite-entry { background: var(--create-inset); border-color: var(--create-border); border-radius: 8px; }
+[data-desktop-create-trip] .manual-campsite-entry :is(h3, .text-text-main) { color: var(--create-text); }
+[data-desktop-create-trip] .manual-campsite-entry :is(.text-text-muted, .text-accent-blue) { color: var(--create-muted); }
+[data-desktop-create-trip] .trip-create__location-summary { margin-top: 10px; padding: 0; border: 0; background: transparent; color: var(--create-muted); }
+[data-desktop-create-trip] .trip-create__location-empty { color: var(--create-muted); }
+[data-desktop-create-trip] .trip-create__submit-region {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 12px 24px; padding: 16px 24px; border-top: 1px solid var(--create-border);
+}
+[data-desktop-create-trip] .trip-create__requirements { flex: 1 1 260px; margin: 0; color: var(--create-muted); font-size: 12px; line-height: 1.5; }
+[data-desktop-create-trip] .trip-create__requirements strong { color: var(--create-text); font-weight: 500; }
+[data-desktop-create-trip] .trip-create__footer-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+[data-desktop-create-trip] .trip-create__submit {
+  width: auto; min-height: 44px; padding: 10px 18px; border: 1px solid transparent; border-radius: 7px;
+  background: var(--create-text); color: var(--create-inset); font-family: var(--font-ui-face); font-size: 14px; box-shadow: none;
+}
+[data-desktop-create-trip] .trip-create__submit:disabled { background: color-mix(in srgb, var(--create-text) 12%, var(--create-surface)); color: var(--create-muted); border-color: var(--create-border); box-shadow: none; }
+[data-desktop-create-trip] :is(.trip-create__manual-toggle, .trip-create__cancel, .manual-campsite-entry__action):hover:not(:disabled) { background: color-mix(in srgb, var(--create-text) 6%, var(--create-surface)); }
+[data-desktop-create-trip] .trip-create__submit:hover:not(:disabled) { background: color-mix(in srgb, var(--create-text) 88%, white); box-shadow: none; }
+[data-desktop-create-trip] :is(.trip-create__input, .manual-campsite-entry__input, .trip-create__back, .trip-create__cancel, .trip-create__submit, .trip-create__manual-toggle, .trip-create__reset, .manual-campsite-entry__action):focus-visible { outline: 2px solid var(--create-text); outline-offset: 3px; box-shadow: none; }
+
+@container create-trip (min-width: 960px) {
+  [data-desktop-create-trip] .trip-create__form { grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); }
+  [data-desktop-create-trip] .trip-create__location { border-top: 0; border-left: 1px solid var(--create-border); }
+}
+@media (max-height: 800px) {
+  [data-desktop-create-trip] .trip-create__map { height: 320px; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-desktop-create-trip].trip-create::before { opacity: 0; }
+}
+
+/* Create Trip discovery map only; SDK interaction and attribution stay intact. */
+[data-desktop-create-trip] .trip-create__map {
+  container-type: inline-size;
+  border: 1px solid var(--create-border);
+  border-radius: 7px;
+  overflow: hidden;
+  background: #1b241f;
+}
+[data-desktop-create-trip] .trip-create__map > .maplibregl-map { border: 0; border-radius: 0; }
+[data-desktop-create-trip] .trip-create__map maptiler-geocoder { display: block; width: min(320px, calc(100cqw - 74px)); max-width: 100%; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-attrib { background: rgb(18 24 21 / 88%); color: #c5cec8; font: 400 11px/1.5 var(--font-ui-face), sans-serif; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-attrib a { color: inherit; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-attrib a:hover { color: #fff; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-attrib-button { filter: invert(1); }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-group { background: #202724; border: 1px solid #65706a; box-shadow: none; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-group button + button { border-top-color: #65706a; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-group button:hover { background: #39483f; }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-icon { filter: brightness(0) invert(1); }
+[data-desktop-create-trip] .trip-create__map .maplibregl-ctrl-group button:focus-visible { outline: 2px solid #edf1ed; outline-offset: -2px; }

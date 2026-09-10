@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { ThemeProvider } from '@/lib/themeContext';
 import { fetchUserTrips } from '@/lib/fetchDashboard';
@@ -12,6 +13,9 @@ import CampsiteMapSelector, { type CampsiteSelection } from '@/components/maps/C
 import ManualCampsiteEntry from '@/components/maps/ManualCampsiteEntry';
 import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoader';
 import { ArrowLeft, Loader2, MapPin, Plus, RotateCcw } from 'lucide-react';
+import { PhoneLayoutProvider, usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
+import { AccountIdentity } from '@/components/trip/WorkspaceAccount';
+import './desktopCreateTrip.css';
 
 export default function NewTripPage() {
   return (
@@ -24,6 +28,11 @@ export default function NewTripPage() {
 }
 
 export function NewTripContent() {
+  return <PhoneLayoutProvider><NewTripForm /></PhoneLayoutProvider>;
+}
+
+function NewTripForm() {
+  const isPhoneLayout = usePhoneLayout();
   const { user, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -124,17 +133,22 @@ export function NewTripContent() {
   }
 
   return (
-    <main className="trip-create" data-entry-flow="create-trip">
+    <main className="trip-create" data-entry-flow="create-trip" data-desktop-create-trip={!isPhoneLayout ? '' : undefined}>
       <div className="trip-create__canvas">
         <header className="trip-create__header">
-          {cancelPath && <button type="button" onClick={() => router.replace(cancelPath)} disabled={isSubmitting} className="trip-create__back">
+          {isPhoneLayout && cancelPath && <button type="button" onClick={() => router.replace(cancelPath)} disabled={isSubmitting} className="trip-create__back">
             <ArrowLeft size={16} aria-hidden="true" /> Cancel
           </button>}
-          <button type="button" onClick={() => void signOut()} disabled={isSubmitting} className="trip-create__back">Sign out</button>
+          {isPhoneLayout ? <button type="button" onClick={() => void signOut()} disabled={isSubmitting} className="trip-create__back">Sign out</button> : (
+            <div className="trip-create__utility">
+              <div className="trip-create__brand"><Image src="/logo.svg" alt="" width={28} height={35} /><span>FIELD PROTOCOL</span></div>
+              <div className="trip-create__account"><AccountIdentity /><button type="button" onClick={() => void signOut()} disabled={isSubmitting} className="trip-create__back">Sign out</button></div>
+            </div>
+          )}
           {!origin && returnTrip?.userId === userId && returnTrip?.failed && <p role="status">Your return trip could not be loaded. You can still create a trip or sign out.</p>}
 
           <div className="trip-create__identity">
-            <p>Field Protocol</p>
+            {isPhoneLayout && <p>Field Protocol</p>}
             <h1 data-mobile-type-role="page-title">Create Trip</h1>
             <span>Set the basics now. You can refine the plan later.</span>
           </div>
@@ -196,11 +210,12 @@ export function NewTripContent() {
                   onChange={(event) => setEndDate(event.target.value)}
                   required
                   aria-invalid={Boolean(dateError)}
+                  aria-describedby={dateError ? 'trip-end-error' : undefined}
                   className="trip-create__input"
                 />
               </div>
             </div>
-            {dateError && <p className="trip-create__field-error" role="alert">{dateError}</p>}
+            {dateError && <p id="trip-end-error" className="trip-create__field-error" role="alert">{dateError}</p>}
 
             <div className="trip-create__field">
               <label htmlFor="trip-park" className="trip-create__label">
@@ -215,7 +230,7 @@ export function NewTripContent() {
               />
             </div>
 
-            <div className="trip-create__field-grid">
+            <div className="trip-create__field-grid trip-create__destination-fields">
               <div className="trip-create__field">
                 <label htmlFor="trip-lake" className="trip-create__label">
                   Lake / Destination
@@ -267,7 +282,9 @@ export function NewTripContent() {
             <CampsiteMapSelector
               value={campsite}
               onChange={setCampsite}
-              mapStyle="openstreetmap"
+              mapStyle={isPhoneLayout ? 'openstreetmap' : 'expedition'}
+              liveMapStyle
+              desktopChrome={!isPhoneLayout}
               className="trip-create__map"
               onManualEntry={openManualLocation}
             />
@@ -309,18 +326,21 @@ export function NewTripContent() {
                 To create this trip, add: <strong>{requirements.join(', ')}</strong>.
               </p>
             )}
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              aria-describedby={requirements.length ? 'create-trip-requirements' : undefined}
-              className="trip-create__submit"
-            >
-              {isSubmitting ? (
-                <><Loader2 size={18} className="animate-spin" /> Creating trip…</>
-              ) : (
-                <><Plus size={18} /> Create Trip</>
-              )}
-            </button>
+            <div className="trip-create__footer-actions">
+              {!isPhoneLayout && cancelPath && <button type="button" onClick={() => router.replace(cancelPath)} disabled={isSubmitting} className="trip-create__cancel">Cancel</button>}
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                aria-describedby={requirements.length ? 'create-trip-requirements' : undefined}
+                className="trip-create__submit"
+              >
+                {isSubmitting ? (
+                  <><Loader2 size={18} className="animate-spin" /> Creating trip…</>
+                ) : (
+                  <><Plus size={18} /> Create Trip</>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

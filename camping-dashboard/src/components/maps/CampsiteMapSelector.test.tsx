@@ -19,6 +19,7 @@ const mapMocks = vi.hoisted(() => {
         off: vi.fn(),
         resize: vi.fn(),
         remove: vi.fn(),
+        setStyle: vi.fn(),
         addControl: vi.fn(),
         removeControl: vi.fn(),
         hasControl: vi.fn(() => false),
@@ -210,6 +211,8 @@ describe('CampsiteMapSelector failure handling', () => {
                 properties: { osm_id: 456 },
             },
         }));
+        expect(onChange).not.toHaveBeenCalled();
+        expect(mapMocks.markerInstance.addTo).not.toHaveBeenCalled();
         act(() => mapMocks.state.mapHandlers.click({ lngLat: { lng: -78.7, lat: 45.5 } }));
 
         expect(onChange).toHaveBeenCalledWith({
@@ -237,5 +240,43 @@ describe('CampsiteMapSelector failure handling', () => {
         act(() => mapMocks.state.mapHandlers.load());
         expect(screen.queryByText('Loading campsite map…')).toBeNull();
         expect(screen.queryByText('Map unavailable')).toBeNull();
+    });
+
+    it('changes an opted-in basemap in place and retains selection, search provenance and attribution', () => {
+        const onChange = vi.fn();
+        const props = { value: null, onChange, liveMapStyle: true };
+        const { rerender } = render(<CampsiteMapSelector {...props} mapStyle="expedition" desktopChrome />);
+        expect(mapMocks.mapConstructor).toHaveBeenCalledWith(expect.objectContaining({
+            style: 'https://api.maptiler.com/maps/outdoor-v2-dark/style.json', attributionControl: {},
+        }));
+        expect(mapMocks.markerInstance.addTo).not.toHaveBeenCalled();
+        act(() => mapMocks.state.mapHandlers.load());
+        act(() => mapMocks.state.geocoderHandlers.pick({ feature: { place_name: 'Lake', properties: { osm_id: 123 } } }));
+        expect(onChange).not.toHaveBeenCalled();
+        act(() => mapMocks.state.mapHandlers.click({ lngLat: { lng: -78, lat: 45 } }));
+        expect(mapMocks.markerInstance.addTo).toHaveBeenCalled();
+        const value = { latitude: 45, longitude: -78, label: 'Lake', source: 'manual_map_selection' as const, osmId: null };
+        rerender(<CampsiteMapSelector {...props} value={value} mapStyle="openstreetmap" />);
+        expect(mapMocks.mapInstance.setStyle).toHaveBeenLastCalledWith('https://api.maptiler.com/maps/openstreetmap/style.json');
+        expect(mapMocks.state.markerPosition).toEqual({ lng: -78, lat: 45 });
+        rerender(<CampsiteMapSelector {...props} value={value} mapStyle="expedition" desktopChrome />);
+        expect(mapMocks.mapInstance.setStyle).toHaveBeenLastCalledWith('https://api.maptiler.com/maps/outdoor-v2-dark/style.json');
+        expect(mapMocks.mapConstructor).toHaveBeenCalledOnce();
+        expect(mapMocks.mapInstance.remove).not.toHaveBeenCalled();
+        expect(mapMocks.geocoderConstructor).toHaveBeenCalledOnce();
+        act(() => mapMocks.state.markerHandlers.dragend());
+        expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ label: 'Lake', osmId: '123', source: 'maptiler_geocoding_refined' }));
+    });
+
+    it('uses the same marker for manual-coordinate updates without reinitializing', () => {
+        const onChange = vi.fn();
+        const { rerender } = render(<CampsiteMapSelector value={null} onChange={onChange} desktopChrome />);
+        expect(mapMocks.markerInstance.addTo).not.toHaveBeenCalled();
+        rerender(<CampsiteMapSelector onChange={onChange} desktopChrome value={{ latitude: 46, longitude: -79, label: null, source: 'manual_map_selection', osmId: null }} />);
+        expect(mapMocks.markerInstance.setLngLat).toHaveBeenLastCalledWith([-79, 46]);
+        expect(mapMocks.markerInstance.addTo).toHaveBeenCalledWith(mapMocks.mapInstance);
+        expect(mapMocks.markerConstructor).toHaveBeenCalledOnce();
+        expect(mapMocks.mapConstructor).toHaveBeenCalledOnce();
+        expect(onChange).not.toHaveBeenCalled();
     });
 });

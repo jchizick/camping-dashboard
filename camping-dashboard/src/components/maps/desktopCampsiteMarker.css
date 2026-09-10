@@ -1,0 +1,19 @@
+@scope (html:not([data-phone-layout="true"])) {
+  /* Shared desktop marker; retain SDK positioning and hit area. */
+  :is([data-desktop-map-chrome], :scope:has([data-desktop-trip-workspace] [data-desktop-workspace-document]) :is(.dwo-map, .campsite-location-sheet)) .campsite-selected-marker {
+    background: #202923;
+    color: #e3c28a;
+    border: 2px solid #c8ad79;
+    border-radius: 12px 12px 50% 50% / 12px 12px 65% 65%;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 40%);
+  }
+  :is([data-desktop-map-chrome], :scope:has([data-desktop-trip-workspace] [data-desktop-workspace-document]) :is(.dwo-map, .campsite-location-sheet)) .campsite-selected-marker > span {
+    width: 25px;
+    height: 25px;
+    font-size: 0;
+    transform: translateY(-2px);
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 20 12 4l9 16H3Zm5 0 4-8 4 8M2 20h20' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+}

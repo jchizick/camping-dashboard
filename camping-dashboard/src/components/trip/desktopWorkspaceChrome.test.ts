@@ -14,7 +14,12 @@ afterEach(() => {
 describe('desktop workspace chrome boundary', () => {
   it('shares the desktop sheet material with confirmation and the campsite marker with Reposition', () => {
     expect(css).toContain('.crud-sheet__panel--workspace, .trip-draft-dialog__panel');
-    expect(css).toContain(':is(.dwo-map, .campsite-location-sheet) .campsite-selected-marker');
+    const marker = readFileSync(resolve(process.cwd(), 'src/components/maps/desktopCampsiteMarker.css'), 'utf8');
+    expect(marker).toContain(':is(.dwo-map, .campsite-location-sheet)');
+    expect(marker).toContain('[data-desktop-map-chrome]');
+    expect(marker).toContain('html:not([data-phone-layout="true"])');
+    expect(marker).toContain('transform: translateY(-2px)');
+    expect(css).not.toContain('mask: url(');
     expect(css).toContain('.trip-draft-dialog__discard { color: var(--workspace-danger-text)');
     expect(css).toContain('.trip-draft-dialog__warning { color: #f2c77f');
     const sheet = readFileSync(resolve(process.cwd(), 'src/components/maps/CampsiteLocationSheet.tsx'), 'utf8');

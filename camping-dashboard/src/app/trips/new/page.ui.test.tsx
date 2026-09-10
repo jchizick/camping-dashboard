@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NewTripContent } from './page';
+import { PHONE_LAYOUT_MEDIA_QUERY } from '@/components/trip/PhoneLayoutProvider';
 
 const push = vi.fn();
 const replace = vi.fn();
@@ -35,8 +36,12 @@ vi.mock('@/components/maps/CampsiteMapSelector', () => ({
     className,
     onChange,
     onManualEntry,
+    mapStyle,
+    desktopChrome,
   }: {
     className?: string;
+    mapStyle?: string;
+    desktopChrome?: boolean;
     onChange: (selection: {
       latitude: number;
       longitude: number;
@@ -46,7 +51,7 @@ vi.mock('@/components/maps/CampsiteMapSelector', () => ({
     }) => void;
     onManualEntry?: () => void;
   }) => (
-    <div className={className} data-testid="campsite-map">
+    <div className={className} data-testid="campsite-map" data-map-style={mapStyle} data-desktop-map-chrome={desktopChrome ? '' : undefined}>
       <button
         type="button"
         onClick={() => onChange({
@@ -175,4 +180,76 @@ describe('authenticated Create Trip entry flow', () => {
 it('returns unrankable direct entry to the terminating chooser route', async()=>{
  search=new URLSearchParams();trips.mockResolvedValue([{id:'existing',start_date:'invalid',end_date:'invalid'}]);render(<NewTripContent />);
  fireEvent.click(await screen.findByRole('button',{name:'Cancel'}));expect(replace).toHaveBeenCalledWith('/trips');
+});
+
+describe('standalone Create Trip responsive composition', () => {
+  function phoneMedia(initial: boolean) {
+    let matches = initial;
+    const listeners = new Set<() => void>();
+    const matchMedia = vi.fn(() => ({
+      get matches() { return matches; },
+      addEventListener: (_: string, listener: () => void) => listeners.add(listener),
+      removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
+    }));
+    vi.stubGlobal('matchMedia', matchMedia);
+    return { matchMedia, change(next: boolean) { act(() => { matches = next; listeners.forEach(listener => listener()); }); } };
+  }
+
+  it('places one map and form in the desktop panel with footer Cancel and account identity', () => {
+    phoneMedia(false);
+    const { container } = render(<NewTripContent />);
+    expect(container.querySelector('[data-desktop-create-trip]')).toBeTruthy();
+    expect(container.querySelectorAll('form')).toHaveLength(1);
+    expect(screen.getAllByTestId('campsite-map')).toHaveLength(1);
+    expect(screen.getByTestId('campsite-map').getAttribute('data-map-style')).toBe('expedition');
+    expect(screen.getByRole('button', { name: 'Cancel' }).closest('.trip-create__submit-region')).toBeTruthy();
+    expect(container.querySelector('.trip-create__account .workspace-account-identity')).toBeTruthy();
+  });
+
+  it('uses the full semantic phone predicate and preserves the phone header composition', () => {
+    const media = phoneMedia(true);
+    const { container } = render(<NewTripContent />);
+    expect(media.matchMedia).toHaveBeenCalledWith(PHONE_LAYOUT_MEDIA_QUERY);
+    expect(PHONE_LAYOUT_MEDIA_QUERY).toContain('(max-width: 956px) and (max-height: 600px) and (pointer: coarse)');
+    expect(container.querySelector('[data-desktop-create-trip]')).toBeNull();
+    expect(container.querySelector('.trip-create__utility')).toBeNull();
+    expect(screen.getByTestId('campsite-map').getAttribute('data-map-style')).toBe('openstreetmap');
+    expect(screen.getByTestId('campsite-map').hasAttribute('data-desktop-map-chrome')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Cancel' }).closest('header')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Sign out' }).closest('header')).toBeTruthy();
+    expect(container.querySelector('.trip-create__identity > p')?.textContent).toBe('Field Protocol');
+    expect(screen.getAllByTestId('campsite-map')).toHaveLength(1);
+  });
+
+  it('retains the same form, map, values and manual coordinate state when phone classification changes', () => {
+    const media = phoneMedia(false);
+    const { container } = render(<NewTripContent />);
+    const form = container.querySelector('form');
+    const map = screen.getByTestId('campsite-map');
+    fireEvent.change(screen.getByLabelText('Trip Name *'), { target: { value: 'Retained trip' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enter coordinates manually' }));
+    fireEvent.change(screen.getByLabelText('Latitude'), { target: { value: '45.65' } });
+    media.change(true);
+    expect(map.getAttribute('data-map-style')).toBe('openstreetmap');
+    expect(container.querySelector('form')).toBe(form);
+    expect(screen.getByTestId('campsite-map')).toBe(map);
+    expect(screen.getByLabelText('Trip Name *')).toHaveProperty('value', 'Retained trip');
+    expect(screen.getByLabelText('Latitude')).toHaveProperty('value', '45.65');
+    media.change(false);
+    expect(map.getAttribute('data-map-style')).toBe('expedition');
+    expect(screen.getByTestId('campsite-map')).toBe(map);
+    expect(screen.getAllByRole('button', { name: 'Cancel' })).toHaveLength(1);
+  });
+
+  it('associates the existing end-date validation error with its input', () => {
+    render(<NewTripContent />);
+    fireEvent.change(screen.getByLabelText('Start Date *'), { target: { value: '2026-09-15' } });
+    fireEvent.change(screen.getByLabelText('End Date *'), { target: { value: '2026-09-12' } });
+    const end = screen.getByLabelText('End Date *');
+    expect(end.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(end.getAttribute('aria-describedby')!)?.textContent).toBe('End date cannot be before start date.');
+    expect(screen.getByRole('button', { name: 'Create Trip' })).toHaveProperty('disabled', true);
+    fireEvent.change(end, { target: { value: '2026-09-16' } });
+    expect(end.getAttribute('aria-describedby')).toBeNull();
+  });
 });
