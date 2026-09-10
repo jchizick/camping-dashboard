@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { canDeleteTrip, formatTripDates, getTripLocation } from '@/lib/tripsLanding';
 import { rankDefaultTrips } from '@/lib/defaultTripResolver';
@@ -13,6 +13,7 @@ import { useOptionalTripWorkspaceStatus } from '@/components/trip/TripWorkspaceS
 import { usePhoneLayout } from '@/components/trip/PhoneLayoutProvider';
 import CrudSheet from '@/components/ui/CrudSheet';
 import { useOverlayDialog } from '@/components/ui/useOverlayDialog';
+import { newTripHref } from '@/lib/newTripNavigation';
 import { useTripList } from './TripListProvider';
 import { deleteOwnedTrip, deletedTripDestination } from './tripManagement';
 import './tripSwitcher.css';
@@ -57,6 +58,7 @@ export default function TripSwitcher({ tripId, tripName, tripLocation }: {
   const workspace = useOptionalTripWorkspaceStatus();
   const guard = useOptionalTripDraftGuard();
   const router = useRouter();
+  const pathname = usePathname();
   const phone = usePhoneLayout();
   const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -134,7 +136,7 @@ export default function TripSwitcher({ tripId, tripName, tripLocation }: {
       </section>)}</div>}
       {deleteError && <p role="alert">{deleteError}</p>}
       <div className="trip-chooser-actions">
-        <GuardedTripLink href="/trips/new" onClick={() => setOpen(false)}>New Trip</GuardedTripLink>
+        <GuardedTripLink href={newTripHref(workspace?.navigationPath ?? pathname)} onClick={() => setOpen(false)}>New Trip</GuardedTripLink>
         {list.status === 'ready' && list.trips.some(canDeleteTrip) && <button type="button" aria-pressed={managing} onClick={() => setManaging(!managing)}>{managing ? 'Done managing' : 'Manage trips'}</button>}
       </div>
     </>}

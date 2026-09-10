@@ -39,7 +39,7 @@ describe('TripSwitcher', () => {
     expect(row.closest('a')).toBeNull();
     fireEvent.click(row); expect(mocks.push).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('link', { name: 'New Trip' }));
-    expect(mocks.push).toHaveBeenCalledWith('/trips/new');
+    expect(mocks.push).toHaveBeenCalledWith('/trips/new?from=%2Ftrips%2Fcurrent');
   });
   it('orders groups canonically and retains invalid dates and full long names', async () => {
     const long = 'A very long expedition name that must remain distinguishable from every other trip in the chooser';

@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/lib/authContext';
 import { ThemeProvider } from '@/lib/themeContext';
+import { fetchUserTrips } from '@/lib/fetchDashboard';
+import { resolveDefaultTrip } from '@/lib/defaultTripResolver';
+import { getNewTripOrigin } from '@/lib/newTripNavigation';
 import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
 import CampsiteMapSelector, { type CampsiteSelection } from '@/components/maps/CampsiteMapSelector';
 import ManualCampsiteEntry from '@/components/maps/ManualCampsiteEntry';
@@ -14,15 +17,33 @@ export default function NewTripPage() {
   return (
     <AuthProvider>
       <ThemeProvider settings={APP_SHELL_SETTINGS}>
-        <NewTripContent />
+        <Suspense fallback={<AuthenticatedTripsLoader />}><NewTripContent /></Suspense>
       </ThemeProvider>
     </AuthProvider>
   );
 }
 
 export function NewTripContent() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
+  const params = useSearchParams();
+  const origin = getNewTripOrigin(params.get('from'));
+  const userId = user?.id;
+  const [returnTrip, setReturnTrip] = useState<{ userId: string; path: string | null; failed: boolean } | null>(null);
+  useEffect(() => {
+    if (origin || !userId || authLoading) return;
+    let active = true;
+    void fetchUserTrips(userId).then((trips) => {
+      const result = resolveDefaultTrip(trips, new Date());
+      // Temporary library fallback for a non-empty collection with invalid dates.
+      // Rework this branch before retiring the visible /trips library.
+      const path = result.status === 'resolved' ? getNewTripOrigin('/trips/' + result.trip.id)
+        : result.status === 'chooser-required' ? '/trips' : null;
+      if (active) setReturnTrip({ userId, path, failed: false });
+    }).catch(() => { if (active) setReturnTrip({ userId, path: null, failed: true }); });
+    return () => { active = false; };
+  }, [authLoading, origin, userId]);
+  const cancelPath = origin ?? (returnTrip?.userId === userId ? returnTrip?.path : null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -95,7 +116,7 @@ export function NewTripContent() {
       if (!response.ok) throw new Error(data.error || 'The trip could not be created.');
       if (typeof data.tripId !== 'string') throw new Error('Trip creation returned no trip ID.');
 
-      router.push(`/trips/${data.tripId}`);
+      router.replace(`/trips/${encodeURIComponent(data.tripId)}`);
     } catch (submitError) {
       console.error('[CreateTripForm] Submission failed', submitError);
       setError(submitError instanceof Error ? submitError.message : 'The trip could not be created.');
@@ -107,13 +128,11 @@ export function NewTripContent() {
     <main className="trip-create" data-entry-flow="create-trip">
       <div className="trip-create__canvas">
         <header className="trip-create__header">
-          <button
-            type="button"
-            onClick={() => router.push('/trips')}
-            className="trip-create__back"
-          >
-            <ArrowLeft size={16} aria-hidden="true" /> Back to Trips
-          </button>
+          {cancelPath && <button type="button" onClick={() => router.replace(cancelPath)} disabled={isSubmitting} className="trip-create__back">
+            <ArrowLeft size={16} aria-hidden="true" /> Cancel
+          </button>}
+          <button type="button" onClick={() => void signOut()} disabled={isSubmitting} className="trip-create__back">Sign out</button>
+          {!origin && returnTrip?.userId === userId && returnTrip?.failed && <p role="status">Your return trip could not be loaded. You can still create a trip or sign out.</p>}
 
           <div className="trip-create__identity">
             <p>Field Protocol</p>

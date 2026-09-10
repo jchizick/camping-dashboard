@@ -1,21 +1,29 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NewTripContent } from './page';
 
 const push = vi.fn();
+const replace = vi.fn();
+const signOut = vi.fn();
+const trips = vi.fn();
+let search = new URLSearchParams({ from: "/trips/trip-1/gear" });
 const appMocks = vi.hoisted(() => ({
   auth: {
     user: { id: 'user-1' } as { id: string } | null,
     isLoading: false,
+    signOut: () => signOut(),
   },
 }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push, replace: vi.fn() }),
+  useRouter: () => ({ push, replace }),
+  useSearchParams: () => search,
 }));
+
+vi.mock('@/lib/fetchDashboard', () => ({ fetchUserTrips: (...args: unknown[]) => trips(...args) }));
 
 vi.mock('@/lib/authContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
@@ -58,6 +66,9 @@ vi.mock('@/components/maps/CampsiteMapSelector', () => ({
 
 beforeEach(() => {
   push.mockReset();
+  replace.mockReset(); signOut.mockReset(); trips.mockReset();
+  trips.mockResolvedValue([]);
+  search = new URLSearchParams({ from: "/trips/trip-1/gear" });
   appMocks.auth.user = { id: 'user-1' };
   appMocks.auth.isLoading = false;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
@@ -91,7 +102,7 @@ describe('authenticated Create Trip entry flow', () => {
     expect(container.querySelector('[data-entry-flow="create-trip"]')).toBeTruthy();
     const heading = screen.getByRole('heading', { level: 1, name: 'Create Trip' });
     expect(heading.getAttribute('data-mobile-type-role')).toBe('page-title');
-    expect(screen.getByRole('button', { name: 'Back to Trips' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
     expect(screen.getByLabelText('Trip Name *').getAttribute('required')).not.toBeNull();
     expect(screen.getByLabelText('Start Date *').getAttribute('type')).toBe('date');
     expect(screen.getByLabelText('End Date *').getAttribute('type')).toBe('date');
@@ -119,3 +130,44 @@ describe('authenticated Create Trip entry flow', () => {
     expect(container.querySelector('.trip-create__location-summary')?.textContent).toContain('45.653000');
   });
 });
+
+ describe('New Trip origin and history', () => {
+ it('cancels to the section with replace without loading a fallback', () => {
+ render(<NewTripContent />);
+ fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+ expect(replace).toHaveBeenCalledWith('/trips/trip-1/gear');
+ expect(push).not.toHaveBeenCalled(); expect(trips).not.toHaveBeenCalled();
+ });
+ it.each(['', 'https://evil.example', '/trips/new'])('uses an authorized default for direct or rejected origin %s', async from => {
+ search = new URLSearchParams({ from });
+ trips.mockResolvedValue([{id:'existing',start_date:'2025-01-01',end_date:'2025-01-02'}]);
+ render(<NewTripContent />);
+ fireEvent.click(await screen.findByRole('button',{name:'Cancel'}));
+ expect(trips).toHaveBeenCalledWith('user-1'); expect(replace).toHaveBeenCalledWith('/trips/existing');
+ });
+ it('has no Cancel for an empty list and permits explicit sign out', async () => {
+ search = new URLSearchParams(); render(<NewTripContent />);
+ await waitFor(()=>expect(trips).toHaveBeenCalled());
+ expect(screen.queryByRole('button',{name:'Cancel'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Sign out'})); expect(signOut).toHaveBeenCalledOnce();
+ expect(replace).not.toHaveBeenCalled();
+ });
+ it('distinguishes a load failure from an empty collection', async () => {
+ search = new URLSearchParams(); trips.mockRejectedValue(new Error('offline'));
+ render(<NewTripContent />); expect(await screen.findByRole('status')).toHaveProperty('textContent', 'Your return trip could not be loaded. You can still create a trip or sign out.');
+ expect(screen.queryByRole('button',{name:'Cancel'})).toBeNull();
+ });
+ it.each([true,false])('preserves submission and uses replace only on success=%s', async success => {
+ const fetchMock=vi.fn().mockResolvedValue({ok:success,json:async()=>success?{tripId:'created-trip'}:{error:'Create failed'}}); vi.stubGlobal('fetch',fetchMock);
+ render(<NewTripContent />);
+ fireEvent.change(screen.getByLabelText('Trip Name *'),{target:{value:'Test Trip'}});
+ fireEvent.change(screen.getByLabelText('Start Date *'),{target:{value:'2026-09-12'}});
+ fireEvent.change(screen.getByLabelText('End Date *'),{target:{value:'2026-09-15'}});
+ fireEvent.click(screen.getByRole('button',{name:'Choose campsite'}));
+ fireEvent.click(screen.getByRole('button',{name:'Create Trip'}));
+ await waitFor(()=>expect(fetchMock).toHaveBeenCalledOnce());
+ if(success) await waitFor(()=>expect(replace).toHaveBeenCalledWith('/trips/created-trip'));
+ else { expect(await screen.findByText('Create failed')).toBeTruthy(); expect(replace).not.toHaveBeenCalled(); expect(screen.getByLabelText('Trip Name *')).toHaveProperty('value','Test Trip'); }
+ expect(push).not.toHaveBeenCalled();
+ });
+ });
