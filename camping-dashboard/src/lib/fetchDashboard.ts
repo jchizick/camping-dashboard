@@ -88,7 +88,7 @@ function classifyUserTripsFailure(status: number | undefined) {
     return 'unavailable' as const;
 }
 
-export async function fetchUserTrips(): Promise<UserTrip[]> {
+export async function fetchUserTrips(expectedUserId?: string): Promise<UserTrip[]> {
     const { data: userData, error: authError } = await supabase.auth.getUser();
     if (authError) {
         throw new UserTripsFetchError(
@@ -103,6 +103,10 @@ export async function fetchUserTrips(): Promise<UserTrip[]> {
             'unauthenticated',
             'No authenticated user is available.'
         );
+    }
+
+    if (expectedUserId && userData.user.id !== expectedUserId) {
+        throw new UserTripsFetchError('unauthenticated', 'The account changed while loading trips.');
     }
 
     const { data, error, status } = await supabase

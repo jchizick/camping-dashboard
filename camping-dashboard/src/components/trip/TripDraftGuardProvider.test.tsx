@@ -22,6 +22,8 @@ const navigation = vi.hoisted(() => ({
   replace: vi.fn(),
 }));
 
+vi.mock('@/components/trips/TripSwitcher', () => ({ default: () => <span>Trip identity</span> }));
+
 vi.mock('next/navigation', () => ({
   usePathname: () => window.location.pathname,
   useRouter: () => ({ push: navigation.push, replace: navigation.replace }),

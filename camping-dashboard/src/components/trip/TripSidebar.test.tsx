@@ -8,6 +8,10 @@ import { TRIP_PRIMARY_DESTINATIONS } from './tripNavigation';
 const mocks = vi.hoisted(() => ({ pathname: '/trips/trip-1' }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => mocks.pathname }));
+vi.mock('@/components/trips/TripSwitcher', () => ({
+  default: ({ tripName, tripLocation }: { tripName: string; tripLocation: string }) =>
+    <button type="button">{tripName}<span>{tripLocation}</span></button>,
+}));
 
 import TripSidebar from './TripSidebar';
 

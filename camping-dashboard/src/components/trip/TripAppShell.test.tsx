@@ -32,7 +32,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => mocks.pathname,
+  useRouter: () => ({ replace: vi.fn() }),
 }));
+
+vi.mock('@/lib/fetchDashboard', () => ({ fetchUserTrips: vi.fn() }));
 
 vi.mock('@/lib/authContext', () => ({
   useAuth: () => ({ signOut: mocks.signOut }),
@@ -672,7 +675,7 @@ describe('TripAppShell', () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it('keeps a long trip identity accessible while applying visual truncation', () => {
+  it('keeps the full long trip identity accessible through the switcher trigger', () => {
     const value = workspaceValue();
     value.trip!.name =
       'A deliberately long Algonquin backcountry expedition name for responsive testing';
@@ -686,9 +689,9 @@ describe('TripAppShell', () => {
       </TripAppShell>
     );
 
-    const identity = container.querySelector('.trip-workspace-sidebar__identity');
-    expect(identity?.getAttribute('title')).toContain(value.trip!.name);
-    expect(identity?.querySelector('.trip-workspace-sidebar__trip-name')).toBeTruthy();
+    const identity = container.querySelector('.trip-switcher-trigger');
+    expect(identity?.getAttribute('aria-label')).toContain(value.trip!.name);
+    expect(identity?.getAttribute('aria-haspopup')).toBe('dialog');
     expect(identity?.textContent).toContain(value.trip!.name);
   });
 });

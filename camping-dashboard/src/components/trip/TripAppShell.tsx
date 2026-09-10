@@ -21,6 +21,8 @@ import { PhoneLayoutProvider, usePhoneLayout } from './PhoneLayoutProvider';
 import DesktopTripWorkspaceBoundary from './DesktopTripWorkspaceBoundary';
 import DesktopWorkspaceDocument from './DesktopWorkspaceDocument';
 import { desktopSectionHeading } from './desktopSectionNavigation';
+import { TripListProvider } from '@/components/trips/TripListProvider';
+import TripSwitcher from '@/components/trips/TripSwitcher';
 
 type AppInfoDialogName = 'mission-brief' | 'about' | 'appearance';
 interface ActiveAppInfoDialog {
@@ -194,17 +196,9 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
             <span className="hidden text-sm font-medium xl:inline">Back to Trips</span>
           </GuardedTripLink>
 
-          <div
-            className="trip-shell-identity min-w-0 flex-1"
-            title={`${trip.name} · ${[trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || trip.park_name}`}
-          >
-            <p className="truncate text-base font-semibold leading-tight">{trip.name}</p>
-            <p className="trip-shell-location mt-0.5 truncate text-xs leading-tight">
-              {[trip.lake_name, trip.site_name].filter(Boolean).join(' · ') ||
-                trip.park_name ||
-                'Campsite unavailable'}
-            </p>
-          </div>
+          <TripSwitcher tripId={tripId} tripName={trip.name} tripLocation={
+            [trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || trip.park_name || 'Campsite unavailable'
+          } />
 
           <div
             className="trip-navigation-desktop min-w-0 flex-1 justify-center"
@@ -357,8 +351,8 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
 
 export default function TripAppShell({ children }: { children: React.ReactNode }) {
   return (
-    <PhoneLayoutProvider>
+    <TripListProvider><PhoneLayoutProvider>
       <TripAppShellContent>{children}</TripAppShellContent>
-    </PhoneLayoutProvider>
+    </PhoneLayoutProvider></TripListProvider>
   );
 }

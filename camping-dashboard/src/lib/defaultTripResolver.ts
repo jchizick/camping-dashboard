@@ -40,9 +40,19 @@ export function resolveDefaultTrip<T extends DefaultTripCandidate>(
   trips: readonly T[],
   now: Date,
 ): DefaultTripResult<T> {
-  if (!Number.isFinite(now.getTime())) throw new RangeError('A valid resolver clock is required.');
+  const { groups, invalidTrips } = rankDefaultTrips(trips, now);
   if (trips.length === 0) return { status: 'no-trips' };
 
+  for (const category of ['active', 'upcoming', 'completed'] as const) {
+    const ranked = groups[category];
+    if (ranked.length > 0) return { status: 'resolved', trip: ranked[0], category, invalidTrips };
+  }
+  return { status: 'chooser-required', invalidTrips };
+}
+
+/** The same ordering exposed for an explicit chooser; invalid dates stay selectable. */
+export function rankDefaultTrips<T extends DefaultTripCandidate>(trips: readonly T[], now: Date) {
+  if (!Number.isFinite(now.getTime())) throw new RangeError('A valid resolver clock is required.');
   const invalidTrips: T[] = [];
   const groups: Record<DefaultTripCategory, T[]> = { active: [], upcoming: [], completed: [] };
   for (const trip of trips) {
@@ -55,8 +65,7 @@ export function resolveDefaultTrip<T extends DefaultTripCandidate>(
   }
   invalidTrips.sort((a, b) => compareText(a.id, b.id));
   for (const category of ['active', 'upcoming', 'completed'] as const) {
-    const ranked = groups[category].sort((a, b) => compareTrips(a, b, category));
-    if (ranked.length > 0) return { status: 'resolved', trip: ranked[0], category, invalidTrips };
+    groups[category].sort((a, b) => compareTrips(a, b, category));
   }
-  return { status: 'chooser-required', invalidTrips };
+  return { groups, invalidTrips };
 }

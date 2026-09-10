@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import GuardedTripLink from './GuardedTripLink';
 import TripMoreMenu from './TripMoreMenu';
+import TripSwitcher from '@/components/trips/TripSwitcher';
 import { useOptionalTripWorkspaceStatus } from './TripWorkspaceStatus';
 import {
   isTripDestinationActive,
@@ -45,10 +46,7 @@ export default function TripSidebar({
           <span>Back to Trips</span>
         </GuardedTripLink>
 
-        <div className="trip-workspace-sidebar__identity" title={`${tripName} · ${tripLocation}`}>
-          <p className="trip-workspace-sidebar__trip-name">{tripName}</p>
-          <p className="trip-workspace-sidebar__location">{tripLocation}</p>
-        </div>
+        <TripSwitcher tripId={tripId} tripName={tripName} tripLocation={tripLocation} />
 
         <nav aria-label="Trip sections" className="trip-workspace-sidebar__nav">
           {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {

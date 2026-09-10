@@ -106,6 +106,17 @@ beforeEach(() => {
 });
 
 describe('fetchUserTrips', () => {
+  it('rejects a changed account before returning its membership collection', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: { id: 'different-user' } }, error: null });
+    await expect(fetchUserTrips('expected-user')).rejects.toMatchObject({ kind: 'unauthenticated' });
+  });
+
+  it('retains roles and omits inaccessible joined trips', async () => {
+    mocks.results.set('trip_members', { data: [
+      { role: 'viewer', trips: { id: 'visible' } }, { role: 'owner', trips: null },
+    ], error: null, status: 200 });
+    await expect(fetchUserTrips()).resolves.toEqual([{ id: 'visible', role: 'viewer' }]);
+  });
   it('returns an empty list only when the trip source succeeds with no rows', async () => {
     mocks.results.set('trip_members', { data: [], error: null, status: 200 });
 
