@@ -35,8 +35,7 @@ export function NewTripContent() {
     let active = true;
     void fetchUserTrips(userId).then((trips) => {
       const result = resolveDefaultTrip(trips, new Date());
-      // Temporary library fallback for a non-empty collection with invalid dates.
-      // Rework this branch before retiring the visible /trips library.
+      // Unrankable existing trips terminate at the /trips chooser.
       const path = result.status === 'resolved' ? getNewTripOrigin('/trips/' + result.trip.id)
         : result.status === 'chooser-required' ? '/trips' : null;
       if (active) setReturnTrip({ userId, path, failed: false });

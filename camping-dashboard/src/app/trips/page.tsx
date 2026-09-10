@@ -1,395 +1,121 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/lib/authContext';
-import { getAuthErrorMessage } from '@/lib/authRedirect';
-import {
-  fetchUserTrips,
-  UserTripsFetchError,
-  type UserTrip,
-} from '@/lib/fetchDashboard';
+import { getAuthErrorMessage, getSafeNextPath } from '@/lib/authRedirect';
+import { fetchUserTrips, UserTripsFetchError, type UserTrip } from '@/lib/fetchDashboard';
+import { resolveDefaultTrip } from '@/lib/defaultTripResolver';
 import { ThemeProvider } from '@/lib/themeContext';
 import { APP_SHELL_SETTINGS } from '@/lib/appShellSettings';
-import { resolveTripWorkspaceBackground } from '@/components/trip/tripWorkspaceVisuals';
 import { SignedOutLanding } from '@/components/trips/SignedOutLanding';
 import AuthenticatedTripsLoader from '@/components/trips/AuthenticatedTripsLoader';
-import { EmptyTripsState, TripsWelcome } from '@/components/trips/TripsLandingOnboarding';
-import {
-  canDeleteTrip,
-  formatFeaturedTripDate,
-  formatTripDates,
-  getTripHref,
-  getTripLocation,
-  getTripStatus,
-  getUserFirstName,
-  NEW_TRIP_HREF,
-  selectFeaturedTrip,
-} from '@/lib/tripsLanding';
-import { formatTripDuration, getTripDuration } from '@/lib/tripDuration';
-import {
-  ArrowRight,
-  Backpack,
-  BookOpen,
-  CalendarDays,
-  CircleHelp,
-  Compass,
-  Ellipsis,
-  LogOut,
-  Map,
-  MapPin,
-  Menu,
-  Mountain,
-  Plus,
-  Route,
-  RefreshCw,
-  Trash2,
-  TriangleAlert,
-  UserRound,
-  X,
-  Loader2,
-  type LucideIcon,
-} from 'lucide-react';
+import { formatTripDates, getTripHref, getTripLocation } from '@/lib/tripsLanding';
+
+type Resolution =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'denied' }
+  | { status: 'chooser'; trips: UserTrip[] }
+  | { status: 'redirect'; path: string };
 
 export default function TripsPage() {
-  return (
-    <AuthProvider>
-      <ThemeProvider settings={APP_SHELL_SETTINGS}>
-        <TripsContent />
-      </ThemeProvider>
-    </AuthProvider>
-  );
+  return <AuthProvider><ThemeProvider settings={APP_SHELL_SETTINGS}>
+    <Suspense fallback={<AuthenticatedTripsLoader />}><TripsContent /></Suspense>
+  </ThemeProvider></AuthProvider>;
 }
-
-function BrandMark() {
-  return (
-    <Link href="/trips" className="trips-brand" aria-label="Field Protocol — Trips">
-      <span className="trips-brand__crest" aria-hidden="true">
-        <Image src="/logo.svg" alt="" width={67} height={83} />
-      </span>
-      <span className="trips-brand__name">FIELD PROTOCOL</span>
-    </Link>
-  );
-}
-
-function GlobalNav({ onNavigate }: { onNavigate?: () => void }) {
-  return (
-    <nav className="trips-global-nav" aria-label="Global navigation">
-      <Link href="/trips" className="trips-global-nav__item trips-global-nav__item--active" aria-current="page" onClick={onNavigate}>
-        <Mountain size={19} aria-hidden="true" /><span>Trips</span>
-      </Link>
-      <Link href={NEW_TRIP_HREF} className="trips-global-nav__item" onClick={onNavigate}>
-        <Plus size={19} aria-hidden="true" /><span>New Trip</span>
-      </Link>
-      <button type="button" className="trips-global-nav__item" disabled title="Gear Closet is coming soon">
-        <Backpack size={19} aria-hidden="true" /><span>Gear Closet</span><span className="trips-nav-note">Soon</span>
-      </button>
-      <button type="button" className="trips-global-nav__item" disabled title="Camper Guide is coming soon">
-        <BookOpen size={19} aria-hidden="true" /><span>Camper Guide</span><span className="trips-nav-note">Soon</span>
-      </button>
-    </nav>
-  );
-}
-
-function GlobalSidebar({ firstName, email, onSignOut }: { firstName: string; email?: string; onSignOut: () => Promise<void> }) {
-  return (
-    <aside className="trips-sidebar">
-      <div className="trips-sidebar__inner">
-        <BrandMark />
-        <GlobalNav />
-        <div className="trips-sidebar__footer">
-          <div className="trips-profile">
-            <span className="trips-profile__avatar" aria-hidden="true"><UserRound size={20} /></span>
-            <span className="trips-profile__copy"><strong>{firstName}</strong><small>{email ?? 'Explorer'}</small></span>
-          </div>
-          <button type="button" className="trips-support" disabled title="Help and Support is coming soon">
-            <CircleHelp size={18} aria-hidden="true" /> Help &amp; Support
-          </button>
-          <button type="button" className="trips-signout" onClick={onSignOut}>
-            <LogOut size={18} aria-hidden="true" /> Sign out
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function MobileHeader() {
-  const [open, setOpen] = useState(false);
-  return (
-    <header className="trips-mobile-header">
-      <BrandMark />
-      <button type="button" className="trips-icon-button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="global-mobile-navigation" aria-label={open ? 'Close navigation' : 'Open navigation'}>
-        {open ? <X size={21} /> : <Menu size={21} />}
-      </button>
-      {open ? <div id="global-mobile-navigation" className="trips-mobile-menu"><GlobalNav onNavigate={() => setOpen(false)} /></div> : null}
-    </header>
-  );
-}
-
-function TripOverflow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
-  if (!canDeleteTrip(trip)) return null;
-  return (
-    <details className="trips-overflow">
-      <summary aria-label={`More actions for ${trip.name}`} title="More actions"><Ellipsis size={20} aria-hidden="true" /></summary>
-      <div className="trips-overflow__menu">
-        <button type="button" onClick={() => onDelete(trip)} disabled={deleting}>
-          {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-          Delete trip
-        </button>
-      </div>
-    </details>
-  );
-}
-
-function FeaturedTripStat({
-  icon: Icon,
-  primary,
-  secondary,
-  label,
-}: {
-  icon: LucideIcon;
-  primary: string;
-  secondary: string;
-  label: string;
-}) {
-  return (
-    <div className="trips-feature__stat" role="group" aria-label={label}>
-      <Icon size={30} aria-hidden="true" />
-      <span className="trips-feature__stat-copy" aria-hidden="true">
-        <strong>{primary}</strong>
-        {secondary ? <small>{secondary}</small> : null}
-      </span>
-    </div>
-  );
-}
-
-function FeaturedTrip({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
-  const background = resolveTripWorkspaceBackground(trip);
-  const duration = getTripDuration(trip.start_date, trip.end_date);
-  const durationLabel = duration ? formatTripDuration(duration) : null;
-  const [durationDaysLabel, durationNightsLabel] = durationLabel?.split(' · ') ?? [];
-  const dateLabel = formatTripDates(trip.start_date, trip.end_date);
-  const featuredDate = formatFeaturedTripDate(trip.start_date, trip.end_date);
-  const status = getTripStatus(trip.start_date, trip.end_date);
-  return (
-    <section className="trips-feature" aria-labelledby="featured-trip-title" style={background ? { backgroundImage: `url(${background})` } : undefined}>
-      <div className="trips-feature__shade" aria-hidden="true" />
-      <div className="trips-feature__topline">
-        <span className="trips-feature__status"><Compass size={14} aria-hidden="true" /> {status.label} trip</span>
-        <div className="trips-feature__actions">
-          <span className="trips-role"><UserRound size={15} aria-hidden="true" /> {trip.role}</span>
-          <TripOverflow trip={trip} deleting={deleting} onDelete={onDelete} />
-        </div>
-      </div>
-      <div className="trips-feature__content">
-        <h2 id="featured-trip-title" className="display-distressed display-distressed--light" data-mobile-type-role="trip-title">{trip.name}</h2>
-        <p className="trips-feature__location"><MapPin size={18} aria-hidden="true" /> {getTripLocation(trip)}</p>
-        <div className="trips-feature__meta">
-          <span><CalendarDays size={17} aria-hidden="true" /> {dateLabel}</span>
-          {durationLabel ? <span><Route size={17} aria-hidden="true" /> {durationLabel}</span> : null}
-        </div>
-        <div className="trips-feature__stats" role="group" aria-label="Trip timing">
-          <FeaturedTripStat
-            icon={CalendarDays}
-            primary={featuredDate.primary}
-            secondary={featuredDate.secondary}
-            label={`Trip dates: ${dateLabel}`}
-          />
-          {durationLabel ? (
-            <FeaturedTripStat
-              icon={Route}
-              primary={durationDaysLabel}
-              secondary={durationNightsLabel}
-              label={`Trip duration: ${durationLabel}`}
-            />
-          ) : null}
-        </div>
-        <Link href={getTripHref(trip.id)} className="trips-primary-action">
-          Continue Trip <ArrowRight size={20} aria-hidden="true" />
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-const utilityCards = [
-  { title: 'Gear Closet', copy: 'Your equipment, essentials and saved gear.', icon: Backpack, artwork: 'gear' },
-  { title: 'Camper Guide', copy: 'Getting started, camping basics and practical guides.', icon: BookOpen, artwork: 'guide' },
-  { title: 'Field Resources', copy: 'Park information, safety references and useful tools.', icon: Map, artwork: 'resources' },
-] as const;
-
-function UtilityCards() {
-  return (
-    <section className="trips-utilities" aria-label="Camping resources">
-      {utilityCards.map(({ title, copy, icon: Icon, artwork }) => (
-        <div className={`trips-utility trips-utility--${artwork}`} key={title}>
-          <span className="trips-utility__icon" aria-hidden="true"><Icon size={27} /></span>
-          <span className="trips-utility__copy"><strong>{title}</strong><small>{copy}</small></span>
-          <span className="trips-utility__soon">Coming soon</span>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function TripRow({ trip, deleting, onDelete }: { trip: UserTrip; deleting: boolean; onDelete: (trip: UserTrip) => void }) {
-  const background = resolveTripWorkspaceBackground(trip);
-  const status = getTripStatus(trip.start_date, trip.end_date);
-  const duration = getTripDuration(trip.start_date, trip.end_date);
-  const durationLabel = duration ? formatTripDuration(duration) : null;
-  return (
-    <article className="trips-expedition-row">
-      <div className="trips-expedition-row__image" style={background ? { backgroundImage: `url(${background})` } : undefined} aria-hidden="true" />
-      <div className="trips-expedition-row__identity">
-        <div><h3>{trip.name}</h3><span className={`trips-status trips-status--${status.tone}`}>{status.label}</span></div>
-        <p><MapPin size={14} aria-hidden="true" /> {getTripLocation(trip)}</p>
-      </div>
-      <div className="trips-expedition-row__dates">
-        <small>Dates</small><strong>{formatTripDates(trip.start_date, trip.end_date)}</strong>{durationLabel ? <span>{durationLabel}</span> : null}
-      </div>
-      <div className="trips-expedition-row__role">
-        <small>Access</small><strong>{trip.role}</strong>
-      </div>
-      <div className="trips-expedition-row__controls">
-        <Link href={getTripHref(trip.id)}>{status.tone === 'complete' ? 'View Trip' : 'Continue'} <ArrowRight size={17} aria-hidden="true" /></Link>
-        <TripOverflow trip={trip} deleting={deleting} onDelete={onDelete} />
-      </div>
-    </article>
-  );
-}
-
-function TripsUnavailable({ onRetry }: { onRetry: () => void }) {
-  return (
-    <section
-      className="trips-empty trips-empty--unavailable"
-      data-trip-list-state="unavailable"
-      role="alert"
-      aria-labelledby="trips-unavailable-heading"
-    >
-      <span className="trips-empty__icon" aria-hidden="true">
-        <TriangleAlert size={32} />
-      </span>
-      <h2 id="trips-unavailable-heading">Trips unavailable</h2>
-      <p>We couldn’t load your trips. Your account is still signed in. Check your connection and try again.</p>
-      <button type="button" className="trips-primary-action" onClick={onRetry}>
-        <RefreshCw size={18} aria-hidden="true" /> Retry loading trips
-      </button>
-    </section>
-  );
-}
-
-type TripsLoadState = {
-  userId: string | null;
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  trips: UserTrip[];
-};
 
 export function TripsContent() {
   const { user, isLoading: authLoading, signIn, signOut } = useAuth();
-  const [tripsState, setTripsState] = useState<TripsLoadState>({ userId: null, status: 'idle', trips: [] });
-  const [loadAttempt, setLoadAttempt] = useState(0);
-  const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const router = useRouter();
+  const params = useSearchParams();
+  const next = getSafeNextPath(params.get('next'));
+  const callbackError = getAuthErrorMessage(params.get('auth_error'));
+  const userId = user?.id;
+  const [attempt, setAttempt] = useState(0);
+  const [state, setState] = useState<{ userId: string; next: string | null; result: Resolution } | null>(null);
   const [signInError, setSignInError] = useState<string | null>(null);
-  const [callbackError, setCallbackError] = useState<string | null>(null);
 
   useEffect(() => {
-    setCallbackError(getAuthErrorMessage(new URLSearchParams(window.location.search).get('auth_error')));
-  }, []);
-
-  useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading || !userId) return;
     let cancelled = false;
-    fetchUserTrips()
-      .then((data) => {
-        if (!cancelled) setTripsState({ userId: user.id, status: 'ready', trips: data });
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        if (error instanceof UserTripsFetchError && error.kind === 'unauthenticated') {
-          void signOut();
-          return;
-        }
-        setTripsState({ userId: user.id, status: 'error', trips: [] });
-      });
+    void fetchUserTrips(userId).then(trips => {
+      if (cancelled) return;
+      const nextUrl = next ? new URL(next, 'https://app.invalid') : null;
+      let result: Resolution;
+      // /trips is this resolver, never a recursive explicit destination.
+      if (nextUrl && nextUrl.pathname !== '/trips' && nextUrl.pathname !== '/auth/callback') {
+        const match = /^\/trips\/([^/]+)/.exec(nextUrl.pathname);
+        let requestedId: string | null = null;
+        try { requestedId = match ? decodeURIComponent(match[1]) : null; } catch { /* rejected below */ }
+        result = match && requestedId !== 'new' && !trips.some(trip => trip.id === requestedId)
+          ? { status: 'denied' }
+          : { status: 'redirect', path: next! };
+      } else {
+        const resolved = resolveDefaultTrip(trips, new Date());
+        result = resolved.status === 'resolved'
+          ? { status: 'redirect', path: getTripHref(resolved.trip.id) }
+          : resolved.status === 'no-trips'
+            ? { status: 'redirect', path: '/trips/new' }
+            : { status: 'chooser', trips };
+      }
+      setState({ userId, next, result });
+    }).catch((error: unknown) => {
+      if (cancelled) return;
+      if (error instanceof UserTripsFetchError && error.kind === 'unauthenticated') {
+        void signOut();
+        return;
+      }
+      setState({ userId, next, result: { status: 'error' } });
+    });
     return () => { cancelled = true; };
-  }, [user, authLoading, loadAttempt, signOut]);
+  }, [authLoading, userId, next, attempt, signOut]);
 
-  const trips = tripsState.userId === user?.id ? tripsState.trips : [];
-  const tripListStatus = tripsState.userId === user?.id ? tripsState.status : 'idle';
-  const featuredTrip = selectFeaturedTrip(trips);
-  const isLoading = authLoading || Boolean(user && (tripListStatus === 'idle' || tripListStatus === 'loading'));
-  const tripListFailed = tripListStatus === 'error';
-  const firstName = getUserFirstName(user);
-
-  async function handleDeleteTrip(trip: UserTrip) {
-    if (deletingTripId) return;
-    if (!window.confirm(`Delete "${trip.name}"? This also permanently deletes its prep-feed photos and cannot be undone.`)) return;
-    setDeletingTripId(trip.id);
-    setDeleteError(null);
-    try {
-      const response = await fetch(`/api/trips/${encodeURIComponent(trip.id)}`, { method: 'DELETE' });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'The trip could not be deleted.');
-      setTripsState((current) => ({ ...current, trips: current.trips.filter((candidate) => candidate.id !== trip.id) }));
-    } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : 'The trip could not be deleted.');
-    } finally {
-      setDeletingTripId(null);
-    }
-  }
+  const result: Resolution = state?.userId === userId && state?.next === next
+    ? state.result : { status: 'loading' };
+  const redirectPath = result.status === 'redirect' ? result.path : null;
+  useEffect(() => {
+    if (!authLoading && userId && redirectPath) router.replace(redirectPath);
+  }, [authLoading, userId, redirectPath, router]);
 
   async function handleSignIn() {
     setSignInError(null);
     try { await signIn(); } catch { setSignInError('Google sign-in could not be started. Please try again.'); }
   }
-
-  function retryTripList() {
-    if (!user) return;
-    setTripsState({ userId: user.id, status: 'loading', trips: [] });
-    setLoadAttempt((attempt) => attempt + 1);
+  function retry() {
+    if (result.status !== 'error') return;
+    setState(null);
+    setAttempt(value => value + 1);
   }
+  if (!authLoading && !user) return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
+  if (authLoading || result.status === 'loading' || result.status === 'redirect') return <AuthenticatedTripsLoader />;
 
-  if (!authLoading && !user) {
-    return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
-  }
-
-  if (isLoading) {
-    return <AuthenticatedTripsLoader />;
-  }
-
-  return (
-    <main className="trips-landing" data-entry-flow="trips-library">
-      <GlobalSidebar firstName={firstName} email={user?.email} onSignOut={signOut} />
-      <MobileHeader />
-      <div className="trips-landing__main">
-        <div className="trips-landing__canvas">
-          {tripListFailed ? (
-            <TripsUnavailable onRetry={retryTripList} />
-          ) : (
-            <>
-              <TripsWelcome firstName={firstName} hasTrips={Boolean(featuredTrip)} />
-
-              {deleteError ? <p role="alert" className="trips-error">{deleteError}</p> : null}
-
-              {featuredTrip ? (
-                <>
-                  <FeaturedTrip trip={featuredTrip} deleting={deletingTripId === featuredTrip.id} onDelete={handleDeleteTrip} />
-                  <UtilityCards />
-                  <section className="trips-expeditions" aria-labelledby="trips-heading">
-                    <div className="trips-section-heading"><div><h2 id="trips-heading">Your Trips</h2><p>{trips.length} trip{trips.length === 1 ? '' : 's'} in your library</p></div></div>
-                    <div className="trips-expeditions__list">{trips.map((trip) => <TripRow key={trip.id} trip={trip} deleting={deletingTripId === trip.id} onDelete={handleDeleteTrip} />)}</div>
-                  </section>
-                </>
-              ) : (
-                <EmptyTripsState />
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </main>
-  );
+  return <main className="relative z-10 flex min-h-[100dvh] items-center justify-center px-5 py-12" data-entry-flow="trips-resolution">
+    <section className="trip-workspace-state-panel w-full max-w-xl p-6" aria-labelledby="trips-resolution-heading">
+      <p className="trip-workspace-state-panel__copy text-sm font-semibold">Field Protocol</p>
+      <h1 id="trips-resolution-heading" className="trip-workspace-state-panel__title mt-3 text-2xl">
+        {result.status === 'error' ? 'Trips unavailable' : result.status === 'denied' ? 'Trip unavailable' : 'Choose a trip'}
+      </h1>
+      {result.status === 'error' ? <>
+        <p className="trip-workspace-state-panel__copy mt-3">We couldn’t load your trips. Your account is still signed in. Check your connection and try again.</p>
+        <button type="button" className="trip-workspace-state-panel__action mt-4 inline-flex rounded border px-4 py-3 text-sm font-semibold" onClick={retry}>Retry loading trips</button>
+      </> : result.status === 'denied' ? <>
+        <p className="trip-workspace-state-panel__copy mt-3">The requested trip is not in your authorized trips.</p>
+        <button type="button" className="trip-workspace-state-panel__action mt-4 inline-flex rounded border px-4 py-3 text-sm font-semibold" onClick={() => router.replace('/trips')}>Open my trips</button>
+      </> : <>
+        <p className="trip-workspace-state-panel__copy mt-3">Your trip dates need attention. Choose which trip to open.</p>
+        <ul className="mt-4 space-y-3">
+          {result.trips.map(trip => <li key={trip.id} className="min-w-0">
+            <Link href={getTripHref(trip.id)} className="block rounded border border-border-subtle p-3 focus-visible:outline-2 focus-visible:outline-offset-2">
+              <strong className="block break-words">{trip.name}</strong>
+              <span className="trip-workspace-state-panel__copy block text-sm">{getTripLocation(trip)} · {formatTripDates(trip.start_date, trip.end_date)}</span>
+            </Link>
+          </li>)}
+        </ul>
+        <Link href="/trips/new" className="trip-workspace-state-panel__action mt-4 inline-flex rounded border px-4 py-3 text-sm font-semibold">New Trip</Link>
+      </>}
+      <button type="button" className="mt-4 block text-sm underline" onClick={() => void signOut()}>Sign out</button>
+    </section>
+  </main>;
 }

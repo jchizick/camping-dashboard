@@ -9,7 +9,7 @@ export async function deleteOwnedTrip(trip: UserTrip): Promise<void> {
   if (!response.ok) throw new Error(result.error ?? 'The trip could not be deleted.');
 }
 
-/** /trips remains the explicit chooser until the entry-route migration. */
+/** Unrankable remaining trips terminate at the /trips chooser. */
 export function deletedTripDestination(trips: readonly UserTrip[], now: Date): string {
   const result = resolveDefaultTrip(trips, now);
   if (result.status === 'resolved') return `/trips/${encodeURIComponent(result.trip.id)}`;

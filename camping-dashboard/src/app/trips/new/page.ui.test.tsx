@@ -171,3 +171,8 @@ describe('authenticated Create Trip entry flow', () => {
  expect(push).not.toHaveBeenCalled();
  });
  });
+
+it('returns unrankable direct entry to the terminating chooser route', async()=>{
+ search=new URLSearchParams();trips.mockResolvedValue([{id:'existing',start_date:'invalid',end_date:'invalid'}]);render(<NewTripContent />);
+ fireEvent.click(await screen.findByRole('button',{name:'Cancel'}));expect(replace).toHaveBeenCalledWith('/trips');
+});
