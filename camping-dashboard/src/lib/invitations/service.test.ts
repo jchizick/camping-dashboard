@@ -2,15 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only',()=>({}));
 import { runInvitationOperation } from './service';
 import { createTripInvitationToken, hashTripInvitationToken } from '../tripInvitationToken';
-import { localInvitationDelivery, takeLocalInvitationMessages } from './delivery';
+import { DeliveryError, localInvitationDelivery, takeLocalInvitationMessages } from './delivery';
 import { getInvitationReturnPath } from './contracts';
 import { getSafeNextPath, buildOAuthCallbackUrl } from '../authRedirect';
 import { parseOfflineTarget } from '../offlineTarget';
 
-const summary = { id:'11111111-1111-1111-1111-111111111111',email:'invitee@example.test',role:'viewer',status:'pending',expiresAt:'2026-09-18',tripName:'Synthetic trip' };
+const summary = { deliveryAttemptId:'22222222-2222-2222-2222-222222222222',deliveryState:'not_attempted', id:'11111111-1111-1111-1111-111111111111',email:'invitee@example.test',role:'viewer',status:'pending',expiresAt:'2026-09-18',tripName:'Synthetic trip' };
 const call = vi.fn(); const deliver = vi.fn();
-const deps = {call,delivery:{deliver},origin:'http://localhost:3000'};
-beforeEach(()=>{call.mockResolvedValue(summary);deliver.mockResolvedValue(undefined);});
+const deps = {call,delivery:{deliver},origin:'http://localhost:3000',provider:'local' as const,limit:vi.fn().mockResolvedValue(undefined)};
+beforeEach(()=>{call.mockImplementation(async (_actor,op)=>op==='delivery_start'||op==='delivery_finish' ? {updated:true} : summary);deliver.mockResolvedValue({status:'captured_locally'});});
 describe('trusted invitation service',()=>{
   it('requires authentication before management',async()=>{
     await expect(runInvitationOperation(deps,null,'create',{tripId:'trip',email:summary.email})).rejects.toMatchObject({status:401});
@@ -21,7 +21,7 @@ describe('trusted invitation service',()=>{
   });
   it('persists digest before delivery and returns only a safe summary',async()=>{
     const result = await runInvitationOperation(deps,'verified-owner','create',{tripId:'trip',email:summary.email});
-    const [actor,op,input] = call.mock.calls[0];
+    const [actor,op,input] = call.mock.calls.find(c=>c[1]==='create')!;
     expect(actor).toBe('verified-owner');expect(op).toBe('create');expect(input.role).toBe('viewer');
     const url = new URL(deliver.mock.calls[0][0].acceptanceUrl);
     expect(hashTripInvitationToken(url.hash.slice(1))).toBe(input.tokenHash);
@@ -38,9 +38,9 @@ describe('trusted invitation service',()=>{
   });
   it('reports delivery failure and rotates a fresh token on retry',async()=>{
     deliver.mockRejectedValue(new Error('do not expose details'));
-    expect(await runInvitationOperation(deps,'owner','create',{tripId:'trip',email:summary.email})).toMatchObject({delivery:'unavailable'});
-    expect(await runInvitationOperation(deps,'owner','resend',{tripId:'trip',invitationId:summary.id})).toMatchObject({delivery:'unavailable'});
-    expect(call.mock.calls[0][2].tokenHash).not.toBe(call.mock.calls[1][2].tokenHash);
+    expect(await runInvitationOperation(deps,'owner','create',{tripId:'trip',email:summary.email})).toMatchObject({delivery:'unknown'});
+    expect(await runInvitationOperation(deps,'owner','resend',{tripId:'trip',invitationId:summary.id})).toMatchObject({delivery:'unknown'});
+    expect(call.mock.calls.find(c=>c[1]==='create')![2].tokenHash).not.toBe(call.mock.calls.find(c=>c[1]==='resend')![2].tokenHash);
   });
   it('does not deliver a terminal resend and revokes without delivery',async()=>{
     call.mockResolvedValue({...summary,status:'revoked'});
@@ -63,6 +63,21 @@ describe('trusted invitation service',()=>{
   it('malformed token returns unavailable without lookup',async()=>{
     expect(await runInvitationOperation(deps,'invitee','inspect',{token:'invalid'})).toEqual({outcome:'unavailable'});
     expect(call).not.toHaveBeenCalled();
+  });
+  it('persists known provider failure without reporting sent or changing lifecycle',async()=>{
+    deliver.mockRejectedValue(new DeliveryError('provider_rejected'));
+    expect(await runInvitationOperation(deps,'owner','create',{tripId:'trip',email:summary.email})).toMatchObject({delivery:'failed',invitation:{status:'pending',deliveryState:'failed'}});
+    expect(call.mock.calls.find(c=>c[1]==='delivery_finish')![2]).toMatchObject({state:'failed',failureCode:'provider_rejected'});
+  });
+  it('never reports sent if the post-send durable write fails',async()=>{
+    call.mockImplementation(async (_actor,op)=>{if(op==='delivery_finish') throw new Error('storage unavailable');return op==='delivery_start' ? {updated:true} : summary;});
+    expect(await runInvitationOperation(deps,'owner','create',{tripId:'trip',email:summary.email})).toMatchObject({delivery:'unknown'});
+    expect(deliver).toHaveBeenCalledTimes(1);
+  });
+  it('does not send when an attempt was already claimed',async()=>{
+    call.mockImplementation(async (_actor,op)=>op==='delivery_start' ? {updated:false} : summary);
+    expect(await runInvitationOperation(deps,'owner','create',{tripId:'trip',email:summary.email})).toMatchObject({delivery:'not_sent'});
+    expect(deliver).not.toHaveBeenCalled();
   });
 });
 

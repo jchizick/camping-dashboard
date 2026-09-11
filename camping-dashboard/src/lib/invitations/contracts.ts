@@ -9,6 +9,8 @@ export interface InvitationView {
   maskedEmail?: string;
 }
 export interface InvitationSummary {
+  deliveryAttemptId: string;
+  deliveryState: string;
   id: string;
   email: string;
   role: 'viewer' | 'editor';

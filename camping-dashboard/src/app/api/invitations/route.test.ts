@@ -1,15 +1,15 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 vi.mock('server-only',()=>({}));
-const mocks = vi.hoisted(()=>({getUser:vi.fn(),call:vi.fn(),delivery:vi.fn(),enabled:vi.fn()}));
+const mocks = vi.hoisted(()=>({getUser:vi.fn(),call:vi.fn(),delivery:vi.fn(),enabled:vi.fn(),consume:vi.fn()}));
 vi.mock('@/lib/serverSupabase',()=>({createRequestSupabaseClient:async()=>({auth:{getUser:mocks.getUser}})}));
-vi.mock('@/lib/invitations/server',()=>({callInvitationBridge:mocks.call}));
-vi.mock('@/lib/invitations/delivery',()=>({localInvitationsEnabled:mocks.enabled,localInvitationDelivery:{deliver:mocks.delivery}}));
+vi.mock('@/lib/invitations/server',()=>({callInvitationBridge:mocks.call,consumeInvitationRates:mocks.consume}));
+vi.mock('@/lib/invitations/config',()=>({invitationConfig:()=>mocks.enabled() ? {provider:'local',origin:'http://localhost',rateSecret:'local-only-invitation-rate-test-key'} : null}));
 import { POST } from './route';
 import { createTripInvitationToken } from '@/lib/tripInvitationToken';
 const request = (body:unknown,origin:string|null='http://localhost') => new NextRequest('http://localhost/api/invitations',{
   method:'POST',headers:{'content-type':'application/json',...(origin ? {origin} : {})},body:JSON.stringify(body)});
-beforeEach(()=>{mocks.enabled.mockReturnValue(true);mocks.getUser.mockResolvedValue({data:{user:{id:'verified-session-id'}},error:null});mocks.call.mockResolvedValue({outcome:'pending'});});
+beforeEach(()=>{mocks.consume.mockResolvedValue({allowed:true,retryAfter:0});mocks.enabled.mockReturnValue(true);mocks.getUser.mockResolvedValue({data:{user:{id:'verified-session-id'}},error:null});mocks.call.mockResolvedValue({outcome:'pending'});});
 it.each(['https://evil.test',null])('rejects origin %s before auth/db',async origin=>{
   expect((await POST(request({operation:'accept',token:'x'},origin))).status).toBe(403);expect(mocks.call).not.toHaveBeenCalled();
 });
@@ -36,4 +36,16 @@ it('suppresses upstream error details',async()=>{
   mocks.call.mockRejectedValue(new Error('sensitive token/hash'));
   const response = await POST(request({operation:'inspect',token:createTripInvitationToken().rawToken}));
   expect(await response.json()).toEqual({code:'invitation_failed'});
+});
+it('throttles before auth or body lookup and returns Retry-After',async()=>{
+  mocks.consume.mockResolvedValue({allowed:false,retryAfter:37});
+  const response=await POST(request({operation:'inspect',token:'invalid'}));
+  expect(response.status).toBe(429);expect(response.headers.get('Retry-After')).toBe('37');
+  expect(await response.json()).toEqual({code:'rate_limited'});expect(mocks.getUser).not.toHaveBeenCalled();
+});
+it('fails closed if distributed rate storage is unavailable',async()=>{
+  mocks.consume.mockRejectedValue(new Error('private storage details'));
+  const response=await POST(request({operation:'inspect',token:'invalid'}));
+  expect(response.status).toBe(503);expect(await response.json()).toEqual({code:'invitation_failed'});
+  expect(mocks.getUser).not.toHaveBeenCalled();
 });

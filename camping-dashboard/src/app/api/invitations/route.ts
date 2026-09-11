@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRequestSupabaseClient } from '@/lib/serverSupabase';
-import { localInvitationDelivery, localInvitationsEnabled } from '@/lib/invitations/delivery';
-import { callInvitationBridge } from '@/lib/invitations/server';
+import { localInvitationDelivery } from '@/lib/invitations/delivery';
+import { invitationConfig } from '@/lib/invitations/config';
+import { resendInvitationDelivery } from '@/lib/invitations/resend';
+import { invitationLimiter } from '@/lib/invitations/rateLimit';
+import { callInvitationBridge, consumeInvitationRates } from '@/lib/invitations/server';
 import { InvitationFailure, runInvitationOperation, type InvitationOperation } from '@/lib/invitations/service';
 
 export const dynamic = 'force-dynamic';
@@ -27,8 +30,11 @@ export async function POST(request: NextRequest) {
   // Origin is mandatory even for inspect: the token travels in JSON, never in an API URL.
   if (request.headers.get('origin') !== new URL(request.url).origin
     || request.headers.get('sec-fetch-site') === 'cross-site') return reply({code:'invalid_origin'},403);
-  if (!localInvitationsEnabled()) return reply({code:'delivery_unavailable'},503);
+  const config=invitationConfig();
+  if (!config) return reply({code:'delivery_unavailable'},503);
   try {
+    const limiter=invitationLimiter(config.rateSecret,consumeInvitationRates);
+    await limiter.network(request.headers);
     if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({code:'invalid_request'},400);
     const text = await boundedBody(request);
     const body = JSON.parse(text);
@@ -38,11 +44,14 @@ export async function POST(request: NextRequest) {
     const client = await createRequestSupabaseClient();
     const {data:{user},error} = await client.auth.getUser();
     const actor = error ? null : user?.id ?? null;
-    const result = await runInvitationOperation({call:callInvitationBridge,delivery:localInvitationDelivery,origin:new URL(request.url).origin},
+    const result = await runInvitationOperation({call:callInvitationBridge,
+      delivery:config.provider==='local' ? localInvitationDelivery : resendInvitationDelivery(config),
+      origin:config.origin,provider:config.provider,limit:limiter.operation},
       actor,operation as InvitationOperation,input);
     return reply(result);
   } catch (error) {
-    if (error instanceof InvitationFailure) return reply({code:error.code},error.status);
+    if (error instanceof InvitationFailure) return NextResponse.json({code:error.code},{status:error.status,
+      headers:{...headers,...(error.retryAfter ? {'Retry-After':String(error.retryAfter)} : {})}});
     if (error instanceof SyntaxError) return reply({code:'invalid_request'},400);
     return reply({code:'invitation_failed'},503);
   }

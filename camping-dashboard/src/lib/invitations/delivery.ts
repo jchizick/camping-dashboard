@@ -7,7 +7,12 @@ export interface InvitationMessage {
   expiresAt: string;
   acceptanceUrl: string;
 }
-export interface InvitationDelivery { deliver(message: InvitationMessage): Promise<void> }
+export type DeliveryFailureCode = 'invalid_request' | 'provider_auth' | 'provider_rate_limited' | 'provider_rejected' | 'provider_unknown';
+export class DeliveryError extends Error {
+  constructor(public code: DeliveryFailureCode) { super(code); }
+}
+export interface DeliveryReceipt { status:'sent' | 'captured_locally'; providerMessageId?: string }
+export interface InvitationDelivery { deliver(message: InvitationMessage, attemptId?: string): Promise<DeliveryReceipt> }
 
 export function localInvitationsEnabled() {
   return process.env.NODE_ENV !== 'production' && !process.env.VERCEL
@@ -25,5 +30,6 @@ export const localInvitationDelivery: InvitationDelivery = {
     if (!localInvitationsEnabled()) throw new Error('Delivery unavailable');
     if (messages.length >= 20) messages.shift();
     messages.push({ ...message });
+    return {status:'captured_locally'};
   },
 };

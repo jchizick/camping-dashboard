@@ -644,10 +644,18 @@ export type Database = {
           accepted_at: string | null
           accepted_by: string | null
           created_at: string
+          delivery_attempt_count: number
+          delivery_attempt_id: string | null
+          delivery_failure_code: string | null
+          delivery_provider: string | null
+          delivery_state: string
           expires_at: string
           id: string
           invited_by: string | null
           invited_email_normalized: string
+          last_delivery_attempt_at: string | null
+          last_delivery_success_at: string | null
+          provider_message_id: string | null
           revoked_at: string | null
           role: string
           status: string
@@ -658,10 +666,18 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string
+          delivery_attempt_count?: number
+          delivery_attempt_id?: string | null
+          delivery_failure_code?: string | null
+          delivery_provider?: string | null
+          delivery_state?: string
           expires_at?: string
           id?: string
           invited_by?: string | null
           invited_email_normalized: string
+          last_delivery_attempt_at?: string | null
+          last_delivery_success_at?: string | null
+          provider_message_id?: string | null
           revoked_at?: string | null
           role?: string
           status?: string
@@ -672,10 +688,18 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           created_at?: string
+          delivery_attempt_count?: number
+          delivery_attempt_id?: string | null
+          delivery_failure_code?: string | null
+          delivery_provider?: string | null
+          delivery_state?: string
           expires_at?: string
           id?: string
           invited_by?: string | null
           invited_email_normalized?: string
+          last_delivery_attempt_at?: string | null
+          last_delivery_success_at?: string | null
+          provider_message_id?: string | null
           revoked_at?: string | null
           role?: string
           status?: string
@@ -1084,6 +1108,7 @@ export type Database = {
         Args: { p_deletion_token: string; p_trip_id: string }
         Returns: boolean
       }
+      consume_invitation_rate_limits: { Args: { p_rules: Json }; Returns: Json }
       create_trip: {
         Args: {
           p_campsite_label?: string
