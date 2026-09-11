@@ -639,6 +639,59 @@ export type Database = {
           },
         ]
       }
+      trip_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          invited_email_normalized: string
+          revoked_at: string | null
+          role: string
+          status: string
+          token_hash: string
+          trip_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_email_normalized: string
+          revoked_at?: string | null
+          role?: string
+          status?: string
+          token_hash: string
+          trip_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          invited_email_normalized?: string
+          revoked_at?: string | null
+          role?: string
+          status?: string
+          token_hash?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_invitations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_members: {
         Row: {
           created_at: string | null

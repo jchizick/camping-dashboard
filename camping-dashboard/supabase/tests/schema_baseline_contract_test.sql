@@ -178,6 +178,9 @@ select set_config(
   true
 );
 
+-- Fixture provisioning is administrative. Ordinary clients can no longer
+-- insert memberships directly; the invitation contract tests that boundary.
+reset role;
 insert into public.trip_members (trip_id, user_id, role)
 values
   (
@@ -190,6 +193,7 @@ values
     '00000000-0000-0000-0000-000000000303',
     'viewer'
   );
+set local role authenticated;
 
 select ok(
   app_private.is_trip_owner(current_setting('test.baseline_trip_id')),

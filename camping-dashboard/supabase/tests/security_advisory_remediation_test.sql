@@ -334,12 +334,15 @@ select set_config(
   true
 );
 
+-- Administrative fixture; direct client membership writes are now revoked.
+reset role;
 insert into public.trip_members (trip_id, user_id, role)
 values (
   current_setting('test.advisor_trip_id'),
   '00000000-0000-0000-0000-000000000402',
   'viewer'
 );
+set local role authenticated;
 
 select ok(
   app_private.is_trip_owner(current_setting('test.advisor_trip_id')),

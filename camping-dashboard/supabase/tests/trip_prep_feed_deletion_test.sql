@@ -113,12 +113,15 @@ select set_config(
   true
 );
 
+-- Administrative fixture; direct client membership writes are now revoked.
+reset role;
 insert into public.trip_members (trip_id, user_id, role)
 values (
   current_setting('test.trip_id'),
   '00000000-0000-0000-0000-000000000202',
   'editor'
 );
+set local role authenticated;
 
 insert into public.prep_feed_items (
   trip_id,
