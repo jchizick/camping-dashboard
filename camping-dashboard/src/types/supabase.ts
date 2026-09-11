@@ -1184,6 +1184,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      trip_invitation_bridge: {
+        Args: { p_actor: string; p_input: Json; p_operation: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

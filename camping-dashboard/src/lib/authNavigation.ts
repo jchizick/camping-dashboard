@@ -1,3 +1,5 @@
-export function returnToSignIn() {
-  window.location.replace('/trips');
+import { getInvitationReturnPath } from './invitations/contracts';
+
+export function returnToSignIn(invitationPath?: string) {
+  window.location.replace(getInvitationReturnPath(invitationPath) ?? '/trips');
 }

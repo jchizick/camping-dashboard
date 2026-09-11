@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { buildOAuthCallbackUrl } from '@/lib/authRedirect';
 import { returnToSignIn } from '@/lib/authNavigation';
+import { getInvitationReturnPath } from '@/lib/invitations/contracts';
 import { tripRepository } from '@/lib/tripRepository';
 
 // ── Context shape ─────────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ interface AuthContextValue {
   isLoading: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  switchInvitationAccount: (invitationPath: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -29,6 +31,7 @@ const AuthContext = createContext<AuthContextValue>({
   isLoading: true,
   signIn: async () => {},
   signOut: async () => {},
+  switchInvitationAccount: async () => {},
 });
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -115,7 +118,8 @@ export function AuthProvider({
     if (error) throw error;
   }, []);
 
-  const signOut = useCallback(async () => {
+  const clearSession = useCallback(async (invitationPath?: string) => {
+    let signedOut = false;
     try {
       const userId = user?.id ?? identity?.userId;
       if (userId) {
@@ -130,16 +134,28 @@ export function AuthProvider({
       } catch (error) {
         console.error('[auth] Offline identity pointer could not be cleared.', error);
       }
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (invitationPath && error) throw new Error('Account switch could not be completed.');
+      signedOut = true;
     } finally {
-      setUser(null);
-      setIdentity(null);
-      returnToSignIn();
+      if (!invitationPath || signedOut) {
+        setUser(null);
+        setIdentity(null);
+        if (invitationPath) returnToSignIn(invitationPath);
+        else returnToSignIn();
+      }
     }
   }, [identity, user]);
 
+  const signOut = useCallback(() => clearSession(), [clearSession]);
+  const switchInvitationAccount = useCallback((path: string) => {
+    const destination = getInvitationReturnPath(path);
+    if (!destination) return Promise.reject(new Error('Invalid invitation destination.'));
+    return clearSession(destination);
+  }, [clearSession]);
+
   return (
-    <AuthContext.Provider value={{ user, identity, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, identity, isLoading, signIn, signOut, switchInvitationAccount }}>
       {children}
     </AuthContext.Provider>
   );

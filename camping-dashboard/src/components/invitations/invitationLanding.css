@@ -1,0 +1,6 @@
+.invitation-landing { max-width: 38rem; margin: 0 auto; padding: 4rem 1.5rem; color: #e8e9e7; }
+.invitation-landing h1, .invitation-landing h2 { font-family: var(--font-display-face), sans-serif; }
+.invitation-landing p { margin: 1rem 0; }
+.invitation-landing button { padding: .65rem 1rem; border: 1px solid #656b65; border-radius: .35rem; background: #292e2a; color: inherit; }
+.invitation-landing button:focus-visible { outline: 2px solid #f2c77f; outline-offset: 3px; }
+.invitation-landing button:disabled { opacity: .6; }

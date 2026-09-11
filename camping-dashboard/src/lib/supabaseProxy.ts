@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/types/database';
 import { requiredEnvironmentVariable } from '@/lib/env';
+import { getInvitationReturnPath } from '@/lib/invitations/contracts';
 
 function isProtectedPage(pathname: string) {
   return pathname === '/trips/new' || pathname.startsWith('/trips/');
@@ -65,7 +66,10 @@ export async function updateSupabaseSession(request: NextRequest) {
     return redirect;
   }
 
-  if (refreshedSession || isProtectedPage(request.nextUrl.pathname)) {
+  const invitationRequest = request.nextUrl.pathname.startsWith('/invite/')
+    || getInvitationReturnPath(request.nextUrl.searchParams.get('next') ?? undefined);
+  if (invitationRequest) response.headers.set('Referrer-Policy', 'no-referrer');
+  if (refreshedSession || isProtectedPage(request.nextUrl.pathname) || invitationRequest) {
     response.headers.set('Cache-Control', 'private, no-store');
   }
 

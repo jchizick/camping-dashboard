@@ -42,7 +42,7 @@ vi.mock('@/lib/tripRepository', () => ({
 import { AuthProvider, useAuth } from './authContext';
 
 function AuthHarness() {
-  const { user, identity, isLoading, signIn, signOut } = useAuth();
+  const { user, identity, isLoading, signIn, signOut, switchInvitationAccount } = useAuth();
 
   return (
     <>
@@ -52,11 +52,31 @@ function AuthHarness() {
       </p>
       <button type="button" onClick={() => void signIn()}>Sign in</button>
       <button type="button" onClick={() => void signOut()}>Sign out</button>
+      <button type="button" onClick={() => void switchInvitationAccount('/invite/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA').catch(() => {})}>Switch invitation account</button>
     </>
   );
 }
 
 describe('AuthProvider actions', () => {
+  it('does not claim an invitation account switch succeeded when Supabase sign-out fails', async () => {
+    supabaseMocks.signOut.mockResolvedValue({error:{message:'failed'}});
+    render(<AuthProvider><AuthHarness /></AuthProvider>);
+    await screen.findByText('authenticated');
+    fireEvent.click(screen.getByRole('button', { name: 'Switch invitation account' }));
+    await waitFor(() => expect(supabaseMocks.signOut).toHaveBeenCalledOnce());
+    expect(navigationMocks.returnToSignIn).not.toHaveBeenCalled();
+    expect(screen.getByText('authenticated')).toBeTruthy();
+  });
+  it('clears the existing account cache before returning to an invitation', async () => {
+    render(<AuthProvider><AuthHarness /></AuthProvider>);
+    await screen.findByText('authenticated');
+    fireEvent.click(screen.getByRole('button', { name: 'Switch invitation account' }));
+    await waitFor(() => expect(navigationMocks.returnToSignIn).toHaveBeenCalledWith('/invite/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'));
+    expect(repositoryMocks.clearUserCache).toHaveBeenCalledWith({userId:'user-123'});
+    expect(repositoryMocks.clearOfflineIdentity).toHaveBeenCalled();
+    expect(supabaseMocks.signOut).toHaveBeenCalledOnce();
+    expect(repositoryMocks.clearUserCache.mock.invocationCallOrder[0]).toBeLessThan(supabaseMocks.signOut.mock.invocationCallOrder[0]);
+  });
   beforeEach(() => {
     window.history.replaceState({}, '', '/trips?next=%2Ftrips%2Ftrip-123');
     supabaseMocks.getUser.mockResolvedValue({

@@ -25,6 +25,7 @@ function redirectResponse(
 
   const response = NextResponse.redirect(redirectUrl);
   response.headers.set('Cache-Control', 'private, no-store');
+  response.headers.set('Referrer-Policy', 'no-referrer');
   return response;
 }
 

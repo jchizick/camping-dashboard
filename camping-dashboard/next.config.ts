@@ -7,6 +7,15 @@ const fieldProtocolBuildId =
   randomUUID();
 
 const nextConfig: NextConfig = {
+  // Opaque invite tokens (including OAuth return destinations) must not reach dev access logs.
+  logging: { incomingRequests: { ignore: [/\/invite\//, /\/auth\/callback/, /[?&]next=/] } },
+  async headers() {
+    return [{ source: '/invite/:path*', headers: [
+      { key: 'Cache-Control', value: 'private, no-store' },
+      { key: 'Referrer-Policy', value: 'no-referrer' },
+      { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+    ] }];
+  },
   generateBuildId: async () => fieldProtocolBuildId,
   env: {
     NEXT_PUBLIC_FIELD_PROTOCOL_BUILD_ID: fieldProtocolBuildId,
