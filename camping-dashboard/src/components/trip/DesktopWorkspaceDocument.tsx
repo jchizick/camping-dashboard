@@ -18,6 +18,7 @@ export default function DesktopWorkspaceDocument({ pathname, tripId }: { pathnam
       <DesktopWorkspaceGearSection navigationPath={pathname} />
       <DesktopWorkspaceCrewSection navigationPath={pathname} />
       <DesktopWorkspaceFieldSection navigationPath={pathname} />
+      <div data-desktop-workspace-end aria-hidden="true" />
     </div>
   );
 }

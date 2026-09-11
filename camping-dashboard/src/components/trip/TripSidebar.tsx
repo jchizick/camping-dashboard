@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useDesktopActiveSection } from './useDesktopActiveSection';
 import GuardedTripLink from './GuardedTripLink';
 import TripMoreMenu from './TripMoreMenu';
 import WorkspaceBrand from './WorkspaceBrand';
@@ -31,6 +32,7 @@ export default function TripSidebar({
   const pathname = usePathname();
   const workspace = useOptionalTripWorkspaceStatus();
   const navigationPath = workspace?.navigationPath ?? pathname;
+  const activePath = useDesktopActiveSection(navigationPath, tripId);
 
   return (
     <aside className="trip-workspace-sidebar" data-testid="wide-trip-sidebar-shell">
@@ -41,7 +43,7 @@ export default function TripSidebar({
 
         <nav aria-label="Trip sections" className="trip-workspace-sidebar__nav">
           {TRIP_PRIMARY_DESTINATIONS.map(({ label, segment, icon: Icon }) => {
-            const active = isTripDestinationActive(navigationPath, tripId, segment);
+            const active = isTripDestinationActive(activePath, tripId, segment);
             return (
               <GuardedTripLink
                 key={label}

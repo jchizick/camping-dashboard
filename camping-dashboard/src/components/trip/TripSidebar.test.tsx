@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TRIP_PRIMARY_DESTINATIONS } from './tripNavigation';
 
@@ -36,6 +36,34 @@ function renderSidebar() {
 }
 
 describe('TripSidebar', () => {
+  it('marks exactly one observed section current while retaining guarded route destinations', () => {
+    let notify: IntersectionObserverCallback = () => {};
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+        if (options) notify = callback;
+      }
+      observe() {} disconnect() {}
+    });
+    const fixture = document.createElement('div');
+    fixture.setAttribute('data-desktop-workspace-document', '');
+    fixture.innerHTML = ['overview', 'plan', 'gear', 'crew', 'field'].map(name => `<section><h2 id="desktop-${name}-title"></h2></section>`).join('');
+    document.body.append(fixture);
+    let active = 0;
+    fixture.querySelectorAll('section').forEach((section, index) => {
+      section.getBoundingClientRect = () => ({ top: index <= active ? 0 : 500 }) as DOMRect;
+    });
+    renderSidebar();
+    const nav = screen.getByRole('navigation', { name: 'Trip sections' });
+    for (const index of [0, 1, 2, 3, 4, 3, 2, 1, 0]) {
+      active = index;
+      act(() => notify([], {} as IntersectionObserver));
+      const links = within(nav).getAllByRole('link');
+      expect(links.filter(link => link.getAttribute('aria-current') === 'page')).toEqual([links[index]]);
+      expect(links[2].getAttribute('href')).toBe('/trips/trip-1/gear');
+    }
+    fixture.remove();
+    vi.unstubAllGlobals();
+  });
   it('renders the canonical destinations in order and keeps Field Log in More', () => {
     renderSidebar();
     const sidebar = screen.getByTestId('wide-trip-sidebar-shell');
