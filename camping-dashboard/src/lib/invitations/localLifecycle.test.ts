@@ -20,7 +20,7 @@ const call: BridgeCall = async (actor,operation,input) => JSON.parse(sql(`begin;
 const messages: InvitationMessage[] = [];
 const deps = {call,origin:'http://localhost:3000',delivery:{async deliver(message:InvitationMessage){messages.push(message);}}};
 const run = (actor:string|null,operation:Parameters<typeof runInvitationOperation>[2],body:Record<string,unknown>) => runInvitationOperation(deps,actor,operation,body);
-const deliveredToken = () => new URL(messages.at(-1)!.acceptanceUrl).pathname.split('/').pop()!;
+const deliveredToken = () => new URL(messages.at(-1)!.acceptanceUrl).hash.slice(1);
 beforeAll(()=>{
   if (!enabled) return;
   cleanup();

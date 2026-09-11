@@ -50,6 +50,16 @@ describe('OAuth callback', () => {
     authMocks.exchangeCodeForSession.mockResolvedValue({ data: {}, error: null });
   });
 
+  it('returns to the token-free invitation route after OAuth', async () => {
+    const response = await GET(new NextRequest('https://dashboard.example/auth/callback?code=mock&next=%2Finvite'));
+    expect(response.headers.get('location')).toBe('https://dashboard.example/invite');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+  });
+  it.each(['/invite/'+'A'.repeat(43),'/invite#'+'A'.repeat(43),'/invite?token='+'A'.repeat(43)])('never echoes legacy/token-bearing next %s', async next => {
+    const response = await GET(new NextRequest('https://dashboard.example/auth/callback?code=mock&next='+encodeURIComponent(next)));
+    expect(authMocks.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(response.headers.get('location')).toBe('https://dashboard.example/trips?auth_error=invalid_redirect');
+  });
   it('exchanges the PKCE code, sets the session cookie on the redirect, and restores next', async () => {
     const request = new NextRequest(
       'https://dashboard.example/auth/callback?code=one-time-code&next=%2Ftrips%2Ftrip-123'

@@ -101,6 +101,13 @@ describe('Supabase session proxy', () => {
     expect(response.headers.get('cache-control')).toBe('private, no-store');
   });
 
+  it('keeps exact invite shell private without redirecting anonymous users', async () => {
+    const response = await updateSupabaseSession(new NextRequest('https://dashboard.example/invite'));
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+  });
+
   it('keeps the public sign-in page available to anonymous users', async () => {
     const request = new NextRequest('https://dashboard.example/trips');
 

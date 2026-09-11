@@ -39,6 +39,7 @@ vi.mock('@/lib/tripRepository', () => ({
   },
 }));
 
+import { captureInvitationSession } from './invitations/session';
 import { AuthProvider, useAuth } from './authContext';
 
 function AuthHarness() {
@@ -52,7 +53,7 @@ function AuthHarness() {
       </p>
       <button type="button" onClick={() => void signIn()}>Sign in</button>
       <button type="button" onClick={() => void signOut()}>Sign out</button>
-      <button type="button" onClick={() => void switchInvitationAccount('/invite/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA').catch(() => {})}>Switch invitation account</button>
+      <button type="button" onClick={() => void switchInvitationAccount('/invite').catch(() => {})}>Switch invitation account</button>
     </>
   );
 }
@@ -71,13 +72,25 @@ describe('AuthProvider actions', () => {
     render(<AuthProvider><AuthHarness /></AuthProvider>);
     await screen.findByText('authenticated');
     fireEvent.click(screen.getByRole('button', { name: 'Switch invitation account' }));
-    await waitFor(() => expect(navigationMocks.returnToSignIn).toHaveBeenCalledWith('/invite/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'));
+    await waitFor(() => expect(navigationMocks.returnToSignIn).toHaveBeenCalledWith('/invite'));
     expect(repositoryMocks.clearUserCache).toHaveBeenCalledWith({userId:'user-123'});
     expect(repositoryMocks.clearOfflineIdentity).toHaveBeenCalled();
     expect(supabaseMocks.signOut).toHaveBeenCalledOnce();
     expect(repositoryMocks.clearUserCache.mock.invocationCallOrder[0]).toBeLessThan(supabaseMocks.signOut.mock.invocationCallOrder[0]);
   });
+  it('preserves per-tab invitation on explicit switch, but clears on ordinary sign-out', async () => {
+    window.history.replaceState({}, '', '/invite#'+'A'.repeat(43));
+    expect(captureInvitationSession()).toBe('A'.repeat(43));
+    render(<AuthProvider><AuthHarness /></AuthProvider>);
+    await screen.findByText('authenticated');
+    fireEvent.click(screen.getByRole('button', { name: 'Switch invitation account' }));
+    await waitFor(() => expect(navigationMocks.returnToSignIn).toHaveBeenCalledWith('/invite'));
+    expect(captureInvitationSession()).toBe('A'.repeat(43));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(captureInvitationSession()).toBeNull();
+  });
   beforeEach(() => {
+    sessionStorage.clear();
     window.history.replaceState({}, '', '/trips?next=%2Ftrips%2Ftrip-123');
     supabaseMocks.getUser.mockResolvedValue({
       data: { user: { id: 'user-123' } },

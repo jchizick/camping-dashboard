@@ -24,10 +24,11 @@ describe('trusted invitation service',()=>{
     const [actor,op,input] = call.mock.calls[0];
     expect(actor).toBe('verified-owner');expect(op).toBe('create');expect(input.role).toBe('viewer');
     const url = new URL(deliver.mock.calls[0][0].acceptanceUrl);
-    expect(hashTripInvitationToken(url.pathname.split('/').pop()!)).toBe(input.tokenHash);
+    expect(hashTripInvitationToken(url.hash.slice(1))).toBe(input.tokenHash);
     expect(call.mock.invocationCallOrder[0]).toBeLessThan(deliver.mock.invocationCallOrder[0]);
     expect(JSON.stringify(result)).not.toContain(input.tokenHash);
-    expect(JSON.stringify(result)).not.toContain(url.pathname);
+    expect(url.pathname).toBe('/invite'); expect(url.search).toBe('');
+    expect(JSON.stringify(result)).not.toContain(url.hash.slice(1));
     expect(result).toMatchObject({delivery:'captured_locally'});
   });
   it('does not deliver after database failure',async()=>{
@@ -68,7 +69,7 @@ describe('trusted invitation service',()=>{
 describe('local delivery guard and auth return',()=>{
   it('captures only with explicit local opt-in and refuses production',async()=>{
     vi.stubEnv('NODE_ENV','test');vi.stubEnv('VERCEL','');vi.stubEnv('TRIP_INVITATIONS_LOCAL','true');
-    const message = {...summary,role:'viewer' as const,acceptanceUrl:'http://localhost/invite/test'};
+    const message = {...summary,role:'viewer' as const,acceptanceUrl:'http://localhost/invite#test'};
     await localInvitationDelivery.deliver(message);expect(takeLocalInvitationMessages()).toEqual([message]);
     expect(takeLocalInvitationMessages()).toEqual([]);
     vi.stubEnv('NODE_ENV','production');
@@ -78,7 +79,7 @@ describe('local delivery guard and auth return',()=>{
     vi.unstubAllEnvs();
   });
   it('preserves the invitation through existing OAuth and excludes offline matching',()=>{
-    const path = `/invite/${createTripInvitationToken().rawToken}`;
+    const path = '/invite';
     expect(getSafeNextPath(path)).toBe(path);expect(getInvitationReturnPath(path)).toBe(path);
     const callback = new URL(buildOAuthCallbackUrl({origin:'https://app.test',pathname:path,search:''}));
     expect(callback.pathname).toBe('/auth/callback');expect(callback.searchParams.get('next')).toBe(path);

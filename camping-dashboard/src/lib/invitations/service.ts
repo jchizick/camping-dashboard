@@ -42,7 +42,7 @@ export async function runInvitationOperation(deps: { call: BridgeCall; delivery:
   // Persist/rotate first; never retain a raw token for retries. Every resend rotates again.
   try {
     await deps.delivery.deliver({ email:summary.email, tripName:summary.tripName, role:summary.role,
-      expiresAt:summary.expiresAt, acceptanceUrl:new URL(`/invite/${token.rawToken}`,deps.origin).toString() });
+      expiresAt:summary.expiresAt, acceptanceUrl:new URL(`/invite#${token.rawToken}`,deps.origin).toString() });
     return { invitation:summary, delivery:'captured_locally' };
   } catch {
     return { invitation:summary, delivery:'unavailable' };

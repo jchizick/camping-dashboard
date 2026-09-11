@@ -66,7 +66,7 @@ export async function updateSupabaseSession(request: NextRequest) {
     return redirect;
   }
 
-  const invitationRequest = request.nextUrl.pathname.startsWith('/invite/')
+  const invitationRequest = request.nextUrl.pathname === '/invite' || request.nextUrl.pathname.startsWith('/invite/')
     || getInvitationReturnPath(request.nextUrl.searchParams.get('next') ?? undefined);
   if (invitationRequest) response.headers.set('Referrer-Policy', 'no-referrer');
   if (refreshedSession || isProtectedPage(request.nextUrl.pathname) || invitationRequest) {

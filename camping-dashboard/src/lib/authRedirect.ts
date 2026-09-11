@@ -1,8 +1,8 @@
 const DEFAULT_AUTH_DESTINATION = '/trips';
 const SAFE_REDIRECT_ORIGIN = 'https://app.invalid';
 
-export function getSafeNextPath(value: string | null): string | null {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) {
+export function getSafeNextPath(value: string | null, depth = 0): string | null {
+  if (depth > 4 || !value || !value.startsWith('/') || value.startsWith('//')) {
     return null;
   }
 
@@ -26,6 +26,13 @@ export function getSafeNextPath(value: string | null): string | null {
     return null;
   }
 
+  // Invitation secrets must never be forwarded through OAuth, including legacy links.
+  const decodedPath = new URL(decodedValue, SAFE_REDIRECT_ORIGIN).pathname;
+  if (/^\/invite(?:\/|$)/.test(decodedPath)) {
+    return value === '/invite' ? '/invite' : null;
+  }
+  const nestedNext = url.searchParams.get('next');
+  if (nestedNext !== null && getSafeNextPath(nestedNext, depth + 1) === null) return null;
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
@@ -38,7 +45,7 @@ export function getRequestedAuthDestination(
 export function buildOAuthCallbackUrl(location: Pick<Location, 'origin' | 'pathname' | 'search'>) {
   const pageParams = new URLSearchParams(location.search);
   const requestedDestination =
-    getSafeNextPath(pageParams.get('next')) ??
+    (location.pathname === '/invite' ? '/invite' : getSafeNextPath(pageParams.get('next'))) ??
     getSafeNextPath(
       location.pathname === DEFAULT_AUTH_DESTINATION
         ? DEFAULT_AUTH_DESTINATION

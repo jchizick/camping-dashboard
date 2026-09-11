@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { buildOAuthCallbackUrl } from '@/lib/authRedirect';
 import { returnToSignIn } from '@/lib/authNavigation';
+import { clearInvitationSession } from '@/lib/invitations/session';
 import { getInvitationReturnPath } from '@/lib/invitations/contracts';
 import { tripRepository } from '@/lib/tripRepository';
 
@@ -119,6 +120,7 @@ export function AuthProvider({
   }, []);
 
   const clearSession = useCallback(async (invitationPath?: string) => {
+    if (!invitationPath) clearInvitationSession();
     let signedOut = false;
     try {
       const userId = user?.id ?? identity?.userId;

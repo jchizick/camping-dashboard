@@ -16,7 +16,7 @@ export interface InvitationSummary {
   expiresAt: string;
   tripName: string;
 }
-/** Only opaque invitation paths may override the ordinary sign-out destination. */
+/** Only the token-free invitation route may override the ordinary sign-out destination. */
 export function getInvitationReturnPath(value?: string): string | null {
-  return value && /^\/invite\/[A-Za-z0-9_-]{43}$/.test(value) ? value : null;
+  return value === '/invite' ? value : null;
 }
