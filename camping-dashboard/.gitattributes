@@ -1,0 +1,3 @@
+supabase/migrations/*.sql text eol=lf
+scripts/staging/*.sql text eol=lf
+src/types/supabase.ts text eol=lf

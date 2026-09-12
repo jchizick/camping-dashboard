@@ -1,0 +1,134 @@
+{
+  "sha": "03ebd55e09159ee4f8cd0678dd3f45fdf8fdbbdb",
+  "migrations": [
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260307012657_create_all_tables.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260307151438_phase3_rls_crud_policies.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260311025508_add_uuid_defaults_to_user_authored_tables.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260321023149_replace_moonrise_with_visibility.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260322143229_add_offline_status_update_policy.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260324033317_add_phase_to_timeline_events.sql"
+    },
+    {
+      "sha256": "f683ecb832d457de4fbd2f778e68e7e68292d488351a579de1dfc7067ed5364d",
+      "name": "20260326211824_enforce_rls_and_admin_policies.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260513000741_add_daily_vehicle_permit_saved.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260606144130_add_prep_feed_items.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260709165709_create_trip_members.sql"
+    },
+    {
+      "sha256": "5ad1f900b12cd82e53a447acd0e67239092f31b2e3f1f5b9197de2bf0fe4aad3",
+      "name": "20260709165726_seed_alpha_trip_members.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260709165856_replace_rls_policies.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260709165924_add_storage_policies.sql"
+    },
+    {
+      "sha256": "d00bcf9ddc1f862b0930b5464ccf32627a0a21fbeb74101cfd8ab580a5de6d77",
+      "name": "20260709165932_add_theme_variant_to_settings.sql"
+    },
+    {
+      "sha256": "723b71bb0309bf7ddcdcb9b103655fbae975cf636525b3296a9c0fbcb0867223",
+      "name": "20260710135251_006_fix_trip_members_rls_recursion.sql"
+    },
+    {
+      "sha256": "65b0eec1bceee2b50eed6b95d03b31fe49eed5778cff2f77f1a81c3082f69ae0",
+      "name": "20260726010611_expand_trip_creation_and_campsites.sql"
+    },
+    {
+      "sha256": "2844607b8072a142922973199c353f9a417ddfb5b0d4e45d52b3efb289b0fa66",
+      "name": "20260726013323_refactor_create_trip_remove_legacy_singleton_id.sql"
+    },
+    {
+      "sha256": "14729819121e2c19adab68e551d14b409df9f27f1f7a5155d7bbab8ea27be9f5",
+      "name": "20260726013846_contract_singleton_trip_ids.sql"
+    },
+    {
+      "sha256": "4f9a4aafbc199cae4a0b9360c1f8a39bd60065b25c780d3d0182037433341b5c",
+      "name": "20260726143539_safe_trip_and_prep_feed_deletion.sql"
+    },
+    {
+      "sha256": "45073d7d7f262aa884a98ee47a247e19c861231a04096b43915d8f2f4b6233b1",
+      "name": "20260726143737_index_prep_feed_cleanup_jobs_trip_id.sql"
+    },
+    {
+      "sha256": "74b678888c03dc8a042dcd2dee27a77e5df66cbf541b0c87323c7d41d7db5ebc",
+      "name": "20260726174306_harden_rls_helpers_and_cleanup_queue.sql"
+    },
+    {
+      "sha256": "9a172e248a91808e1644da73ea1f0190d854e3334ee17ee745bedc7e4c3d2397",
+      "name": "20260726174312_index_remaining_foreign_keys.sql"
+    },
+    {
+      "sha256": "cea8c9cef64da4dd689ee03abfd6fef7053d86eeaa179022f3e4e548c51f4ef9",
+      "name": "20260726181155_narrow_cleanup_queue_service_role_privileges.sql"
+    },
+    {
+      "sha256": "864cc88da031c6cf01159b0baf0eccf055474f25690c2fcb37c1d29dbec6c385",
+      "name": "20260726204948_process_prep_feed_storage_cleanup_jobs.sql"
+    },
+    {
+      "sha256": "925191a123fe815cb32474ec13fed739e792704bd5f25d345f219600475b315e",
+      "name": "20260726221207_migrate_weather_refresh_to_supabase_cron.sql"
+    },
+    {
+      "sha256": "3775b6d34d63b0dbd7919b5b251d513e9f7ac099f0f4fd6c943d0156f676b5aa",
+      "name": "20260727030556_migrate_trip_alerts_to_supabase_cron.sql"
+    },
+    {
+      "sha256": "6205b83a904dbdb55bdb255c388694f64826a63a2871f5eb72df1f7471ae4c1f",
+      "name": "20260808210000_make_expedition_primary_theme.sql"
+    },
+    {
+      "sha256": "25554b974e7a87ce828665ae17e40cc8b41f5f3e5edc61f35aeafff08f47d256",
+      "name": "20260824151000_add_crew_identity_responsibilities.sql"
+    },
+    {
+      "sha256": "0471d1a7845632876374a591ca2e38cecb4c3d1b3732bf20d2d4a633aa824bcf",
+      "name": "20260911135747_trip_invitation_authorization_foundation.sql"
+    },
+    {
+      "sha256": "820dbe67f5221584ccb8233b4ea34f3adb18f8050ac4f801521c6d7a6f379b1e",
+      "name": "20260911145134_trip_invitation_server_bridge.sql"
+    },
+    {
+      "sha256": "5a16484b115e94bddd69096efe4bca39888c00029c2832aa570905db8fbf0f2b",
+      "name": "20260911164431_trip_invitation_delivery_and_limits.sql"
+    },
+    {
+      "sha256": "89ecf52874ef94e893e8377d9a38508096a00eb9208d08f7b9c20e6c28eb4d26",
+      "name": "20260912215252_normalize_public_function_execute_privileges.sql"
+    }
+  ],
+  "candidate": "base SHA plus uncommitted ACL normalization migration; not a deployment approval"
+}
