@@ -1,6 +1,6 @@
 // Hosted adapter is constructed only by the explicitly invoked repair CLI.
 import {execFileSync,spawnSync} from 'node:child_process';
-import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,cpSync,rmSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,cpSync,rmSync,existsSync} from 'node:fs';
 import {join,resolve,relative,isAbsolute} from 'node:path';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
@@ -10,7 +10,7 @@ import {invocation,checkClient,checkCertificate,migrationTls} from './sqlProbe.m
 import {projectMatches,IDENTITY_SQL} from './sqlIdentity.mjs';
 import {describeCatalog} from './catalogComparison.mjs';
 import {MODE,REF,SOURCE,FILE,CA_HASH,digest,fail,migrationBytes,runRepair} from './repairContract.mjs';
-import {VERSIONS} from './postMigrationContract.mjs';
+import {runRepairDryRun,childEnvironment,cliDiagnostic} from './repairCli.mjs';
 export const FUNCTIONS_SQL=readFileSync(new URL('./repairFunctions.sql',import.meta.url),'utf8');
 // Both SELECTs run within the same read-only, repeatable-read snapshot.
 export const REPAIR_SQL=IDENTITY_SQL.replace('BEGIN READ ONLY;','BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;').replace(/COMMIT;$/,FUNCTIONS_SQL+'\nCOMMIT;');
@@ -19,21 +19,7 @@ export function parseSnapshot(output) {
   return {row:JSON.parse(lines[0]),functions:JSON.parse(lines[1])};
  }catch{fail('REPAIR_SQL_FAILED');}
 }
-export function parsePending(list,dry) {
- const clean=s=>s.replace(/\x1b\[[0-9;]*m/g,'');
- let rows;
- if(clean(list).trim().startsWith('{')) {
-  try {const data=JSON.parse(clean(list).trim().split(/\r?\n/)[0]);
-   if(!Array.isArray(data.migrations))throw Error();
-   rows=data.migrations.map(r=>{if(typeof r.local!=='string'||typeof r.remote!=='string'||![r.local,r.remote].every(v=>v===''||/^\d{14}$/.test(v)))throw Error();return [null,r.local,r.remote];});
-  }catch{fail('REPAIR_PENDING_SET_MISMATCH');}
- }else rows=[...clean(list).matchAll(/^\s*(\d{14})?\s*\|\s*(\d{14})?\s*\|[^\n]*$/gm)];
- if(JSON.stringify(rows.map(r=>r[1]).filter(Boolean))!==JSON.stringify(VERSIONS)||
-   JSON.stringify(rows.map(r=>r[2]).filter(Boolean))!==JSON.stringify(VERSIONS.slice(0,31)))fail('REPAIR_PENDING_SET_MISMATCH');
- const filenames=clean(dry).match(/\b\d{14}_[a-zA-Z0-9_]+\.sql\b/g)??[];
- if(filenames.length!==1||filenames[0]!==FILE)fail('REPAIR_PENDING_SET_MISMATCH');
- return rows.filter(r=>r[1]&&!r[2]).map(r=>r[1]);
-}
+export {parsePending} from './repairCli.mjs';
 function createHostedTransport(env) {
  if(env.STAGING_REF!==REF)fail('REPAIR_TARGET_MISMATCH');
  let identity;
@@ -50,7 +36,11 @@ function createHostedTransport(env) {
  const evidence=env.STAGING_EVIDENCE_DIR;
  if(!evidence||!isAbsolute(evidence))fail('REPAIR_EVIDENCE_DIRECTORY_REQUIRED');
  const cli=resolve(env.STAGING_CLI_PATH??join(root,'node_modules/supabase/dist/supabase.js'));
- if(execFileSync(process.execPath,[cli,'--version'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim()!=='2.109.1')fail('REPAIR_CLI_VERSION_MISMATCH');
+ if(!existsSync(cli))fail('REPAIR_CLI_NOT_FOUND');
+ try {if(execFileSync(process.execPath,[cli,'--version'],{encoding:'utf8',timeout:10000,stdio:['ignore','pipe','pipe']}).trim()!=='2.109.1')fail('REPAIR_CLI_VERSION_MISMATCH');}
+ catch(e){fail(e.code==='ENOENT'?'REPAIR_CLI_NOT_FOUND':e.message==='REPAIR_CLI_VERSION_MISMATCH'?e.message:'REPAIR_CHILD_START_FAILED');}
+ const diagnostics=[];
+ const preserveDiagnostic=d=>{diagnostics.push(d);mkdirSync(evidence,{recursive:true});writeFileSync(join(evidence,'cli-diagnostics.json'),JSON.stringify({cliVersion:'2.109.1',invocation:'node <pinned-cli> <operation> --db-url <redacted> --workdir <owned-temp>',timeoutMs:120000,events:diagnostics},null,2));};
  const temp=mkdtempSync(join(tmpdir(),'fp-repair-31-32-'));
  const cleanup=()=>{const rel=relative(resolve(tmpdir()),temp);if(!rel.startsWith('..')&&!isAbsolute(rel)&&rel.startsWith('fp-repair-31-32-'))rmSync(temp,{recursive:true,force:true});};
  try {
@@ -96,17 +86,17 @@ function createHostedTransport(env) {
  }
  function cliRun(args) {
   bytes();const tls=migrationTls(env.STAGING_DATABASE_URL,cert,{});
-  const childEnv=Object.fromEntries(Object.entries(env).filter(([k])=>/^(PATH|SYSTEMROOT|WINDIR|TEMP|TMP|HOME|USERPROFILE|APPDATA|LOCALAPPDATA)$/i.test(k)));
-  Object.assign(childEnv,tls.env);
+  const childEnv=childEnvironment(env,tls.env);
   const result=spawnSync(process.execPath,[cli,...args,'--db-url',tls.dbUrl,'--workdir',temp],{env:childEnv,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:120000});
-  if(result.error||result.status!==0)fail('REPAIR_CLI_FAILED');
+  const diagnostic=cliDiagnostic('apply',result,'dry_run_parsed');preserveDiagnostic(diagnostic);
+  if(diagnostic.code!=='OK')fail(diagnostic.code);
   // CLI output is consumed only by strict parsers, never logged.
   return result.stdout+'\n'+result.stderr;
  }
  return {bytes,capture,cleanup,
   preserve:async(label,snapshot)=>{if(!['before','after'].includes(label))fail('REPAIR_EVIDENCE_LABEL');
    mkdirSync(evidence,{recursive:true});writeFileSync(join(evidence,label+'-catalog.json'),JSON.stringify({source:SOURCE,state:label==='before'?'POST_MIGRATION_31_PRE_REPAIR':'POST_MIGRATION_STAGING',fingerprint:snapshot.row.post_schema_hash,...describeCatalog(snapshot.row.catalog_diagnostic.catalog),functions:snapshot.functions},null,2));},
-  dryRun:async()=>parsePending(cliRun(['migration','list']),cliRun(['db','push','--dry-run'])),
+  dryRun:async()=>{const tls=migrationTls(env.STAGING_DATABASE_URL,cert,{});return runRepairDryRun({cli,dbUrl:tls.dbUrl,workdir:temp,env:childEnvironment(env,tls.env),verifyBytes:bytes,preserve:preserveDiagnostic});},
   apply:async()=>{cliRun(['db','push','--yes']);},
  };
 }

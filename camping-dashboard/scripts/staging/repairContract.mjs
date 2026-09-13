@@ -1,3 +1,4 @@
+import {CLI_CODES} from './repairCli.mjs';
 // One transition, not a general migration authorization API. No I/O on import.
 import {createHash} from 'node:crypto';
 import {VERSIONS,POST,POST_SENTINELS,SCHEMA_FINGERPRINT} from './postMigrationContract.mjs';
@@ -90,7 +91,7 @@ export async function runRepair({mode,ref,session,io,now=Date.now,dryRunOnly=fal
  await io.preserve('before',first.a);
  authorizeStart(mode,ref,first,session,now());
  let pending;
- try {pending=await io.dryRun();}catch{fail('REPAIR_DRY_RUN_FAILED');}
+ try {pending=await io.dryRun();}catch(e){fail(CLI_CODES.has(e.message)?e.message:'REPAIR_DRY_RUN_FAILED');}
  pendingSet(pending);
  if(dryRunOnly)return {result:'DRY_RUN_PASS',pending,mutation:false};
  // Fresh A/B, provider and independent cluster checks immediately before mutation.
