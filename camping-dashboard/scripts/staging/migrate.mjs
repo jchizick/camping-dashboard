@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 import { validateTarget, verifyManifest } from './guard.mjs';
 import { requireFreshGate, checkCertificate, migrationTls } from './sqlProbe.mjs';
 import {authorizeMigrationAction} from './postMigrationContract.mjs';
-import {compareTypes,hash} from './typeComparison.mjs';
+import {hash} from './typeComparison.mjs';
+import {compareHostedTypes} from './hostedTypeGate.mjs';
 
 const action = process.argv[2];
 // Target is 32; hosted staging remains at 31. No repair action is enabled here.
@@ -89,9 +90,8 @@ const metadata={source:manifest.sha,ref,cliVersion,schema:'public',
   command:['gen','types','--project-id',ref,'--lang','typescript','--schema','public'],
   expectedSha256:hash(baseline),actualSha256:hash(generated),normalizedEquivalent};
 let comparison;
-try {comparison=compareTypes(baseline,generated);}
+try {comparison=compareHostedTypes(baseline,generated);}
 catch {writeFileSync(resolve(evidence,'comparison.json'),JSON.stringify({...metadata,typeVerdict:'TYPE_COMPARISON_ERROR'},null,2));throw new Error('TYPE_COMPARISON_ERROR');}
-writeFileSync(resolve(evidence,'comparison.json'),JSON.stringify({...metadata,...comparison,
-  typeVerdict:comparison.equivalent?(normalizedEquivalent?'TYPE_EQUIVALENT':'TYPE_NON_SEMANTIC_ONLY'):'TYPE_SUBSTANTIVE_DIFFERENCE'},null,2));
-if (!comparison.equivalent) throw new Error('Generated public type contract differs; artifacts preserved for review');
+writeFileSync(resolve(evidence,'comparison.json'),JSON.stringify({...metadata,...comparison},null,2));
+if (!comparison.equivalent) throw new Error(comparison.typeVerdict);
 console.log('PASS: exact history, schema/grants and generated public types');
