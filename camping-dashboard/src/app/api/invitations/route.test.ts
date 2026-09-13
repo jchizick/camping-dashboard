@@ -5,7 +5,7 @@ const mocks = vi.hoisted(()=>({getUser:vi.fn(),call:vi.fn(),delivery:vi.fn(),ena
 vi.mock('@/lib/serverSupabase',()=>({createRequestSupabaseClient:async()=>({auth:{getUser:mocks.getUser}})}));
 vi.mock('@/lib/invitations/server',()=>({callInvitationBridge:mocks.call,consumeInvitationRates:mocks.consume}));
 vi.mock('@/lib/invitations/config',()=>({invitationConfig:()=>mocks.enabled() ? {provider:'local',origin:'http://localhost',rateSecret:'local-only-invitation-rate-test-key'} : null}));
-import { POST } from './route';
+import { GET, POST } from './route';
 import { createTripInvitationToken } from '@/lib/tripInvitationToken';
 import { InvitationFailure } from '@/lib/invitations/service';
 const request = (body:unknown,origin:string|null='http://localhost') => new NextRequest('http://localhost/api/invitations',{
@@ -95,4 +95,53 @@ it.each(['viewer','editor','other-trip owner'])('returns safe DB denial for %s',
 });
 it.each(['bad','-'.repeat(36),'',null])('rejects invalid target membership %s',async membershipId=>{
   expect((await POST(request({...removal,membershipId}))).status).toBe(400);expect(mocks.call).not.toHaveBeenCalled();
+});
+
+const management = {operation:'list_access',tripId:'trip-a'};
+const snapshot = {people:[{membershipId:'10000000-0000-0000-0000-000000000001',email:'owner@example.test',role:'owner',isCurrentUser:true}],
+  pendingInvitations:[{invitationId:'20000000-0000-0000-0000-000000000001',email:'invitee@example.test',role:'viewer',status:'pending',createdAt:'2026-09-13T00:00:00Z',expiresAt:'2026-09-20T00:00:00Z'}]};
+it('returns an allowlisted management snapshot using only verified actor, without delivery or rate writes',async()=>{
+  mocks.call.mockResolvedValue({...snapshot,token_hash:'private-hash',people:snapshot.people.map(row=>({...row,user_id:'internal',raw_user_meta_data:{private:true}}))});
+  const response=await POST(request(management));
+  expect(response.status).toBe(200);expect(await response.json()).toEqual(snapshot);
+  expect(mocks.call).toHaveBeenCalledExactlyOnceWith('verified-session-id','list_access',{tripId:'trip-a'});
+  expect(mocks.consume).not.toHaveBeenCalled();expect(mocks.delivery).not.toHaveBeenCalled();
+  expect(response.headers.get('cache-control')).toBe('private, no-store');
+});
+it.each(['actorUserId','ownerUserId','callerRole','isOwner','claims','role','token','membershipId'])('rejects management injection %s',async key=>{
+  expect((await POST(request({...management,[key]:'spoofed'}))).status).toBe(400);
+  expect(mocks.call).not.toHaveBeenCalled();expect(mocks.consume).not.toHaveBeenCalled();
+});
+it.each([null,'','bad trip',123,'x'.repeat(201)])('rejects invalid management trip %s',async tripId=>{
+  expect((await POST(request({...management,tripId}))).status).toBe(400);expect(mocks.call).not.toHaveBeenCalled();
+});
+it.each(['viewer','editor','owner of another trip'])('does not disclose management data for %s',async()=>{
+  mocks.call.mockRejectedValue(new InvitationFailure('not_authorized',403));
+  const response=await POST(request(management));expect(response.status).toBe(403);
+  expect(await response.json()).toEqual({code:'not_authorized'});
+});
+it('denies unauthenticated management before privileged read',async()=>{
+  mocks.getUser.mockResolvedValue({data:{user:null},error:null});
+  expect((await POST(request(management))).status).toBe(401);expect(mocks.call).not.toHaveBeenCalled();
+});
+it('fails closed with no privileged query when disabled, and safely handles absent schema',async()=>{
+  mocks.enabled.mockReturnValue(false);
+  expect((await POST(request(management))).status).toBe(503);
+  expect(mocks.call).not.toHaveBeenCalled();expect(mocks.consume).not.toHaveBeenCalled();
+  mocks.enabled.mockReturnValue(true);mocks.call.mockRejectedValue(new Error('private SQL schema information'));
+  const response=await POST(request(management));expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({code:'invitation_failed'});
+});
+it.each([true,false])('availability exposes only the authenticated configuration boolean (%s)',async enabled=>{
+  mocks.enabled.mockReturnValue(enabled);
+  const response=await GET(new NextRequest('http://localhost/api/invitations'));
+  expect(await response.json()).toEqual({tripAccessAvailable:enabled});
+  expect(response.headers.get('cache-control')).toBe('private, no-store');
+  expect(mocks.call).not.toHaveBeenCalled();expect(mocks.consume).not.toHaveBeenCalled();
+});
+it('availability rejects invalid sessions and query parameters',async()=>{
+  mocks.getUser.mockResolvedValue({data:{user:{id:'untrusted'}},error:{message:'bad session'}});
+  expect((await GET(new NextRequest('http://localhost/api/invitations'))).status).toBe(401);
+  expect((await GET(new NextRequest('http://localhost/api/invitations?tripId=trip-a'))).status).toBe(400);
+  expect(mocks.call).not.toHaveBeenCalled();
 });

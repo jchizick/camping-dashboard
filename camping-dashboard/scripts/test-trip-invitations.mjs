@@ -115,6 +115,16 @@ try {
   assert.match(deletion.error, /Only the trip owner/);
   assert.equal(sql(`select deletion_token is null from public.trips where id='${trip}';`), 't');
   console.log('Race PASS: deletion authorization rechecked after membership lock wait');
+  setup();
+  const [ownerChange, managementRead] = await race(
+    `update public.trip_members set role='viewer' where trip_id='${trip}' and user_id='00000000-0000-0000-0000-000000000981';`,
+    `set local role service_role; select public.trip_invitation_bridge('00000000-0000-0000-0000-000000000981','list_access',jsonb_build_object('tripId','${trip}'));`,
+  );
+  assert.equal(ownerChange.code, 0, ownerChange.error);
+  assert.notEqual(managementRead.code, 0, 'A demoted owner must not read the roster after waiting');
+  assert.match(managementRead.error, /Owner access required/);
+  assert.doesNotMatch(managementRead.output, /people|pendingInvitations|example\.test/);
+  console.log('Race PASS: management read rechecks ownership after membership lock wait');
 } finally {
   clean();
 }

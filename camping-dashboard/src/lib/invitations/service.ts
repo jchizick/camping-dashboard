@@ -3,14 +3,16 @@ import { createTripInvitationToken, hashTripInvitationToken } from '@/lib/tripIn
 import { DeliveryError, type InvitationDelivery, type DeliveryReceipt } from './delivery';
 import type { LimitOperation } from './rateLimit';
 import type { AccessRemovalResult, InvitationSummary, InvitationView } from './contracts';
+import { parseAccessManagement } from './management';
 
-export type InvitationOperation = 'create' | 'resend' | 'revoke' | 'inspect' | 'accept' | 'remove_access';
+export type InvitationOperation = 'create' | 'resend' | 'revoke' | 'inspect' | 'accept' | 'remove_access' | 'list_access';
 export type BridgeCall = (actor: string, operation: InvitationOperation | 'delivery_context' | 'delivery_start' | 'delivery_finish', input: Record<string, string>) => Promise<unknown>;
 export class InvitationFailure extends Error {
   constructor(public code: string, public status: number, public retryAfter?:number) { super(code); }
 }
 function parseInput(operation: InvitationOperation, body: Record<string, unknown>): Record<string,string> {
   const keys = operation === 'create' ? ['tripId','email','role']
+    : operation === 'list_access' ? ['tripId']
     : operation === 'remove_access' ? ['tripId','membershipId']
     : operation === 'resend' || operation === 'revoke' ? ['tripId','invitationId'] : ['token'];
   if (Object.keys(body).some(key => !keys.includes(key)) || keys.some(key =>
@@ -38,6 +40,14 @@ export async function removeTripAccess(call: BridgeCall, actor: string | null, b
 
 export async function runInvitationOperation(deps: { call: BridgeCall; delivery: InvitationDelivery; origin: string; provider:'local'|'resend'; limit:LimitOperation },
   actor: string | null, operation: InvitationOperation, body: Record<string,unknown>) {
+  // Management reads do not consume durable mutation/delivery rate buckets.
+  if (operation === 'list_access') {
+    if (!actor) throw new InvitationFailure('not_authenticated',401);
+    const input = parseInput(operation,body);
+    const snapshot = parseAccessManagement(await deps.call(actor,operation,input));
+    if (!snapshot) throw new InvitationFailure('invitation_failed',503);
+    return snapshot;
+  }
   if (actor) await deps.limit(actor,operation);
   if (operation === 'remove_access') return removeTripAccess(deps.call,actor,body);
   const input = parseInput(operation, body);

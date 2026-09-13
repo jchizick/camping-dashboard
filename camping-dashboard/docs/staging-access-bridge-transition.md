@@ -1,5 +1,9 @@
 # Guarded staging access bridge: 32 to 33
 
+**Historical contract:** current final staging verification requires 34. State 33
+is now only the pre-state for the explicit management-read transition. See
+[staging-access-management-transition.md](staging-access-management-transition.md).
+
 Packaging note: the seven-file task list below is historical. [The authoritative combined package](trip-access-removal-package.md) defines the full product-path, security-regression and transition manifest and final clean-checkout gate.
 
 Local tooling candidate; **no hosted execution authorized by this document**. The product removal/migration review is in `trip-access-removal-security-review.md`. Existing server code, migration bytes and the completed 31-to-32 repair are unchanged.

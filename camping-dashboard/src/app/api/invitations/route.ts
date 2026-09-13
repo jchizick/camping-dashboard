@@ -11,6 +11,17 @@ export const dynamic = 'force-dynamic';
 const headers = { 'Cache-Control':'private, no-store', 'Referrer-Policy':'no-referrer', 'X-Robots-Tag':'noindex, nofollow' };
 const reply = (body: unknown,status = 200) => NextResponse.json(body,{status,headers});
 
+/** The client-rendered workspace may request this boolean without a privileged DB read. */
+export async function GET(request: NextRequest) {
+  if (request.nextUrl.search || request.headers.get('sec-fetch-site') === 'cross-site') return reply({code:'invalid_request'},400);
+  try {
+    const client = await createRequestSupabaseClient();
+    const {data:{user},error} = await client.auth.getUser();
+    if (error || !user) return reply({code:'not_authenticated'},401);
+    return reply({tripAccessAvailable:invitationConfig() !== null});
+  } catch { return reply({code:'invitation_failed'},503); }
+}
+
 async function boundedBody(request: NextRequest) {
   const reader = request.body?.getReader();
   if (!reader) throw new InvitationFailure('invalid_request',400);
@@ -34,13 +45,14 @@ export async function POST(request: NextRequest) {
   if (!config) return reply({code:'delivery_unavailable'},503);
   try {
     const limiter=invitationLimiter(config.rateSecret,consumeInvitationRates);
-    await limiter.network(request.headers);
     if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({code:'invalid_request'},400);
     const text = await boundedBody(request);
     const body = JSON.parse(text);
     if (!body || typeof body !== 'object' || Array.isArray(body)) return reply({code:'invalid_request'},400);
     const {operation,...input} = body;
-    if (!['create','resend','revoke','inspect','accept','remove_access'].includes(operation)) return reply({code:'invalid_request'},400);
+    // Reads intentionally do not write the durable network/actor rate buckets.
+    if (operation !== 'list_access') await limiter.network(request.headers);
+    if (!['create','resend','revoke','inspect','accept','remove_access','list_access'].includes(operation)) return reply({code:'invalid_request'},400);
     const client = await createRequestSupabaseClient();
     const {data:{user},error} = await client.auth.getUser();
     const actor = error ? null : user?.id ?? null;

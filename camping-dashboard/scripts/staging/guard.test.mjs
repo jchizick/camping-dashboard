@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateTarget, validateHistory, verifyManifest, PROTECTED } from './guard.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync,mkdtempSync,mkdirSync,writeFileSync,rmSync } from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,resolve,relative,isAbsolute} from 'node:path';
+import {exactMigrationBytes} from './accessRemovalContract.mjs';
 const ref = 'abcdefghijklmnopqrst';
 const direct = `postgresql://postgres:synthetic@db.${ref}.supabase.co:5432/postgres?sslmode=verify-full`;
 test('accepts dedicated direct identity', () => assert.equal(validateTarget(ref,direct).mode,'direct'));
@@ -23,6 +26,13 @@ test('rejects divergent, missing-middle and extra histories',()=>{ for (const h 
 const manifest = JSON.parse(readFileSync(new URL('./migrations.json',import.meta.url),'utf8'));
 const root = fileURLToPath(new URL('../../',import.meta.url));
 import { fileURLToPath } from 'node:url';
-test('clean archive matches all 32 candidate hashes',()=>assert.equal(verifyManifest(root,manifest).length,32));
+test('frozen 32 archive matches hashes independently of later source migrations',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'fp-guard32-'));
+ try{
+  mkdirSync(join(dir,'supabase/migrations'),{recursive:true});
+  for(const e of manifest.migrations)writeFileSync(join(dir,'supabase/migrations',e.name),exactMigrationBytes(readFileSync(join(root,'supabase/migrations',e.name)),e.sha256));
+  assert.equal(verifyManifest(dir,manifest).length,32);
+ }finally{const rel=relative(resolve(tmpdir()),resolve(dir));if(!rel.startsWith('..')&&!isAbsolute(rel)&&rel.startsWith('fp-guard32-'))rmSync(dir,{recursive:true,force:true});}
+});
 test('rejects modified migration hash',()=>{ const copy=structuredClone(manifest); copy.migrations[0].sha256='0'.repeat(64); assert.throws(()=>verifyManifest(root,copy)); });
 test('rejects wrong baseline manifest',()=>assert.throws(()=>verifyManifest(root,{...manifest,sha:'unapproved'})));

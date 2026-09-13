@@ -1,0 +1,60 @@
+// Local-only replay gate. Accepts no hosted target or credentials.
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {mkdirSync,mkdtempSync,readFileSync,readdirSync,writeFileSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {captureLocalCatalog} from './staging/catalogReplay.mjs';
+import {compareCatalogs} from './staging/catalogComparison.mjs';
+import {normalizeTypes} from './staging/localReplayEvidence.mjs';
+import {compareTypes} from './staging/typeComparison.mjs';
+import {exactMigrationBytes} from './staging/accessRemovalContract.mjs';
+
+assert.deepEqual(process.argv.slice(2),['--reset-disposable']);
+const root=resolve(import.meta.dirname,'..');
+const cli=join(root,'node_modules/supabase/dist/supabase.js');
+const container='supabase_db_invitation-phase1-test';
+const output=join(root,'output/trip-access-management');
+mkdirSync(output,{recursive:true});
+const project=mkdtempSync(join(output,'replay-'));
+mkdirSync(join(project,'supabase/migrations'),{recursive:true});
+const base=JSON.parse(readFileSync(join(root,'scripts/staging/migrations.json'),'utf8'));
+const extension=JSON.parse(readFileSync(join(root,'scripts/staging/accessRemovalMigration.json'),'utf8'));
+const entries=[...base.migrations,extension.migration];
+const candidate='20260913204351_trip_access_management_read.sql';
+assert.deepEqual(readdirSync(join(root,'supabase/migrations')).filter(n=>n.endsWith('.sql')).sort(),[...entries.map(e=>e.name),candidate]);
+// Reuse the reviewed hash-checked reconstruction of historical checkout EOL bytes.
+for(const entry of entries)writeFileSync(join(project,'supabase/migrations',entry.name),
+  exactMigrationBytes(readFileSync(join(root,'supabase/migrations',entry.name)),entry.sha256));
+writeFileSync(join(project,'supabase/migrations',candidate),readFileSync(join(root,'supabase/migrations',candidate)));
+const config=readFileSync(join(root,'supabase/config.toml'),'utf8');
+assert.match(config,/^project_id = "camping-dashboard"$/m);
+writeFileSync(join(project,'supabase/config.toml'),config.replace(/^project_id = "camping-dashboard"$/m,'project_id = "invitation-phase1-test"'));
+const command=args=>execFileSync(process.execPath,[cli,...args,'--workdir',project],{cwd:root,encoding:'utf8',timeout:300000,maxBuffer:16*1024*1024});
+assert.equal(execFileSync('docker',['inspect','--format','{{.State.Running}}',container],{encoding:'utf8'}).trim(),'true');
+const query=sql=>execFileSync('docker',['exec','-i',container,'psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U','postgres','-d','postgres'],{input:sql,encoding:'utf8',timeout:30000});
+console.log('Replaying fresh local history through migration 33');
+command(['db','reset','--local','--no-seed','--yes','--version','20260913131931']);
+const before=captureLocalCatalog(query);
+assert.equal(before.history.length,33);
+writeFileSync(join(output,'catalog-33.json'),JSON.stringify(before,null,2));
+assert.equal(before.catalog.fingerprint,'58c4311b982fe8716cbc19ea5c687093');
+console.log('Replaying fresh local history through migration 34');
+command(['db','reset','--local','--no-seed','--yes']);
+const after=captureLocalCatalog(query);
+writeFileSync(join(output,'catalog-34.json'),JSON.stringify(after,null,2));
+assert.equal(after.history.length,34);
+assert.equal(after.history.at(-1),'20260913204351');
+const diff=compareCatalogs(before.catalog.catalog,after.catalog.catalog);
+writeFileSync(join(output,'catalog-diff.json'),JSON.stringify(diff,null,2));
+assert.equal(diff.differences.length,1,'Unrelated catalog drift: STOP');
+assert.equal(diff.differences[0].kind,'function');
+assert.match(diff.differences[0].key,/^public\.trip_invitation_bridge\(/);
+const generated=command(['gen','types','--local','--lang','typescript','--schema','public']);
+writeFileSync(join(output,'generated-public.ts'),generated);
+const baseline=readFileSync(join(root,'src/types/supabase.ts'),'utf8');
+const types={normalized:normalizeTypes(baseline)===normalizeTypes(generated),structural:compareTypes(baseline,generated).equivalent};
+assert.deepEqual(types,{normalized:true,structural:true});
+const result={migrations:after.history.length,oldFingerprint:before.catalog.fingerprint,newFingerprint:after.catalog.fingerprint,
+  changedComponent:diff.differences[0].key,types};
+writeFileSync(join(output,'verification.json'),JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result));
