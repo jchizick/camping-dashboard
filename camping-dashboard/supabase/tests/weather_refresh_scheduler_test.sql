@@ -1,5 +1,30 @@
 begin;
-select plan(50);
+-- This fixture supplies America/Toronto as its provider timezone. Its date-only
+-- trip/forecast values must share that calendar, regardless of the caller's zone.
+-- Transaction-local: rollback restores the incoming session setting.
+set local timezone = 'America/Toronto';
+select plan(54);
+
+select is(
+  app_private.weather_local_date('UTC', timestamptz '2026-09-13 01:30:00+00'),
+  date '2026-09-13',
+  'boundary instant belongs to September 13 in UTC'
+);
+select is(
+  app_private.weather_local_date('America/Toronto', timestamptz '2026-09-13 01:30:00+00'),
+  date '2026-09-12',
+  'provider calendar is the previous day in Toronto'
+);
+select is(
+  (timestamptz '2026-09-13 01:30:00+00')::date,
+  app_private.weather_local_date('America/Toronto', timestamptz '2026-09-13 01:30:00+00'),
+  'fixture session calendar matches its provider at the UTC boundary'
+);
+select is(
+  app_private.weather_local_date('America/Toronto', timestamptz '2026-01-15 02:30:00+00'),
+  date '2026-01-14',
+  'provider calendar also handles the winter UTC boundary'
+);
 
 select has_table(
   'public',
