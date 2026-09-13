@@ -18,6 +18,8 @@ export interface InvitationSummary {
   expiresAt: string;
   tripName: string;
 }
+/** Idempotent completion; does not disclose whether the target membership existed. */
+export interface AccessRemovalResult { outcome: 'access_removed' }
 /** Only the token-free invitation route may override the ordinary sign-out destination. */
 export function getInvitationReturnPath(value?: string): string | null {
   return value === '/invite' ? value : null;

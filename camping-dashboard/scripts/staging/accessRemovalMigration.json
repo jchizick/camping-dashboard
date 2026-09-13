@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "baseCount": 32,
+  "baseHistorySha256": "3e2288e2034b1492cccfe54509b26bfb897e601ebe1a70a508c8cfdcb41da412",
+  "migration": {
+    "name": "20260913131931_trip_access_removal_bridge.sql",
+    "sha256": "635291e2b6b560c3f499d4aa828c28f531eb9e0b10b1069459f10508032e6590"
+  }
+}

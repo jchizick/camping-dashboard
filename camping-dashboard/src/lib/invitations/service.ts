@@ -2,15 +2,16 @@ import 'server-only';
 import { createTripInvitationToken, hashTripInvitationToken } from '@/lib/tripInvitationToken';
 import { DeliveryError, type InvitationDelivery, type DeliveryReceipt } from './delivery';
 import type { LimitOperation } from './rateLimit';
-import type { InvitationSummary, InvitationView } from './contracts';
+import type { AccessRemovalResult, InvitationSummary, InvitationView } from './contracts';
 
-export type InvitationOperation = 'create' | 'resend' | 'revoke' | 'inspect' | 'accept';
+export type InvitationOperation = 'create' | 'resend' | 'revoke' | 'inspect' | 'accept' | 'remove_access';
 export type BridgeCall = (actor: string, operation: InvitationOperation | 'delivery_context' | 'delivery_start' | 'delivery_finish', input: Record<string, string>) => Promise<unknown>;
 export class InvitationFailure extends Error {
   constructor(public code: string, public status: number, public retryAfter?:number) { super(code); }
 }
 function parseInput(operation: InvitationOperation, body: Record<string, unknown>): Record<string,string> {
   const keys = operation === 'create' ? ['tripId','email','role']
+    : operation === 'remove_access' ? ['tripId','membershipId']
     : operation === 'resend' || operation === 'revoke' ? ['tripId','invitationId'] : ['token'];
   if (Object.keys(body).some(key => !keys.includes(key)) || keys.some(key =>
     key !== 'role' && (typeof body[key] !== 'string' || !(body[key] as string).length))) {
@@ -18,14 +19,27 @@ function parseInput(operation: InvitationOperation, body: Record<string, unknown
   }
   if ('tripId' in body && (typeof body.tripId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(body.tripId))) throw new InvitationFailure('invalid_request',400);
   if ('invitationId' in body && (typeof body.invitationId !== 'string' || !/^[a-f0-9-]{36}$/i.test(body.invitationId))) throw new InvitationFailure('invalid_request',400);
+  if (operation === 'remove_access' && !/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(String(body.membershipId))) throw new InvitationFailure('invalid_request',400);
   if (operation === 'create' && ((body.role !== undefined && body.role !== 'viewer' && body.role !== 'editor')
     || typeof body.email !== 'string' || body.email.length > 254)) throw new InvitationFailure('invalid_request',400);
   return { ...body, ...(operation === 'create' ? { role: body.role ?? 'viewer' } : {}) } as Record<string,string>;
 }
 
+/** actor must come from server auth.getUser(), never request JSON or decoded JWT claims. */
+export async function removeTripAccess(call: BridgeCall, actor: string | null, body: Record<string,unknown>): Promise<AccessRemovalResult> {
+  if (!actor) throw new InvitationFailure('not_authenticated',401);
+  const input = parseInput('remove_access',body);
+  const result = await call(actor,'remove_access',input);
+  if (!result || typeof result !== 'object' || !('outcome' in result) || result.outcome !== 'access_removed') {
+    throw new InvitationFailure('invitation_failed',503);
+  }
+  return {outcome:'access_removed'};
+}
+
 export async function runInvitationOperation(deps: { call: BridgeCall; delivery: InvitationDelivery; origin: string; provider:'local'|'resend'; limit:LimitOperation },
   actor: string | null, operation: InvitationOperation, body: Record<string,unknown>) {
   if (actor) await deps.limit(actor,operation);
+  if (operation === 'remove_access') return removeTripAccess(deps.call,actor,body);
   const input = parseInput(operation, body);
   if (operation === 'inspect' || operation === 'accept') {
     if (operation === 'accept' && !actor) throw new InvitationFailure('not_authenticated',401);

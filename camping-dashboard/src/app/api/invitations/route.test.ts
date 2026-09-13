@@ -7,6 +7,7 @@ vi.mock('@/lib/invitations/server',()=>({callInvitationBridge:mocks.call,consume
 vi.mock('@/lib/invitations/config',()=>({invitationConfig:()=>mocks.enabled() ? {provider:'local',origin:'http://localhost',rateSecret:'local-only-invitation-rate-test-key'} : null}));
 import { POST } from './route';
 import { createTripInvitationToken } from '@/lib/tripInvitationToken';
+import { InvitationFailure } from '@/lib/invitations/service';
 const request = (body:unknown,origin:string|null='http://localhost') => new NextRequest('http://localhost/api/invitations',{
   method:'POST',headers:{'content-type':'application/json',...(origin ? {origin} : {})},body:JSON.stringify(body)});
 beforeEach(()=>{mocks.consume.mockResolvedValue({allowed:true,retryAfter:0});mocks.enabled.mockReturnValue(true);mocks.getUser.mockResolvedValue({data:{user:{id:'verified-session-id'}},error:null});mocks.call.mockResolvedValue({outcome:'pending'});});
@@ -48,4 +49,50 @@ it('fails closed if distributed rate storage is unavailable',async()=>{
   const response=await POST(request({operation:'inspect',token:'invalid'}));
   expect(response.status).toBe(503);expect(await response.json()).toEqual({code:'invitation_failed'});
   expect(mocks.getUser).not.toHaveBeenCalled();
+});
+
+const removal={operation:'remove_access',tripId:'trip-a',membershipId:'00000000-0000-0000-0000-000000000123'};
+it('removes through the verified session and existing bridge with a minimal response',async()=>{
+  mocks.call.mockResolvedValue({outcome:'access_removed',privateExtra:'discarded'});
+  const response=await POST(request(removal));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({outcome:'access_removed'});
+  expect(mocks.call).toHaveBeenCalledExactlyOnceWith('verified-session-id','remove_access',{
+    tripId:removal.tripId,membershipId:removal.membershipId,
+  });
+  expect(response.headers.get('cache-control')).toBe('private, no-store');
+});
+it.each(['actorUserId','callerUserId','ownerId','ownerUserId','callerRole','isOwner','user_id','role','claims'])('rejects removal identity injection: %s',async key=>{
+  expect((await POST(request({...removal,[key]:'owner'}))).status).toBe(400);
+  expect(mocks.call).not.toHaveBeenCalled();
+});
+it('rejects arbitrary claims and cross-site removal before privileged mutation',async()=>{
+  expect((await POST(request({...removal,claims:{sub:'owner',role:'service_role'}}))).status).toBe(400);
+  expect(mocks.call).not.toHaveBeenCalled();
+  mocks.getUser.mockClear();
+  const crossSite=request(removal);crossSite.headers.set('sec-fetch-site','cross-site');
+  expect((await POST(crossSite)).status).toBe(403);
+  expect(mocks.getUser).not.toHaveBeenCalled();expect(mocks.call).not.toHaveBeenCalled();
+});
+it.each([null,{message:'invalid or foreign-project session'}])('rejects absent/invalid removal session (%s)',async error=>{
+  mocks.getUser.mockResolvedValue({data:{user:error ? {id:'untrusted'} : null},error});
+  expect((await POST(request(removal))).status).toBe(401);expect(mocks.call).not.toHaveBeenCalled();
+});
+it.each(['https://foreign.test',null])('rejects cross-origin removal (%s)',async origin=>{
+  expect((await POST(request(removal,origin))).status).toBe(403);expect(mocks.getUser).not.toHaveBeenCalled();
+});
+it('keeps removal dormant and rejects missing schema or unexpected bridge responses',async()=>{
+  mocks.enabled.mockReturnValue(false);
+  expect((await POST(request(removal))).status).toBe(503);expect(mocks.getUser).not.toHaveBeenCalled();
+  mocks.enabled.mockReturnValue(true);mocks.call.mockRejectedValue(new InvitationFailure('invitation_failed',503));
+  expect(await (await POST(request(removal))).json()).toEqual({code:'invitation_failed'});
+  mocks.call.mockResolvedValue(null);expect((await POST(request(removal))).status).toBe(503);
+});
+it.each(['viewer','editor','other-trip owner'])('returns safe DB denial for %s',async()=>{
+  mocks.call.mockRejectedValue(new InvitationFailure('not_authorized',403));
+  const response=await POST(request(removal));
+  expect(response.status).toBe(403);expect(await response.json()).toEqual({code:'not_authorized'});
+});
+it.each(['bad','-'.repeat(36),'',null])('rejects invalid target membership %s',async membershipId=>{
+  expect((await POST(request({...removal,membershipId}))).status).toBe(400);expect(mocks.call).not.toHaveBeenCalled();
 });

@@ -50,8 +50,8 @@ it.skipIf(!enabled)('proves fake delivery → read-only check → explicit accep
   expect(sql(`select role from public.trip_members where trip_id='${tripId}' and user_id='${invitee}'`)).toBe('editor');
   expect(sql(`select count(*) from public.crew_members where trip_id='${tripId}'`)).toBe('0');
   expect(await run(invitee,'accept',{token})).toEqual({outcome:'already_accepted',trip_id:tripId});
-  sql(`begin; select set_config('request.jwt.claim.sub','${owner}',true);
-    select app_private.remove_trip_access('${tripId}',(select id from public.trip_members where trip_id='${tripId}' and user_id='${invitee}')); commit;`);
+  const membershipId=sql(`select id from public.trip_members where trip_id='${tripId}' and user_id='${invitee}'`);
+  expect(await run(owner,'remove_access',{tripId,membershipId})).toEqual({outcome:'access_removed'});
   expect(await run(invitee,'accept',{token})).toEqual({outcome:'already_accepted',trip_id:null});
   expect(await run(invitee,'inspect',{token})).toEqual({outcome:'already_accepted',trip_id:null});
   expect(sql(`select count(*) from public.trip_members where trip_id='${tripId}' and user_id='${invitee}'`)).toBe('0');

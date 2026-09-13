@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const body = JSON.parse(text);
     if (!body || typeof body !== 'object' || Array.isArray(body)) return reply({code:'invalid_request'},400);
     const {operation,...input} = body;
-    if (!['create','resend','revoke','inspect','accept'].includes(operation)) return reply({code:'invalid_request'},400);
+    if (!['create','resend','revoke','inspect','accept','remove_access'].includes(operation)) return reply({code:'invalid_request'},400);
     const client = await createRequestSupabaseClient();
     const {data:{user},error} = await client.auth.getUser();
     const actor = error ? null : user?.id ?? null;
