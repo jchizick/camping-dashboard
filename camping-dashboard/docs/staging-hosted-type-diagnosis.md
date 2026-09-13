@@ -1,5 +1,9 @@
 # Preserved hosted type diagnosis
 
+Historical diagnosis below records the original 14.5 artifact and the then-rejected comparator. The subsequent exact-version gate was deployed, then safely stopped a later window when fresh metadata became **14.17**. That artifact has SHA-256 `43923592af14b186f82f0c58ecaaa54a617d518dac8d27dbb47e0c118d618c59`; structure, all five constraints, exact 32 history, ACLs and strict catalog still passed. No deployment occurred.
+
+The current candidate in [staging-hosted-type-gate.md](staging-hosted-type-gate.md) supersedes the proposed exact-version rule below. Installed Supabase JS/PostgREST JS 2.98.0 enables the same two type capabilities for both versions; compiler tests prove this against installed declarations. Strictly formatted 14.x metadata maps to `postgrest-14-compatible`, with the observed value retained, audited dependency versions enforced, and other server families/prereleases rejected. This is client capability equivalence, not a promise that every server-runtime upgrade is harmless. Schema/catalog authorization remains independent. Neither original nor new metadata divergence was caused by migration 32.
+
 Verdict: **HOSTED TYPE DIFFERENCE — UNDERSTOOD**. Classification **B**, for the database contract and current application: generator representation/metadata divergence, not demonstrated schema drift. The PostgREST capability metadata has a real SDK typing effect and must be checked separately, not discarded as universally meaningless.
 
 No acceptance rule was changed. The existing gate still rejects this pair. Recommendation: **READY TO FIX TYPE GATE**, through a separately reviewed narrow change; not permission to deploy.

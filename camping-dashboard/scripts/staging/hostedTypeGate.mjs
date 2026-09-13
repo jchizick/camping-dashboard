@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import {compareTypes,hash,describeTypeDifferences} from './typeComparison.mjs';
+import {classifyPostgrestVersion,verifyInstalledClient,CAPABILITY_PROFILE,CLIENT_VERSIONS} from './postgrestCapabilities.mjs';
 
-export const POSTGREST_VERSION='14.5';
 export const CONSTRAINTS=Object.freeze({Tables:'TableName',TablesInsert:'TableName',TablesUpdate:'TableName',Enums:'EnumName',CompositeTypes:'CompositeTypeName'});
 const name=n=>n?.name&&(ts.isIdentifier(n.name)||ts.isStringLiteral(n.name))?n.name.text:null;
 // AST tree shape preserves precedence: (A | B)[] is not A | B[]. Only
@@ -20,7 +20,7 @@ function prepare(text,hosted){
  const databases=source.statements.filter(s=>ts.isTypeAliasDeclaration(s)&&s.name.text==='Database');
  const db=databases.length===1&&ts.isTypeLiteralNode(databases[0].type)?databases[0]:null;
  const members=db?.type.members.filter(m=>name(m)==='__InternalSupabase')??[];
- let code=hosted?'POSTGREST_METADATA_MISSING':'LOCAL_CAPABILITY_METADATA_NOT_APPLICABLE',value=null;
+ let code=hosted?'POSTGREST_METADATA_MISSING':'LOCAL_CAPABILITY_METADATA_NOT_APPLICABLE',value=null,profile=null,capabilities=null;
  if(members.length){
   code='POSTGREST_VERSION_INVALID';
   const member=members[0];
@@ -28,11 +28,12 @@ function prepare(text,hosted){
    const version=member.type.members[0];
    if(ts.isPropertySignature(version)&&name(version)==='PostgrestVersion'&&!version.questionToken&&!version.modifiers?.length&&version.type&&ts.isLiteralTypeNode(version.type)&&ts.isStringLiteral(version.type.literal)){
     value=version.type.literal.text;
-    code=/^\d+\.\d+$/.test(value)?value===POSTGREST_VERSION?'POSTGREST_CAPABILITY_PASS':'POSTGREST_VERSION_MISMATCH':'POSTGREST_VERSION_INVALID';
+    const result=classifyPostgrestVersion(value);
+    code=result.verdict;profile=result.profile;capabilities=result.capabilities??null;
    }
   }
  }
- const capability={verdict:code,path:'Database.__InternalSupabase.PostgrestVersion',expected:hosted?POSTGREST_VERSION:'absent or '+POSTGREST_VERSION,actual:value,contract:'capability metadata'};
+ const capability={verdict:code,path:'Database.__InternalSupabase.PostgrestVersion',expected:hosted?CAPABILITY_PROFILE:'absent or '+CAPABILITY_PROFILE,actual:value,profile,capabilities,clientVersions:CLIENT_VERSIONS,contract:'capability metadata'};
  const constraints={};
  const transformed=ts.transform(source,[context=>node=>ts.visitEachChild(node,statement=>{
   if(!ts.isTypeAliasDeclaration(statement))return statement;
@@ -58,6 +59,7 @@ function prepare(text,hosted){
  return {structural,capability,constraints};
 }
 export function compareHostedTypes(expected,actual){
+ verifyInstalledClient();
  const a=prepare(expected,false),b=prepare(actual,true);
  const comparison=compareTypes(a.structural,b.structural);
  const constraintResults=[...new Set([...Object.keys(a.constraints),...Object.keys(b.constraints)])].sort().map(path=>({path,equivalent:a.constraints[path]===b.constraints[path]}));
