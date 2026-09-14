@@ -5,8 +5,8 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(()=>({replace:vi.fn(),signIn:vi.fn(),signOut:vi.fn(),fetch:vi.fn()}));
 const token = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 vi.mock('next/navigation',()=>({useParams:()=>({token:'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'}),useRouter:()=>({replace:mocks.replace})}));
-vi.mock('@/lib/authContext',()=>({useAuth:()=>({signIn:mocks.signIn,switchInvitationAccount:mocks.signOut})}));
-import InvitationLanding from './InvitationLanding';
+vi.mock('@/lib/authContext',()=>({useAuth:()=>({user:{email:'invitee@example.test'},signIn:mocks.signIn,switchInvitationAccount:mocks.signOut})}));
+import InvitationLanding, { formatInvitationExpiry } from './InvitationLanding';
 const response = (body:unknown,status=200) => ({ok:status===200,status,json:async()=>body});
 beforeEach(()=>{sessionStorage.clear();window.history.replaceState({},'', '/invite#'+token);vi.stubGlobal('fetch',mocks.fetch);});
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
@@ -88,4 +88,30 @@ it('ignores an older acceptance response after a different invitation fragment a
   await screen.findByText('Second');finish(response({outcome:'expired'}));
   await waitFor(()=>expect(screen.getByRole('button',{name:'Accept invitation'}).hasAttribute('disabled')).toBe(false));
   expect(screen.getByText('Second')).toBeTruthy();expect(sessionStorage.length).toBe(1);expect(mocks.replace).not.toHaveBeenCalled();
+});
+
+it('presents the existing account, trip, role and expiry without accepting automatically',async()=>{
+  mocks.fetch.mockResolvedValue(response({outcome:'pending',tripName:'Pine Lake Weekend',role:'editor',expiresAt:'2026-09-20T12:00:00Z'}));
+  render(<InvitationLanding/>);
+  expect(await screen.findByRole('heading',{name:'Pine Lake Weekend'})).toBeTruthy();
+  expect(screen.getByText('Signed in as invitee@example.test')).toBeTruthy();
+  expect(screen.getByText('You’re invited as a editor.')).toBeTruthy();
+  expect(screen.getByText(`Expires ${formatInvitationExpiry('2026-09-20T12:00:00Z')}`)).toBeTruthy();
+  expect(screen.getByRole('main').querySelectorAll('h1')).toHaveLength(1);
+  expect(mocks.fetch).toHaveBeenCalledTimes(1);
+  expect(document.body.textContent).not.toContain(token);
+});
+
+it('formats expiry in local time with a short date and no seconds',()=>{
+  const local = new Date(2026,8,20,14,0,37);
+  expect(formatInvitationExpiry(local.toISOString(),'en-US')).toBe('Sep 20 at 2:00 PM');
+});
+
+it.each([undefined,'','invalid'])('omits unusable expiry %s',async(expiresAt)=>{
+  expect(formatInvitationExpiry(expiresAt)).toBeNull();
+  mocks.fetch.mockResolvedValue(response({outcome:'pending',tripName:'Test',role:'viewer',expiresAt}));
+  render(<InvitationLanding/>);
+  await screen.findByText('Accept invitation');
+  expect(screen.queryByText(/^Expires /)).toBeNull();
+  expect(document.body.textContent).not.toContain('Invalid Date');
 });

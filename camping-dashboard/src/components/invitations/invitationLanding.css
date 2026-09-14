@@ -1,6 +1,31 @@
-.invitation-landing { max-width: 38rem; margin: 0 auto; padding: 4rem 1.5rem; color: #e8e9e7; }
-.invitation-landing h1, .invitation-landing h2 { font-family: var(--font-display-face), sans-serif; }
-.invitation-landing p { margin: 1rem 0; }
-.invitation-landing button { padding: .65rem 1rem; border: 1px solid #656b65; border-radius: .35rem; background: #292e2a; color: inherit; }
-.invitation-landing button:focus-visible { outline: 2px solid #f2c77f; outline-offset: 3px; }
-.invitation-landing button:disabled { opacity: .6; }
+/* /invite owns its surface: it does not mount the workspace theme. */
+.invitation-landing {
+  --app-bg: #111814;
+  --text-main: #f6f2e7;
+  --text-muted: #b7c3c5;
+  --border-subtle: #656b65;
+  --focus-ring: #f2c77f;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(32px, 7vw, 80px) 24px 48px;
+  background: var(--app-bg);
+  color: var(--text-main);
+  color-scheme: dark;
+  font: 400 16px/1.6 var(--font-ui-face), sans-serif;
+}
+.invitation-landing__content { max-width: 36rem; margin-inline: auto; overflow-wrap: anywhere; }
+.invitation-landing p { margin: 16px 0; }
+.invitation-landing .invitation-landing__brand { margin: 0 0 32px; color: var(--text-muted); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.invitation-landing h1 { margin: 0 0 24px; font: 800 36px/1.1 var(--font-display-face), sans-serif; }
+.invitation-landing h2 { margin: 0 0 12px; font: 800 26px/1.2 var(--font-display-face), sans-serif; }
+.invitation-landing .invitation-landing__context { color: var(--text-muted); font-size: 14px; }
+.invitation-landing .invitation-landing__warning,
+.invitation-landing [role="alert"] { color: var(--focus-ring); border-left: 2px solid currentColor; padding-left: 14px; }
+.invitation-landing button { min-height: 48px; max-width: 100%; margin-top: 8px; padding: 10px 18px; border: 1px solid var(--text-main); border-radius: 6px; background: var(--text-main); color: var(--app-bg); font: 600 15px/1.5 var(--font-ui-face), sans-serif; cursor: pointer; }
+.invitation-landing button.invitation-landing__secondary { background: transparent; color: var(--text-main); border-color: var(--border-subtle); }
+.invitation-landing button:not(:disabled):hover { border-color: var(--focus-ring); }
+.invitation-landing button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+.invitation-landing button:disabled { background: #292e2a; color: var(--text-muted); border-color: var(--border-subtle); cursor: wait; }
+@media (max-width: 480px) {
+  .invitation-landing button { width: 100%; }
+}
