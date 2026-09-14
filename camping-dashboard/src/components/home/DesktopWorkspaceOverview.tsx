@@ -10,6 +10,7 @@ import DesktopConditions from './DesktopConditions';
 import { formatTripDuration, getTripDuration } from '@/lib/tripDuration';
 import type { HomeViewModel } from './homeViewModel';
 import './desktopWorkspaceOverview.css';
+import { TripAccessInvite } from '@/components/trip/access/TripAccessProvider';
 
 const READINESS_LANDMARKS = [25, 50, 75, 100] as const;
 const READINESS_SEGMENTS = Array.from({ length: 20 }, (_, index) => index);
@@ -64,6 +65,7 @@ export default function DesktopWorkspaceOverview({ model, onSaveLocation, onRefr
     <section className="desktop-workspace-overview" data-home-composition="desktop"
       data-desktop-workspace-overview aria-labelledby="desktop-overview-title">
       <header className="dwo-identity">
+        <TripAccessInvite />
         <p className="dwo-label">Overview <span>{status}</span></p>
         <h1 id="desktop-overview-title" tabIndex={-1}>{trip.name}</h1>
         <p className="dwo-location">{[trip.park_name, trip.lake_name, trip.site_name].filter(Boolean).join(' · ') || 'Campsite unavailable'}</p>

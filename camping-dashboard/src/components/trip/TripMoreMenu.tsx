@@ -1,7 +1,8 @@
 'use client';
 import { useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { BookOpenText, MoreHorizontal } from 'lucide-react';
+import { BookOpenText, MoreHorizontal, Users } from 'lucide-react';
+import { useTripAccess } from './access/TripAccessProvider';
 import GuardedTripLink from './GuardedTripLink';
 import { tripDestinationHref } from './tripNavigation';
 import CrudSheet from '@/components/ui/CrudSheet';
@@ -16,6 +17,7 @@ export default function TripMoreMenu({ id, tripId, onProjectIntel, onSignOut, mo
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const access = useTripAccess();
   const fieldLogHref = tripDestinationHref(tripId, 'field-log');
   function run(action: () => void | Promise<void>) { setOpen(false); void action(); }
   // Fixed Mission Brief media has no explicit trip association. Hide until data-driven.
@@ -28,7 +30,11 @@ export default function TripMoreMenu({ id, tripId, onProjectIntel, onSignOut, mo
       <MoreHorizontal size={18} aria-hidden="true" />{!mobile && 'Trip Extras'}
     </button>
     {open && (mobile ? <CrudSheet isOpen title="More" onClose={() => setOpen(false)} surface="workspace" panelClassName="workspace-secondary-sheet">
-      <section aria-labelledby={id + '-extras'}><h3 id={id + '-extras'}>Trip Extras</h3>{extras}</section>
+      <section aria-labelledby={id + '-extras'}><h3 id={id + '-extras'}>Trip Extras</h3>{extras}
+        {access?.available && <button type="button" className="workspace-extra-link" onClick={() => run(() => {
+          window.requestAnimationFrame(() => { trigger.current?.focus(); access.show(); });
+        })}><Users size={17} aria-hidden="true" />Trip access</button>}
+      </section>
       <section aria-label="Account"><h3>Account</h3><AccountActions onAbout={() => run(onProjectIntel)} onSignOut={() => run(onSignOut)} /></section>
     </CrudSheet> : <WorkspacePopover anchor={trigger} title="Trip Extras" onClose={() => setOpen(false)}>{extras}</WorkspacePopover>)}
   </div>;

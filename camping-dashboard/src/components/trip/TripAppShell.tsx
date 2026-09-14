@@ -21,6 +21,7 @@ import DesktopWorkspaceDocument from './DesktopWorkspaceDocument';
 import { desktopSectionHeading } from './desktopSectionNavigation';
 import { TripListProvider } from '@/components/trips/TripListProvider';
 import TripSwitcher from '@/components/trips/TripSwitcher';
+import { TripAccessProvider } from './access/TripAccessProvider';
 
 type AppInfoDialogName = 'about';
 interface ActiveAppInfoDialog {
@@ -33,6 +34,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   const draftGuard = useOptionalTripDraftGuard();
   const {
     tripId,
+    isOwner,
     isLoading: roleLoading,
     error: roleError,
   } = useTrip();
@@ -153,6 +155,8 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
   if (!data || !trip || roleLoading || isLoading) return <AuthenticatedTripsLoader />;
 
   return (
+    <TripAccessProvider tripId={tripId}
+      eligible={isOwner && source === 'online' && connectivity === 'online'}>
     <DesktopTripWorkspaceBoundary>
       <TripWorkspaceBackground trip={trip} />
       <a
@@ -300,6 +304,7 @@ function TripAppShellContent({ children }: { children: React.ReactNode }) {
         onClose={() => setOpenedInfoDialog(null)}
       />
     </DesktopTripWorkspaceBoundary>
+    </TripAccessProvider>
   );
 }
 
