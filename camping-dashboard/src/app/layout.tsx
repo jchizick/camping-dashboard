@@ -4,8 +4,8 @@ import {
   DM_Sans,
   DM_Serif_Display,
   Inter,
-  JetBrains_Mono,
 } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 import { TopoBackground } from '@/components/ui/TopoBackground';
@@ -48,13 +48,18 @@ const interCompatibility = Inter({
   fallback: ['Arial', 'sans-serif'],
 });
 
-const jetBrainsMonoCompatibility = JetBrains_Mono({
-  weight: ['400', '500', '700'],
-  style: 'normal',
-  subsets: ['latin'],
+// Bundle the same JetBrains Mono version locally to avoid Turbopack's
+// Google font URL parsing error while preserving the existing font roles.
+const jetBrainsMonoCompatibility = localFont({
+  src: [
+    { path: './fonts/JetBrainsMono-Variable.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/JetBrainsMono-Variable.ttf', weight: '500', style: 'normal' },
+    { path: './fonts/JetBrainsMono-Variable.ttf', weight: '700', style: 'normal' },
+  ],
   display: 'swap',
   variable: '--font-mono-compat-face',
   fallback: ['Courier New', 'monospace'],
+  adjustFontFallback: false,
 });
 
 const typographyVariableClasses = [

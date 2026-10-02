@@ -2,9 +2,6 @@
 [data-desktop-signed-out] {
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-rows: auto auto minmax(180px, 1fr);
-  height: 100svh;
   min-height: 100svh;
   padding: 28px 32px 0;
   color: #f3f2ee;
@@ -21,19 +18,47 @@
     background: url('/topo-map-bg.svg') center top / 760px auto repeat;
     opacity: 0.075;
     filter: grayscale(1);
+    mask-image: linear-gradient(to bottom, #000 600px, rgb(0 0 0 / 30%) 1300px);
   }
 
-  .desktop-landing__brand {
+  .desktop-landing__header {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 32px;
     max-width: 1240px;
     margin-inline: auto;
+  }
+
+  .desktop-landing__brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 12px;
     font-size: 17px;
     font-weight: 700;
     letter-spacing: 0.025em;
   }
+
+  .desktop-landing__nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .desktop-landing__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #b8bdbb;
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .desktop-landing__nav a:hover { color: #f3f2ee; }
+  .desktop-landing__nav a:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 4px; border-radius: 3px; }
 
   .desktop-landing__hero {
     width: 100%;
@@ -99,6 +124,24 @@
   button:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 4px; }
   button:disabled { cursor: wait; opacity: 0.75; }
 
+  .desktop-landing__nav-sign-in {
+    width: auto;
+    min-width: 92px;
+    min-height: 44px;
+    padding: 9px 16px;
+    border-color: #454a48;
+    background: transparent;
+    color: #e5e8e5;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .desktop-landing__nav-sign-in:hover:not(:disabled) { background: rgb(255 255 255 / 5%); }
+
+  .desktop-marketing__cta .desktop-landing__actions { margin-top: 0; }
+  .desktop-marketing__readiness .desktop-landing__actions { justify-content: flex-start; }
+  .desktop-marketing__cta .desktop-landing__error { margin: 0 0 20px; }
+
   .desktop-landing__helper {
     margin: 14px 0 0;
     color: #a5adaa;
@@ -117,40 +160,153 @@
     overflow-wrap: anywhere;
   }
 
-  /* Only product evidence is clipped. Hero rows retain their natural height. */
+  /* Preserve the image scale while the shared row determines the frame height. */
   .desktop-landing__preview {
     position: relative;
+    container-type: inline-size;
     width: min(100%, 1240px);
-    min-height: 148px;
     margin: 32px auto 0;
     overflow: clip;
     border: 1px solid #454a48;
-    border-bottom: 0;
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     background: #141715;
   }
 
-  .desktop-landing__preview img {
+  .desktop-landing__preview > img {
+    position: absolute;
+    inset: 0 auto auto 0;
     display: block;
     width: 100%;
     height: auto;
     max-width: none;
+    /* Preserve the upper sidebar; its footer is aligned by the shared row. */
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 16.2% 100%, 16.2% 82%, 0 82%);
+  }
+
+  .desktop-landing__preview::before {
+    position: absolute;
+    inset: 51.25cqw 83.8% 0 0;
+    background: linear-gradient(#10110e, #0e0f0c);
+    content: '';
+    pointer-events: none;
+  }
+
+  /* Match the image's top inset; child query units use the preview width. */
+  .desktop-landing__preview-bottom {
+    position: relative;
+    margin-block: 52.5cqw 1.125cqw;
+  }
+
+  .desktop-landing__sidebar-footer {
+    position: absolute;
+    inset-inline: 1.09375% 84.453125%;
+    inset-block: -1.25cqw 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.9cqw 1.15cqw 1.45cqw;
+    border: 1px solid #373a37;
+    border-block-start: 0;
+    border-radius: 0 0 clamp(8px, 1.4cqw, 18px) clamp(8px, 1.4cqw, 18px);
+    background: #151716;
+    color: #b7c1ba;
+    font-family: var(--font-sans-compat-face), sans-serif;
+    font-size: clamp(7px, 0.97cqw, 12px);
+    line-height: 1.4;
+  }
+
+  .desktop-landing__sidebar-extras,
+  .desktop-landing__sidebar-account {
+    display: flex;
+    align-items: center;
+    gap: 0.5cqw;
+    white-space: nowrap;
+  }
+
+  .desktop-landing__sidebar-account {
+    margin-top: 1cqw;
+    padding-top: 1cqw;
+    border-top: 1px solid #373a37;
+  }
+
+  .desktop-landing__sidebar-footer svg {
+    width: clamp(9px, 1.25cqw, 16px);
+    height: clamp(9px, 1.25cqw, 16px);
+    flex-shrink: 0;
+  }
+
+  .desktop-landing__sidebar-account svg:last-child {
+    width: clamp(7px, 0.95cqw, 12px);
+    margin-inline-start: auto;
+  }
+
+  .desktop-landing__essentials {
+    margin-inline: 16.7% 1.2%;
+    padding: 0.85cqw 1.2cqw;
+    border: 1px solid #343c37;
+    border-radius: clamp(4px, 0.5cqw, 6px);
+    background: #141715;
+    font-family: var(--font-sans-compat-face), sans-serif;
+  }
+
+  .desktop-landing__essentials h2 {
+    margin: 0 0 0.65cqw;
+    color: #dedfd8;
+    font-family: var(--font-display-face), sans-serif;
+    font-size: clamp(11px, 1.22cqw, 15px);
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .desktop-landing__essentials dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  .desktop-landing__essentials dl > div {
+    min-width: 0;
+    padding-inline: 1.1cqw;
+  }
+
+  .desktop-landing__essentials dl > div:first-child { padding-inline-start: 0; }
+  .desktop-landing__essentials dl > div:last-child { padding-inline-end: 0; }
+  .desktop-landing__essentials dl > div + div { border-inline-start: 1px solid #303831; }
+
+  .desktop-landing__essentials dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5cqw;
+    color: #dedfd8;
+    font-size: clamp(10px, 0.99cqw, 12.25px);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .desktop-landing__essentials dt svg {
+    width: clamp(12px, 1.3cqw, 16px);
+    height: clamp(12px, 1.3cqw, 16px);
+    flex-shrink: 0;
+    color: #8fa68f;
+  }
+
+  .desktop-landing__essentials dd {
+    margin: 0.4cqw 0 0;
+    color: #aab2ac;
+    font-size: clamp(9px, 1.02cqw, 12.64px);
+    line-height: 1.4;
   }
 
   @media (prefers-reduced-transparency: reduce), (prefers-reduced-data: reduce) {
     .desktop-landing__topo { display: none; }
   }
+
+  @media (max-width: 1024px) {
+    .desktop-landing__header { gap: 20px; }
+    .desktop-landing__nav { gap: 20px; }
+  }
 }
 
 @media (max-width: 1024px) {
   [data-desktop-signed-out] { padding-inline: 24px; }
-}
-
-/* Tall tablets can fit the entire scaled capture; avoid an empty image frame. */
-@media (max-width: 900px) {
-  [data-desktop-signed-out] .desktop-landing__preview {
-    max-height: calc((100vw - 48px) * 0.625);
-    border-bottom: 1px solid #454a48;
-    border-radius: 12px;
-  }
 }
