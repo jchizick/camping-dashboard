@@ -20,6 +20,7 @@ const repositoryMocks = vi.hoisted(() => ({
   clearOfflineIdentity: vi.fn(),
 }));
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {

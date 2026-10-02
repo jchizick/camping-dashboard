@@ -10,11 +10,12 @@ type Props = {
   error: string | null;
   pending: boolean;
   onSignIn: () => Promise<void>;
+  onEmail?: () => void;
 };
 
 type AuthLocation = 'hero' | 'readiness' | 'closing';
 
-function GoogleSignIn({ location, error, pending, onSignIn }: Props & { location: AuthLocation }) {
+function GoogleSignIn({ location, error, pending, onSignIn, onEmail }: Props & { location: AuthLocation }) {
   return (
     <div className="desktop-landing__auth" data-desktop-auth-location={location}>
       {error ? <p className="desktop-landing__error" role="alert">{error}</p> : null}
@@ -23,13 +24,14 @@ function GoogleSignIn({ location, error, pending, onSignIn }: Props & { location
           <Image src="/google-g-logo.png" alt="" width={20} height={20} aria-hidden="true" />
           <span>{pending ? 'Connecting…' : 'Sign in with Google'}</span>
         </button>
+        {onEmail && <button type="button" className="email-code-entry" onClick={onEmail}>Continue with email</button>}
       </div>
       <p className="desktop-landing__helper">Free to get started · No credit card required</p>
     </div>
   );
 }
 
-export function DesktopSignedOutLanding({ error, pending, onSignIn }: Props) {
+export function DesktopSignedOutLanding({ error, pending, onSignIn, onEmail }: Props) {
   const [authLocation, setAuthLocation] = useState<AuthLocation>('hero');
   const signInInFlight = useRef(false);
 
@@ -45,7 +47,7 @@ export function DesktopSignedOutLanding({ error, pending, onSignIn }: Props) {
   }
 
   function renderSignIn(location: AuthLocation) {
-    return <GoogleSignIn location={location} error={authLocation === location ? error : null} pending={pending} onSignIn={() => startSignIn(location)} />;
+    return <GoogleSignIn onEmail={onEmail} location={location} error={authLocation === location ? error : null} pending={pending} onSignIn={() => startSignIn(location)} />;
   }
 
   return (

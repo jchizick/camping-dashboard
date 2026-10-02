@@ -27,7 +27,7 @@ export default function TripsPage() {
 }
 
 export function TripsContent() {
-  const { user, isLoading: authLoading, signIn, signOut } = useAuth();
+  const { user, isLoading: authLoading, operation, signIn, signOut } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
   const next = getSafeNextPath(params.get('next'));
@@ -88,7 +88,7 @@ export function TripsContent() {
     setState(null);
     setAttempt(value => value + 1);
   }
-  if (!authLoading && !user) return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
+  if ((!authLoading || operation === 'verify') && !user) return <SignedOutLanding error={signInError ?? callbackError} onSignIn={handleSignIn} />;
   if (authLoading || result.status === 'loading' || result.status === 'redirect') return <AuthenticatedTripsLoader />;
 
   return <main className="relative z-10 flex min-h-[100dvh] items-center justify-center px-5 py-12" data-entry-flow="trips-resolution">

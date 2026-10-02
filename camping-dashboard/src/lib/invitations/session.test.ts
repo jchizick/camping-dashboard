@@ -15,7 +15,7 @@ it('captures a fresh fragment, replaces URL without adding history, and resumes 
   const length = history.length;
   expect(captureInvitationSession()).toBe(token);
   expect(location.pathname + location.search + location.hash).toBe('/invite');
-  expect(history.length).toBe(length); expect(history.state).toEqual({ preserved: true });
+  expect(history.length).toBe(length);
   const callback = new URL(buildOAuthCallbackUrl(location));
   expect(callback.searchParams.get('next')).toBe('/invite');
   expect(callback.href).not.toContain(token);
@@ -66,4 +66,13 @@ it('rejects token-bearing nested next while preserving normal trip query/hash',(
   const unsafe='/trips?next='+encodeURIComponent('/invite#'+token);
   expect(getSafeNextPath(unsafe)).toBeNull();
   expect(getSafeNextPath('/trips/a/gear?intent=pack#item')).toBe('/trips/a/gear?intent=pack#item');
+});
+
+it('cleans through the public history API without forwarding router-internal state', () => {
+  history.replaceState({ __NA: true }, '', '/invite#' + token);
+  const replace = vi.spyOn(history, 'replaceState');
+  expect(captureInvitationSession()).toBe(token);
+  expect(replace).toHaveBeenCalledWith(null, '', '/invite');
+  expect(location.hash).toBe('');
+  expect(captureInvitationSession()).toBe(token);
 });

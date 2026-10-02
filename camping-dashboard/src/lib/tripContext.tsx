@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useState,
+  useRef,
 } from 'react';
 import type { TripMemberRole } from '@/types';
 import { supabase } from '@/lib/supabase';
@@ -64,7 +65,26 @@ export function TripProvider({
   children: React.ReactNode;
   initialCachedWorkspace?: TripRepositoryResult;
 }) {
+  const { identity } = useAuth();
+  const [initialUserId] = useState(identity?.userId);
+  return <IdentityTripProvider key={`${tripId}:${identity?.userId ?? 'anonymous'}`}
+    tripId={tripId} initialCachedWorkspace={identity?.userId === initialUserId ? initialCachedWorkspace : undefined}>
+    {children}
+  </IdentityTripProvider>;
+}
+
+function IdentityTripProvider({
+  tripId,
+  children,
+  initialCachedWorkspace,
+}: {
+  tripId: string;
+  children: React.ReactNode;
+  initialCachedWorkspace?: TripRepositoryResult;
+}) {
   const { identity, isLoading: authLoading } = useAuth();
+  const active = useRef(true);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [role, setRole] = useState<TripMemberRole | null>(
     initialCachedWorkspace?.verifiedRole ?? null
   );
@@ -79,7 +99,8 @@ export function TripProvider({
 
   const readCachedAccess = useCallback(async (): Promise<TripRevalidationResult> => {
     const cached = await tripRepository.readOfflineTrip({ tripId });
-    if (cached.status === 'available') {
+    if (!active.current) return 'denied';
+    if (cached.status === 'available' && cached.identity.activeUserId === identity?.userId) {
       setRole(cached.workspace.verifiedRole);
       setVerificationSource('cache');
       setCachedWorkspace(cached.workspace);
@@ -95,7 +116,7 @@ export function TripProvider({
         : 'Trip access could not be verified and no eligible saved trip is available.'
     );
     return 'denied';
-  }, [tripId]);
+  }, [tripId, identity?.userId]);
 
   const revalidateAccess = useCallback(async (): Promise<TripRevalidationResult> => {
     if (!identity) {
@@ -109,6 +130,7 @@ export function TripProvider({
     setIsLoading(true);
     try {
       const { data: userData, error: authError } = await supabase.auth.getUser();
+      if (!active.current) return 'denied';
       if (authError) return await readCachedAccess();
       if (!userData.user || userData.user.id !== identity.userId) {
         setRole(null);
@@ -130,6 +152,7 @@ export function TripProvider({
         .eq('user_id', userData.user.id)
         .single();
 
+      if (!active.current) return 'denied';
       if (fetchError || !data) {
         if (isExplicitMembershipDenial(fetchError) || (!fetchError && !data)) {
           setRole(null);
@@ -156,9 +179,10 @@ export function TripProvider({
       setError(null);
       return 'online';
     } catch {
+      if (!active.current) return 'denied';
       return await readCachedAccess();
     } finally {
-      setIsLoading(false);
+      if (active.current) setIsLoading(false);
     }
   }, [identity, readCachedAccess, tripId]);
 

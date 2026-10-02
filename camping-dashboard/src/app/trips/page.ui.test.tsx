@@ -13,6 +13,7 @@ const appMocks = vi.hoisted(() => ({
   auth: {
     user: { id: 'user-1', email: 'avery@example.com', user_metadata: { first_name: 'Avery' } } as Record<string, unknown> | null,
     isLoading: false,
+    operation: null as 'verify' | null,
   },
 }));
 
@@ -80,6 +81,7 @@ beforeEach(() => {
     user_metadata: { first_name: 'Avery' },
   };
   appMocks.auth.isLoading = false;
+  appMocks.auth.operation = null;
 });
 
 afterEach(cleanup);
@@ -146,4 +148,14 @@ describe('Trips entry resolution', () => {
   appMocks.fetchUserTrips.mockRejectedValue(new UserTripsFetchError('unauthenticated','session expired'));render(<TripsContent />);
   await waitFor(()=>expect(appMocks.signOut).toHaveBeenCalledOnce());expect(appMocks.replace).not.toHaveBeenCalled();
  });
+});
+
+it('keeps the signed-out dialog host mounted while verifying and defers trip continuation until verification settles', async () => {
+  appMocks.auth.user = null; appMocks.auth.operation = 'verify'; appMocks.auth.isLoading = true;
+  const ui = render(<TripsContent />);
+  expect(screen.getByTestId('signed-out-landing')).toBeTruthy();
+  appMocks.auth.user = { id: 'email-user' }; ui.rerender(<TripsContent />);
+  expect(appMocks.fetchUserTrips).not.toHaveBeenCalled(); expect(appMocks.replace).not.toHaveBeenCalled();
+  appMocks.auth.isLoading = false; appMocks.auth.operation = null; ui.rerender(<TripsContent />);
+  await waitFor(() => expect(appMocks.replace).toHaveBeenCalledWith('/trips/new'));
 });
