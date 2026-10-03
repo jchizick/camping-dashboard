@@ -5,7 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { PHONE_LAYOUT_MEDIA_QUERY } from '@/components/trip/PhoneLayoutProvider';
 import fs from 'node:fs';
 import path from 'node:path';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/image', () => ({
@@ -14,6 +14,7 @@ vi.mock('next/image', () => ({
 }));
 
 import { SignedOutLanding } from './SignedOutLanding';
+import { DesktopSignedOutLanding } from './DesktopSignedOutLanding';
 
 beforeEach(() => {
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
@@ -193,14 +194,24 @@ describe('desktop signed-out composition', () => {
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
   });
 
-  it('renders the exact desktop hero with one auth surface and no old preview', () => {
+  function googleButtonAt(container: HTMLElement, location: 'hero' | 'readiness' | 'closing') {
+    const slot = container.querySelector<HTMLElement>(`[data-desktop-auth-location="${location}"]`);
+    expect(slot).toBeTruthy();
+    return within(slot!).getByRole('button', { name: 'Sign in with Google' });
+  }
+
+  it('renders the exact desktop hero with shared auth controls and no old preview', () => {
     const { container } = render(<SignedOutLanding error="Callback failed" onSignIn={vi.fn()} />);
     expect(screen.getByText('YOUR OUTDOOR COMMAND CENTRE')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Trip readiness, made clear.');
     expect(screen.getByText('Plan, pack, and coordinate every trip in one workspace designed for clarity before you head out.')).toBeTruthy();
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeTruthy();
+    expect(screen.getAllByRole('button')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Sign in with Google' })).toHaveLength(3);
+    expect(googleButtonAt(container, 'hero')).toBeTruthy();
     expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByRole('alert').textContent).toBe('Callback failed');
+    expect(screen.getByRole('alert').closest('[data-desktop-auth-location]')?.getAttribute('data-desktop-auth-location')).toBe('hero');
     expect(container.querySelector('[data-desktop-signed-out]')).toBeTruthy();
     expect(container.querySelector('.signed-out-preview')).toBeNull();
     const preview = container.querySelector('[data-desktop-landing-preview]');
@@ -210,23 +221,113 @@ describe('desktop signed-out composition', () => {
     expect(image?.getAttribute('height')).toBe('1600');
     expect(image?.getAttribute('loading')).toBe('eager');
     expect(image?.getAttribute('alt')).toContain('Field Protocol trip workspace');
+    const essentials = within(preview as HTMLElement).getByRole('region', { name: 'Example trip essentials' });
+    expect(within(essentials).getByRole('heading', { name: 'Trip essentials' })).toBeTruthy();
+    expect(Array.from(essentials.querySelectorAll('dt')).map(item => item.textContent)).toEqual(['Gear', 'Meals', 'Crew']);
+    for (const status of ['Critical gear packed.', 'Meals planned for each day.', 'Gear and meal prep assigned.']) {
+      expect(within(essentials).getByText(status)).toBeTruthy();
+    }
     expect(preview?.querySelectorAll('button, a, [tabindex]').length).toBe(0);
     expect(container.querySelector('[data-phone-signed-out]')).toBeNull();
     expect(container.textContent).not.toContain('Email');
   });
 
-  it('retains pending protection on desktop', async () => {
+  it('connects the desktop navigation to sections in reading order and opens only the first FAQ', () => {
+    const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+    const sectionIds = ['features', 'how-it-works', 'faq'];
+    const navNames = ['Features', 'How it works', 'FAQ'];
+    const sections = sectionIds.map((id, index) => {
+      const section = container.querySelector<HTMLElement>(`#${id}`);
+      expect(section).toBeTruthy();
+      const navLinks = screen.getAllByRole('link', { name: navNames[index] });
+      expect(navLinks).toHaveLength(2);
+      expect(navLinks.every(link => link.getAttribute('href') === `#${id}`)).toBe(true);
+      return section!;
+    });
+    const hero = container.querySelector('.desktop-landing__hero');
+    const readiness = container.querySelector('[data-desktop-auth-location="readiness"]');
+    const closing = container.querySelector('[data-desktop-auth-location="closing"]');
+    expect(hero).toBeTruthy();
+    expect(readiness).toBeTruthy();
+    expect(closing).toBeTruthy();
+    const sequence = [hero!, sections[0], readiness!, sections[1], sections[2], closing!];
+
+    for (let index = 1; index < sequence.length; index += 1) {
+      expect(sequence[index - 1].compareDocumentPosition(sequence[index]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+
+    const details = sections[2].querySelectorAll('details');
+    expect(details).toHaveLength(5);
+    expect(details[0].open).toBe(true);
+    expect(Array.from(details).slice(1).every(detail => !detail.open)).toBe(true);
+    expect(Array.from(details).every(detail => detail.querySelector('summary'))).toBe(true);
+  });
+
+  it('keeps desktop product examples static and free of interactive controls', () => {
+    const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+    const examples = container.querySelectorAll('[data-desktop-product-example]');
+    expect(examples.length).toBeGreaterThan(0);
+    for (const example of examples) {
+      expect(example.querySelectorAll('button, a, input, select, textarea, [tabindex]')).toHaveLength(0);
+    }
+  });
+
+  it.each(['hero', 'readiness', 'closing', 'header'] as const)('shares pending protection across all desktop controls when %s starts sign-in', async (location) => {
     let finish!: () => void;
     const signIn = vi.fn(() => new Promise<void>(resolve => { finish = resolve; }));
-    render(<SignedOutLanding error={null} onSignIn={signIn} />);
-    const button = screen.getByRole('button');
+    const { container } = render(<SignedOutLanding error={null} onSignIn={signIn} />);
+    const button = location === 'header'
+      ? screen.getByRole('button', { name: 'Sign in' })
+      : googleButtonAt(container, location);
     fireEvent.click(button);
-    fireEvent.click(button);
+    for (const authButton of screen.getAllByRole('button')) fireEvent.click(authButton);
     expect(signIn).toHaveBeenCalledOnce();
-    expect(button.hasAttribute('disabled')).toBe(true);
-    expect(button.textContent).toBe('Connecting…');
+    const pendingButtons = screen.getAllByRole('button', { name: 'Connecting…' });
+    expect(pendingButtons).toHaveLength(4);
+    expect(pendingButtons.every(authButton => authButton.hasAttribute('disabled'))).toBe(true);
     finish();
-    await waitFor(() => expect(button.textContent).toBe('Sign in with Google'));
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /^Sign in(?: with Google)?$/ })).toHaveLength(4);
+      expect(screen.getAllByRole('button').every(authButton => !authButton.hasAttribute('disabled'))).toBe(true);
+    });
+  });
+
+  it('rejects duplicate cross-control requests before the shared pending prop updates', async () => {
+    let finish!: () => void;
+    const signIn = vi.fn(() => new Promise<void>(resolve => { finish = resolve; }));
+    const { container } = render(<DesktopSignedOutLanding error={null} pending={false} onSignIn={signIn} />);
+
+    fireEvent.click(googleButtonAt(container, 'hero'));
+    fireEvent.click(googleButtonAt(container, 'readiness'));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(signIn).toHaveBeenCalledOnce();
+
+    await act(async () => { finish(); });
+    fireEvent.click(googleButtonAt(container, 'closing'));
+    expect(signIn).toHaveBeenCalledTimes(2);
+    await act(async () => { finish(); });
+  });
+
+  it.each([
+    ['hero', 'hero'],
+    ['readiness', 'readiness'],
+    ['closing', 'closing'],
+    ['header', 'hero'],
+  ] as const)('renders one error at the active %s control after sign-in settles', async (location, errorLocation) => {
+    const signIn = vi.fn().mockResolvedValue(undefined);
+    const { container, rerender } = render(<SignedOutLanding error={null} onSignIn={signIn} />);
+    const button = location === 'header'
+      ? screen.getByRole('button', { name: 'Sign in' })
+      : googleButtonAt(container, location);
+
+    fireEvent.click(button);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /^Sign in(?: with Google)?$/ })).toHaveLength(4));
+    rerender(<SignedOutLanding error="Google sign-in could not start." onSignIn={signIn} />);
+
+    expect(signIn).toHaveBeenCalledOnce();
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByRole('alert').textContent).toBe('Google sign-in could not start.');
+    expect(screen.getByRole('alert').closest('[data-desktop-auth-location]')?.getAttribute('data-desktop-auth-location')).toBe(errorLocation);
   });
 
   it('scopes charcoal and sans typography without clipping the document', () => {
@@ -238,6 +339,12 @@ describe('desktop signed-out composition', () => {
     expect(css).not.toContain('overflow: hidden');
     expect(css).toContain('min-height: 100svh');
   });
+});
+
+it('keeps the phone story singular without the new desktop landing sections', () => {
+  const { container } = render(<SignedOutLanding error={null} onSignIn={vi.fn()} />);
+  expect(container.querySelectorAll('.signed-out-mobile-story')).toHaveLength(1);
+  expect(container.querySelectorAll('#features, #how-it-works, #faq, [data-desktop-auth-location], [data-desktop-product-example]')).toHaveLength(0);
 });
 
 it('uses the canonical query for qualifying landscape phones', () => {

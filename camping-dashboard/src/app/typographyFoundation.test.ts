@@ -15,8 +15,17 @@ describe('Field Protocol typography foundation', () => {
     expect(layoutSource).toMatch(
       /Inter\(\{[\s\S]*?weight: \['400', '500', '600', '700'\]/
     );
+    expect(layoutSource).toContain("from 'next/font/local'");
+    expect(layoutSource).not.toContain('JetBrains_Mono');
+    for (const weight of ['400', '500', '700']) {
+      expect(layoutSource).toContain(
+        `{ path: './fonts/JetBrainsMono-Variable.ttf', weight: '${weight}', style: 'normal' }`
+      );
+    }
+    const fontBytes = readFileSync(new URL('./fonts/JetBrainsMono-Variable.ttf', import.meta.url));
+    expect(fontBytes.subarray(0, 4)).toEqual(Buffer.from([0x00, 0x01, 0x00, 0x00]));
     expect(layoutSource).toMatch(
-      /JetBrains_Mono\(\{[\s\S]*?weight: \['400', '500', '700'\]/
+      /jetBrainsMonoCompatibility = localFont\(\{[\s\S]*?variable: '--font-mono-compat-face',[\s\S]*?fallback: \['Courier New', 'monospace'\],[\s\S]*?adjustFontFallback: false/
     );
   });
 
