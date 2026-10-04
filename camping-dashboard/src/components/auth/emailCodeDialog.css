@@ -1,0 +1,16 @@
+.email-code-dialog { box-sizing: border-box; width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 32px; border: 1px solid #617361; border-radius: 16px; background: #f5f3ea; color: #22342d; box-shadow: 0 24px 80px #0005; font-family: var(--font-dm-sans), sans-serif; }
+.email-code-dialog::backdrop { background: #10231bcc; }
+.email-code-dialog__close { float: right; min-width: 44px; min-height: 44px; font-size: 28px; }
+.email-code-dialog__brand { font-size: 11px; letter-spacing: .14em; font-weight: 700; }
+.email-code-dialog h2 { font-size: 26px; line-height: 1.2; margin: 16px 0; }
+.email-code-dialog p { margin-bottom: 16px; line-height: 1.5; }
+.email-code-dialog label { display: block; margin-bottom: 8px; font-weight: 600; }
+.email-code-dialog input { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid #617361; border-radius: 6px; background: #fff; font-size: 16px; }
+.email-code-dialog__primary { display: block; width: 100%; min-height: 48px; margin: 16px 0; background: #264b39; color: white; border-radius: 6px; font-weight: 600; }
+.email-code-dialog__secondary { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+.email-code-dialog__secondary button { min-height: 44px; text-decoration: underline; }
+.email-code-dialog button:disabled { opacity: .55; cursor: wait; }
+.email-code-dialog [role=alert] { margin-top: 16px; color: #8a2922; }
+.email-code-dialog :focus-visible, .email-code-entry:focus-visible { outline: 3px solid #307249; outline-offset: 3px; }
+.email-code-entry { min-height: 44px; padding: 10px 20px; border: 1px solid currentColor; border-radius: 6px; font-weight: 600; }
+.signed-out-landing .email-code-entry { margin-top: 12px; color: #edf2e5; }

@@ -77,6 +77,7 @@ function Probe() {
 
 describe('TripProvider offline authorization policy', () => {
   beforeEach(() => {
+    mocks.identity = { userId: 'user-1', source: 'local' };
     mocks.getUser.mockReset();
     mocks.membership.mockReset();
     mocks.readOfflineTrip.mockReset();
@@ -171,4 +172,21 @@ describe('TripProvider offline authorization policy', () => {
     await waitFor(() => expect(screen.getByTestId('source').textContent).toBe('online'));
     expect(screen.getByTestId('edit').textContent).toBe('yes');
   });
+});
+
+it('does not expose late membership results after the authenticated identity changes', async () => {
+  let finish!: (value: unknown) => void;
+  mocks.identity = { userId: 'user-1', source: 'local' };
+  mocks.getUser.mockResolvedValueOnce({ data: { user: { id: 'user-1' } }, error: null });
+  mocks.membership.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  const ui = render(<TripProvider tripId="trip-1"><Probe /></TripProvider>);
+  await waitFor(() => expect(mocks.membership).toHaveBeenCalled());
+  mocks.identity = { userId: 'user-2', source: 'local' };
+  mocks.getUser.mockResolvedValue({ data: { user: { id: 'user-2' } }, error: null });
+  mocks.membership.mockResolvedValue({ data: { role: 'viewer' }, error: null });
+  ui.rerender(<TripProvider tripId="trip-1"><Probe /></TripProvider>);
+  await waitFor(() => expect(screen.getByTestId('role').textContent).toBe('viewer'));
+  finish({ data: { role: 'owner' }, error: null });
+  await waitFor(() => expect(screen.getByTestId('edit').textContent).toBe('no'));
+  expect(screen.getByTestId('role').textContent).toBe('viewer'); cleanup();
 });

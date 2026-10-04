@@ -1,4 +1,5 @@
 import 'server-only';
+import { emailCodeSignInEnabled } from '@/lib/emailCode';
 import type { InvitationMessage } from './delivery';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -7,7 +8,9 @@ export function invitationTemplate(message: InvitationMessage) {
   const role = message.role === 'editor' ? 'Editor' : 'Viewer';
   const expires = new Date(message.expiresAt).toISOString().replace('T',' ').replace('.000Z',' UTC');
   const intro = `You have been invited to ${name} as a ${role}.`;
-  const guidance = 'Sign in with the Google-account email that received this invitation. Nothing is accepted until you confirm.';
+  const guidance = emailCodeSignInEnabled()
+    ? 'Sign in with Google or an email code using the email address that received this invitation. Nothing is accepted until you confirm.'
+    : 'Sign in with the Google-account email that received this invitation. Nothing is accepted until you confirm.';
   const ignore = 'If you were not expecting this invitation, you can ignore this email.';
   return {
     subject:'Your Field Protocol trip invitation',

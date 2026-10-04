@@ -1,5 +1,8 @@
 'use client';
 
+import { useAuth } from '@/lib/authContext';
+import { emailCodeSignInEnabled } from '@/lib/emailCode';
+import { EmailCodeDialog } from '@/components/auth/EmailCodeDialog';
 import Image from 'next/image';
 import {
   Activity,
@@ -146,12 +149,15 @@ export function SignedOutLanding(props: SignedOutLandingProps) {
 }
 
 function SignedOutComposition({ error, onSignIn }: SignedOutLandingProps) {
+  const { operation } = useAuth();
+  const [emailOpen, setEmailOpen] = useState(false);
+  const emailEnabled = emailCodeSignInEnabled();
   const isPhoneLayout = usePhoneLayout();
   const isReady = useSyncExternalStore(subscribeToHydration, clientReady, serverReady);
   const [isStartingSignIn, setIsStartingSignIn] = useState(false);
 
   async function handleSignIn() {
-    if (isStartingSignIn) return;
+    if (isStartingSignIn || operation) return;
     setIsStartingSignIn(true);
     try {
       await onSignIn();
@@ -162,10 +168,11 @@ function SignedOutComposition({ error, onSignIn }: SignedOutLandingProps) {
 
   if (!isReady) return <AuthenticatedTripsLoader />;
   if (!isPhoneLayout) {
-    return <DesktopSignedOutLanding error={error} pending={isStartingSignIn} onSignIn={handleSignIn} />;
+    return <><DesktopSignedOutLanding error={error} pending={isStartingSignIn || Boolean(operation)} onSignIn={handleSignIn} onEmail={emailEnabled ? () => setEmailOpen(true) : undefined} /><EmailCodeDialog open={emailOpen} onClose={() => setEmailOpen(false)} /></>;
   }
 
   return (
+    <>
     <main
       data-phone-signed-out
       className="signed-out-landing"
@@ -190,10 +197,11 @@ function SignedOutComposition({ error, onSignIn }: SignedOutLandingProps) {
               <span className="signed-out-copy--mobile">Plan the trip, identify critical gear, coordinate preparation, and see the next action before you leave.</span>
             </p>
             {error ? <p role="alert" className="signed-out-error">{error}</p> : null}
-            <button type="button" className="signed-out-google" data-marketing-type-role="ui-control" onClick={() => void handleSignIn()} disabled={isStartingSignIn}>
+            <button type="button" className="signed-out-google" data-marketing-type-role="ui-control" onClick={() => void handleSignIn()} disabled={isStartingSignIn || Boolean(operation)}>
               <Image src="/google-g-logo.png" alt="" width={18} height={18} aria-hidden="true" />
               <span>{isStartingSignIn ? 'Connecting…' : 'Continue with Google'}</span>
             </button>
+            {emailEnabled && <button type="button" className="email-code-entry" onClick={() => setEmailOpen(true)}>Continue with email</button>}
             <p className="signed-out-reassurance" data-marketing-type-role="ui-supporting"><ShieldCheck size={17} /> Free to get started <span>·</span> No credit card required</p>
           </div>
         </section>
@@ -211,5 +219,7 @@ function SignedOutComposition({ error, onSignIn }: SignedOutLandingProps) {
         </section>
       </div>
     </main>
+    <EmailCodeDialog open={emailOpen} onClose={() => setEmailOpen(false)} />
+    </>
   );
 }

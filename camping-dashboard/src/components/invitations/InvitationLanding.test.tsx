@@ -2,13 +2,13 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-const mocks = vi.hoisted(()=>({replace:vi.fn(),signIn:vi.fn(),signOut:vi.fn(),fetch:vi.fn()}));
+const mocks = vi.hoisted(()=>({user: { id: 'first', email: 'invitee@example.test' } as { id: string; email: string } | null, replace:vi.fn(),signIn:vi.fn(),signOut:vi.fn(),fetch:vi.fn()}));
 const token = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 vi.mock('next/navigation',()=>({useParams:()=>({token:'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'}),useRouter:()=>({replace:mocks.replace})}));
-vi.mock('@/lib/authContext',()=>({useAuth:()=>({user:{email:'invitee@example.test'},signIn:mocks.signIn,switchInvitationAccount:mocks.signOut})}));
+vi.mock('@/lib/authContext',()=>({useAuth:()=>({user:mocks.user,signIn:mocks.signIn,switchInvitationAccount:mocks.signOut})}));
 import InvitationLanding, { formatInvitationExpiry } from './InvitationLanding';
 const response = (body:unknown,status=200) => ({ok:status===200,status,json:async()=>body});
-beforeEach(()=>{sessionStorage.clear();window.history.replaceState({},'', '/invite#'+token);vi.stubGlobal('fetch',mocks.fetch);});
+beforeEach(()=>{mocks.user = { id: 'first', email: 'invitee@example.test' }; sessionStorage.clear();window.history.replaceState({},'', '/invite#'+token);vi.stubGlobal('fetch',mocks.fetch);});
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it('only inspects on mount; explicit accept is required and uses replace after success',async()=>{
   mocks.fetch.mockResolvedValueOnce(response({outcome:'pending',tripName:'Synthetic trip',role:'viewer'}));
@@ -114,4 +114,43 @@ it.each([undefined,'','invalid'])('omits unusable expiry %s',async(expiresAt)=>{
   await screen.findByText('Accept invitation');
   expect(screen.queryByText(/^Expires /)).toBeNull();
   expect(document.body.textContent).not.toContain('Invalid Date');
+});
+
+it('re-inspects after identity change and ignores an old acceptance including token deletion', async () => {
+  let finish!: (value: unknown) => void;
+  mocks.fetch.mockResolvedValueOnce(response({ outcome: 'pending', tripName: 'First account', role: 'viewer' }));
+  const ui = render(<InvitationLanding />);
+  const accept = await screen.findByText('Accept invitation');
+  mocks.fetch.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  fireEvent.click(accept);
+  mocks.user = { id: 'second', email: 'second@example.test' };
+  mocks.fetch.mockResolvedValueOnce(response({ outcome: 'identity_mismatch' }));
+  ui.rerender(<InvitationLanding />);
+  expect(screen.queryByText('First account')).toBeNull();
+  await screen.findByText('Switch account');
+  finish(response({ outcome: 'accepted', trip_id: 'first-trip' }));
+  await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(3));
+  expect(sessionStorage.length).toBe(1); expect(mocks.replace).not.toHaveBeenCalled();
+});
+it('re-inspects on signed-out to signed-in transition without automatically accepting', async () => {
+  mocks.user = null;
+  mocks.fetch.mockResolvedValueOnce(response({ outcome: 'signed_out' }));
+  const ui = render(<InvitationLanding />); await screen.findByText('Sign in with Google');
+  mocks.user = { id: 'email-user', email: 'invitee@example.test' };
+  mocks.fetch.mockResolvedValueOnce(response({ outcome: 'pending', tripName: 'Email trip', role: 'viewer' }));
+  ui.rerender(<InvitationLanding />); await screen.findByText('Accept invitation');
+  expect(mocks.fetch.mock.calls.every(call => JSON.parse(call[1].body).operation === 'inspect')).toBe(true);
+});
+
+it('ignores an old inspection result after another identity is active', async () => {
+  let finish!: (value: unknown) => void;
+  mocks.fetch.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  const ui = render(<InvitationLanding />);
+  mocks.user = { id: 'second', email: 'second@example.test' };
+  mocks.fetch.mockResolvedValueOnce(response({ outcome: 'identity_mismatch' }));
+  ui.rerender(<InvitationLanding />); await screen.findByText('Switch account');
+  finish(response({ outcome: 'expired' }));
+  await waitFor(() => expect(mocks.fetch).toHaveBeenCalledTimes(2));
+  expect(screen.queryByText('This invitation has expired. Ask the inviter for a new one.')).toBeNull();
+  expect(sessionStorage.length).toBe(1);
 });

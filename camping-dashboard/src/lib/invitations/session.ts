@@ -19,7 +19,9 @@ export function captureInvitationSession(): string | null {
       window.opener = null;
     }
     // Clean before returning a secret or starting any request. If cleanup fails, fail closed.
-    if (fragment || window.location.search) window.history.replaceState(window.history.state, '', '/invite');
+    // Use the public history integration so Next also updates its canonical URL.
+    // Forwarding its internal history state bypasses that integration; refresh can restore the token.
+    if (fragment || window.location.search) window.history.replaceState(null, '', '/invite');
     if (fragment) {
       clearInvitationSession();
       const token = fragment.slice(1);

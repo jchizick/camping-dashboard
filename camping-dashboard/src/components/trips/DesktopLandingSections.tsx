@@ -1,3 +1,4 @@
+import { emailCodeSignInEnabled } from '@/lib/emailCode';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 import {
@@ -27,11 +28,11 @@ type DesktopLandingSectionsProps = {
 const faqItems = [
   {
     question: 'How do I get started?',
-    answer: 'Sign in with Google and create your trip. Add your plans, gear, and crew, then review what needs attention. If you already have trips, sign-in opens your trip or lets you choose one.',
+    answer: (emailCodeSignInEnabled() ? 'Sign in with Google or an email code and create' : 'Sign in with Google and create') + ' your trip. Add your plans, gear, and crew, then review what needs attention. If you already have trips, sign-in opens your trip or lets you choose one.',
   },
   {
     question: 'Does everyone on the trip need an account?',
-    answer: 'No. You can add your crew and assign gear or meal prep as you plan. Crew members who want to open the shared trip sign in with the Google account that received their invitation and accept it.',
+    answer: 'No. You can add your crew and assign gear or meal prep as you plan. Crew members who want to open the shared trip sign in with the account that received their invitation and accept it.',
   },
   {
     question: 'What does the readiness status mean?',

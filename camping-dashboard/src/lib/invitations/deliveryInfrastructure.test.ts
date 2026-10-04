@@ -103,3 +103,10 @@ it('groups equivalent IPv6 privacy addresses and ignores client forwarding heade
   vi.stubEnv('VERCEL','');await limiter.network(new Headers({'x-forwarded-for':'1.2.3.4'}));
   await limiter.network(new Headers({'x-forwarded-for':'5.6.7.8'}));expect(consume.mock.calls[2]).toEqual(consume.mock.calls[3]);
 });
+
+it('mentions email codes only when application availability is enabled', () => {
+  vi.stubEnv('NEXT_PUBLIC_EMAIL_CODE_SIGN_IN_ENABLED', 'true');
+  expect(invitationTemplate(message).text).toContain('Google or an email code');
+  vi.stubEnv('NEXT_PUBLIC_EMAIL_CODE_SIGN_IN_ENABLED', 'false');
+  expect(invitationTemplate(message).text).not.toContain('email code');
+});
