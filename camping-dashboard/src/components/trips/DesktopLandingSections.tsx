@@ -123,12 +123,14 @@ function FeatureGrid() {
   return (
     <section id="features" className="desktop-marketing__section desktop-marketing__features" aria-labelledby="desktop-marketing-features-heading">
       <div className="desktop-marketing__section-heading">
+        <span className="desktop-marketing__section-code" aria-hidden="true">TRIP MODULES / 01</span>
         <h2 id="desktop-marketing-features-heading">Your plans. Your gear. Your crew. In one place.</h2>
         <p>Keep the daily plan, packing list, crew responsibilities, and field preparation together.</p>
       </div>
       <figure className="desktop-marketing__feature-figure">
         <div className="desktop-marketing__feature-grid">
           <article className="desktop-marketing__feature-card">
+            <span className="desktop-marketing__module-code" aria-hidden="true">01 / PLAN</span>
             <PlanExample />
             <div className="desktop-marketing__feature-copy">
               <CalendarDays size={27} strokeWidth={1.6} aria-hidden="true" />
@@ -136,6 +138,7 @@ function FeatureGrid() {
             </div>
           </article>
           <article className="desktop-marketing__feature-card">
+            <span className="desktop-marketing__module-code" aria-hidden="true">02 / GEAR</span>
             <GearExample />
             <div className="desktop-marketing__feature-copy">
               <Backpack size={27} strokeWidth={1.6} aria-hidden="true" />
@@ -143,6 +146,7 @@ function FeatureGrid() {
             </div>
           </article>
           <article className="desktop-marketing__feature-card">
+            <span className="desktop-marketing__module-code" aria-hidden="true">03 / CREW</span>
             <CrewExample />
             <div className="desktop-marketing__feature-copy">
               <Users size={27} strokeWidth={1.6} aria-hidden="true" />
@@ -150,6 +154,7 @@ function FeatureGrid() {
             </div>
           </article>
           <article className="desktop-marketing__feature-card">
+            <span className="desktop-marketing__module-code" aria-hidden="true">04 / FIELD</span>
             <ConditionsExample />
             <div className="desktop-marketing__feature-copy">
               <CloudSun size={27} strokeWidth={1.6} aria-hidden="true" />
@@ -166,6 +171,7 @@ function FeatureGrid() {
 function ReadinessExample() {
   return (
     <div className="desktop-marketing__readiness-example" aria-label="Example readiness check" data-desktop-product-example>
+      <span className="desktop-marketing__readiness-instrument" aria-hidden="true">STATUS</span>
       <p className="desktop-marketing__readiness-label">Example readiness check</p>
       <div className="desktop-marketing__readiness-state">
         <h3>Needs Attention</h3>
@@ -192,6 +198,7 @@ export function DesktopLandingSections({ renderSignIn }: DesktopLandingSectionsP
       <FeatureGrid />
       <section className="desktop-marketing__section desktop-marketing__readiness" aria-labelledby="desktop-marketing-readiness-heading">
         <div className="desktop-marketing__readiness-copy">
+          <span className="desktop-marketing__section-code" aria-hidden="true">READINESS / 02</span>
           <h2 id="desktop-marketing-readiness-heading">Know what still needs doing.</h2>
           <p>Field Protocol brings critical gear, meal plans, and preparation checks into one readiness view, then points you to the next thing to review.</p>
           <ul className="desktop-marketing__readiness-signals">
@@ -204,7 +211,7 @@ export function DesktopLandingSections({ renderSignIn }: DesktopLandingSectionsP
         <ReadinessExample />
       </section>
       <section id="how-it-works" className="desktop-marketing__section desktop-marketing__setup" aria-labelledby="desktop-marketing-setup-heading">
-        <div className="desktop-marketing__section-heading"><h2 id="desktop-marketing-setup-heading">Start with the trip you already have in mind.</h2></div>
+        <div className="desktop-marketing__section-heading"><span className="desktop-marketing__section-code" aria-hidden="true">TRIP SETUP / 03</span><h2 id="desktop-marketing-setup-heading">Start with the trip you already have in mind.</h2></div>
         <ol className="desktop-marketing__steps">
           <li>
             <div className="desktop-marketing__step-markers"><span aria-hidden="true">1</span><MapPin size={29} strokeWidth={1.6} aria-hidden="true" /></div>
@@ -232,16 +239,25 @@ export function DesktopLandingSections({ renderSignIn }: DesktopLandingSectionsP
         </div>
       </section>
       <section className="desktop-marketing__section desktop-marketing__closing" aria-labelledby="desktop-marketing-closing-heading">
+        <span className="desktop-marketing__section-code" aria-hidden="true">DEPARTURE / 04</span>
         <h2 id="desktop-marketing-closing-heading">Get your next trip ready.</h2>
         <p>Bring your plans, packing, and people together.<br />See what still needs attention before you head out.</p>
         <div className="desktop-marketing__cta">{renderSignIn('closing')}</div>
       </section>
       <footer className="desktop-marketing__footer">
-        <div className="desktop-marketing__footer-brand">
-          <Image src="/logo.svg" alt="" width={40} height={48} aria-hidden="true" />
-          <div><p>FIELD PROTOCOL</p><span>A shared workspace for camping trips.</span></div>
+        <div className="desktop-marketing__footer-row">
+          <div className="desktop-marketing__footer-brand">
+            <Image src="/logo.svg" alt="" width={40} height={48} aria-hidden="true" />
+            <div><p>FIELD PROTOCOL</p><span>A shared workspace for camping trips.</span></div>
+          </div>
+          <nav aria-label="Footer"><a href="#features">Features</a><a href="#how-it-works">How it works</a><a href="#faq">FAQ</a></nav>
         </div>
-        <nav aria-label="Footer"><a href="#features">Features</a><a href="#how-it-works">How it works</a><a href="#faq">FAQ</a></nav>
+        <div className="desktop-marketing__footer-survey" aria-hidden="true">
+          <span className="desktop-marketing__footer-reference">FIELD REF<br />FP / 01</span>
+          <span className="desktop-marketing__footer-label">PLAN · PACK · COORDINATE · HEAD OUT</span>
+          <span className="desktop-marketing__footer-reference">SYSTEM<br />FIELD READY</span>
+        </div>
+        <div className="desktop-marketing__footer-wordmark" aria-hidden="true">FIELD PROTOCOL</div>
       </footer>
     </div>
   );

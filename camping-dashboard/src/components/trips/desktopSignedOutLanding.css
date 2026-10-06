@@ -9,6 +9,27 @@
   font-family: var(--font-ui-face), sans-serif;
 }
 
+/* The composition boundary also excludes landscape phones; no photo is
+   requested unless the desktop main is actually mounted at 768px or wider. */
+@media (min-width: 768px) {
+  [data-desktop-signed-out]::before {
+    position: absolute;
+    z-index: -2;
+    inset: 0 0 auto;
+    height: clamp(680px, 52vw, 1000px);
+    content: '';
+    pointer-events: none;
+    background-image:
+      linear-gradient(to bottom, rgb(15 21 19 / 20%), rgb(15 21 19 / 12%) 45%, rgb(15 21 19 / 70%) 78%, #171b19),
+      radial-gradient(ellipse at 50% 32%, rgb(15 20 19 / 42%), rgb(15 20 19 / 12%) 65%, rgb(15 20 19 / 55%)),
+      url('/trips/desktop-wilderness-hero.webp');
+    background-position: center 38%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  }
+}
+
 @scope ([data-desktop-signed-out]) {
   .desktop-landing__topo {
     position: absolute;
@@ -159,6 +180,46 @@
     background: #25221d;
     overflow-wrap: anywhere;
   }
+
+  /* Frame notation stays outside the dashboard and uses its existing top gap. */
+  .desktop-landing__preview-frame {
+    position: relative;
+    display: flow-root;
+    width: min(100%, 1240px);
+    margin-inline: auto;
+  }
+
+  .desktop-landing__preview-instrument {
+    position: absolute;
+    inset: 0;
+    color: rgb(185 195 190 / 42%);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .desktop-landing__preview-instrument > span {
+    position: absolute;
+    inset: 8px auto auto 20px;
+    font-family: var(--font-mono-compat-face), monospace;
+    font-size: 9px;
+    line-height: 1.4;
+    letter-spacing: 0.16em;
+  }
+
+  .desktop-landing__preview-instrument::before,
+  .desktop-landing__preview-instrument::after {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background:
+      linear-gradient(currentColor, currentColor) center / 1px 10px no-repeat,
+      linear-gradient(currentColor, currentColor) center / 10px 1px no-repeat;
+    opacity: 0.6;
+    content: '';
+  }
+
+  .desktop-landing__preview-instrument::before { inset: 22px auto auto -10px; }
+  .desktop-landing__preview-instrument::after { inset: auto -10px -10px auto; }
 
   /* Preserve the image scale while the shared row determines the frame height. */
   .desktop-landing__preview {
