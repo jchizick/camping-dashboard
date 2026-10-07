@@ -1,0 +1,75 @@
+/* Fixture-only additions. The product header and landing interior remain static pixels. */
+[data-workspace-preview-capture] { width:1280px; height:775.5px; overflow:hidden; }
+.workspace-preview__product { width:1440px; height:900px; position:relative; transform:scale(calc(8 / 9)); transform-origin:top left; container-type:inline-size; }
+.workspace-preview__product .trip-workspace-sidebar { height:840.4375px!important; }
+.workspace-preview__product .trip-workspace-sidebar__more { padding-bottom:4.88px; }
+.workspace-preview__product .trip-workspace-sidebar__more > div:first-child { display:flex; }
+.workspace-preview__product .trip-shell-control { min-height:0; font-family:var(--font-sans-compat-face),sans-serif; font-weight:400; padding:0; gap:7.2px; font-size:13.958px; line-height:1.4; }
+.workspace-preview__product .trip-shell-control svg { width:18.61px; height:18.61px; }
+.workspace-preview__product .workspace-account { margin-top:14.4px; padding-top:14.4px; }
+.workspace-preview__product .workspace-account-trigger { min-height:0; gap:7.2px; font-family:var(--font-sans-compat-face),sans-serif; color:#b7c1ba; font-size:13.958px; line-height:1.4; }
+.workspace-preview__product .workspace-account-trigger svg { width:18.61px; height:18.61px; }
+.workspace-preview__product .workspace-account-trigger svg:last-child { width:13.965px; }
+.dwo-identity:has(.trip-access-invite) { position: relative; padding-right: 92px; }
+.trip-access-invite { position: absolute; right: 0; top: 24px; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 10px; border: 1px solid var(--border-subtle); border-radius: 6px; background: transparent; color: var(--text-muted); font: 500 12px/1.4 var(--font-ui-face), sans-serif; }
+  .workspace-preview__essentials {
+    margin-inline: 16.7% 1.2%;
+    padding: 0.85cqw 1.2cqw;
+    border: 1.163166px solid #343c37;
+    border-radius: clamp(4.652666px, 0.5cqw, 6.978998px);
+    background: #141715;
+    font-family: var(--font-sans-compat-face), sans-serif;
+  }
+
+  .workspace-preview__essentials h2 {
+    margin: 0 0 0.65cqw;
+    color: #dedfd8;
+    font-family: var(--font-display-face), sans-serif;
+    font-size: clamp(12.794830px, 1.22cqw, 17.447496px);
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .workspace-preview__essentials dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  .workspace-preview__essentials dl > div {
+    min-width: 0;
+    padding-inline: 1.1cqw;
+  }
+
+  .workspace-preview__essentials dl > div:first-child { padding-inline-start: 0; }
+  .workspace-preview__essentials dl > div:last-child { padding-inline-end: 0; }
+  .workspace-preview__essentials dl > div + div { border-inline-start: 1.163166px solid #303831; }
+
+  .workspace-preview__essentials dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5cqw;
+    color: #dedfd8;
+    font-size: clamp(11.631664px, 0.99cqw, 14.248788px);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .workspace-preview__essentials dt svg {
+    width: clamp(13.957997px, 1.3cqw, 18.610662px);
+    height: clamp(13.957997px, 1.3cqw, 18.610662px);
+    flex-shrink: 0;
+    color: #8fa68f;
+  }
+
+  .workspace-preview__essentials dd {
+    margin: 0.4cqw 0 0;
+    color: #aab2ac;
+    font-size: clamp(10.468498px, 1.02cqw, 14.702423px);
+    line-height: 1.4;
+  }
+
+
+.workspace-preview__essentials { position:absolute; top:756px; left:0; right:0; }
+
+.workspace-preview__product .trip-workspace-sidebar__more svg { stroke-width:1.6; }
