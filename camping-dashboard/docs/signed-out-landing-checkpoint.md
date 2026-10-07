@@ -8,7 +8,7 @@ This checkpoint completes the desktop signed-out landing page around the approve
 
 - Desktop header navigation, product feature examples, readiness explanation, setup steps, FAQ, closing sign-in section, and footer.
 - Shared Google sign-in pending state, duplicate-request protection, and one error message at the active sign-in location.
-- Complete workspace preview with Trip essentials, an aligned sidebar footer, and bottom spacing matched to the top inset. Preview scale is preserved as the frame adapts to desktop widths.
+- Complete workspace preview with Trip essentials, an aligned sidebar footer, and bottom spacing matched to the top inset. Preview scale is preserved as the frame adapts to desktop widths. The later local consolidation uses one 2560 × 1551 image including Invite, essentials, and the footer; see [the maintained capture workflow](desktop-workspace-preview.md). The outer instrumentation remains live.
 - Scoped desktop styles and regression coverage for composition, navigation, static examples, sign-in behavior, and phone isolation.
 - Locally bundled JetBrains Mono 2.211 with its SIL Open Font License and source provenance. Existing weights, font variable, display mode, and fallbacks are retained to resolve the Turbopack Google-font URL parsing error.
 
