@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { Backpack, ChevronDown, Ellipsis, UserRound, Users, Utensils } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { DesktopLandingSections } from './DesktopLandingSections';
 import './desktopSignedOutLanding.css';
@@ -76,52 +75,14 @@ export function DesktopSignedOutLanding({ error, pending, onSignIn, onEmail }: P
         <div className="desktop-landing__preview" data-desktop-landing-preview>
           <Image
             src="/trips/desktop-workspace-preview.webp"
-            alt="Field Protocol trip workspace showing readiness, campsite setup, schedule, conditions, and section navigation."
+            alt="Field Protocol trip workspace showing readiness, route, schedule, conditions, trip essentials for gear, meals and crew, and trip access controls."
             width={2560}
-            height={1600}
+            height={1551}
+            unoptimized
             sizes="(min-width: 1304px) 1240px, (max-width: 1024px) calc(100vw - 48px), calc(100vw - 64px)"
             quality={92}
             loading="eager"
           />
-          <div className="desktop-landing__preview-bottom">
-            <div
-              className="desktop-landing__sidebar-footer"
-              aria-hidden="true"
-              data-desktop-preview-sidebar-footer
-            >
-              <div className="desktop-landing__sidebar-extras">
-                <Ellipsis size={16} strokeWidth={1.6} />
-                <span>Trip Extras</span>
-              </div>
-              <div className="desktop-landing__sidebar-account">
-                <UserRound size={16} strokeWidth={1.6} />
-                <span>Demo camper</span>
-                <ChevronDown size={12} strokeWidth={1.6} />
-              </div>
-            </div>
-            <section
-              className="desktop-landing__essentials"
-              aria-label="Example trip essentials"
-              data-desktop-preview-essentials
-              data-desktop-product-example
-            >
-              <h2>Trip essentials</h2>
-              <dl>
-                <div>
-                  <dt><Backpack size={16} strokeWidth={1.6} aria-hidden="true" />Gear</dt>
-                  <dd>Critical gear packed.</dd>
-                </div>
-                <div>
-                  <dt><Utensils size={16} strokeWidth={1.6} aria-hidden="true" />Meals</dt>
-                  <dd>Meals planned for each day.</dd>
-                </div>
-                <div>
-                  <dt><Users size={16} strokeWidth={1.6} aria-hidden="true" />Crew</dt>
-                  <dd>Gear and meal prep assigned.</dd>
-                </div>
-              </dl>
-            </section>
-          </div>
         </div>
       </div>
       <DesktopLandingSections renderSignIn={renderSignIn} />

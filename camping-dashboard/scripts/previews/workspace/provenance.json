@@ -1,0 +1,49 @@
+{
+  "baseline": "494b7612e060df6f9ea608fa19868fe9f15b364e",
+  "historicalAssetCommit": "f81f47d5c0479768f5aa949bd2c75c7c48b8277e",
+  "assetSha256": "e0d67ac883be7f327b5dd0e4fb669dec20679b95c7f9664632853248efa9ec46",
+  "sourceFiles": [
+    "components/home/DesktopWorkspaceOverview.tsx",
+    "components/home/DesktopConditions.tsx",
+    "components/home/homeViewModel.ts",
+    "components/home/homeSelectors.ts",
+    "components/cards/MapRouteCard.tsx",
+    "components/ui/Primitives.tsx",
+    "components/ui/TopoBackground.tsx",
+    "components/trip/TripSidebar.tsx",
+    "components/trip/WorkspaceBrand.tsx",
+    "components/trip/WorkspaceAccount.tsx",
+    "components/trip/TripMoreMenu.tsx",
+    "components/trip/tripNavigation.ts",
+    "components/trip/TripWorkspaceStatus.tsx",
+    "components/trip/DesktopTripWorkspaceBoundary.tsx",
+    "lib/readiness/index.ts",
+    "lib/offlineFreshness.ts",
+    "lib/weatherPresentation.ts",
+    "lib/tripDuration.ts",
+    "components/plan/planViewModel.ts"
+  ],
+  "notes": "Required rendering closure recovered from the historical fixture at f81f47d5. Relative imports, static service-free adapters, expanded forecast state, and unified additions are intentional local-tooling adaptations. Production imports are type-only.",
+  "fonts": [
+    {
+      "file": "051742360c26797e.p.102b7f24.woff2",
+      "sha256": "2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+    },
+    {
+      "file": "0c8f209abc35ee02.p.a4b9a15b.woff2",
+      "sha256": "f273cf2c9ce9bc7d6b0f4fcb8aee72f8cf5a249991308b6a144217e0760c5d3f"
+    },
+    {
+      "file": "5c285b27cdda1fe8.p.a62025f2.woff2",
+      "sha256": "468d56b6b25b05b70190b6c233d773f6f1770e8579827ce022a57f03fa8002fb"
+    },
+    {
+      "file": "83afe278b6a6bb3c.p.3a6ba036.woff2",
+      "sha256": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4"
+    },
+    {
+      "file": "89232e6535d3b87e.p.1a05cc88.woff2",
+      "sha256": "89eec21b1a1d6fd579d3e3c518901c5a6e3579e0e7a4f8b2f17b1473117bc30d"
+    }
+  ]
+}

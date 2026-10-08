@@ -221,10 +221,9 @@
   .desktop-landing__preview-instrument::before { inset: 22px auto auto -10px; }
   .desktop-landing__preview-instrument::after { inset: auto -10px -10px auto; }
 
-  /* Preserve the image scale while the shared row determines the frame height. */
+  /* The complete product illustration determines the frame height. */
   .desktop-landing__preview {
     position: relative;
-    container-type: inline-size;
     width: min(100%, 1240px);
     margin: 32px auto 0;
     overflow: clip;
@@ -234,128 +233,9 @@
   }
 
   .desktop-landing__preview > img {
-    position: absolute;
-    inset: 0 auto auto 0;
     display: block;
     width: 100%;
     height: auto;
-    max-width: none;
-    /* Preserve the upper sidebar; its footer is aligned by the shared row. */
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 16.2% 100%, 16.2% 82%, 0 82%);
-  }
-
-  .desktop-landing__preview::before {
-    position: absolute;
-    inset: 51.25cqw 83.8% 0 0;
-    background: linear-gradient(#10110e, #0e0f0c);
-    content: '';
-    pointer-events: none;
-  }
-
-  /* Match the image's top inset; child query units use the preview width. */
-  .desktop-landing__preview-bottom {
-    position: relative;
-    margin-block: 52.5cqw 1.125cqw;
-  }
-
-  .desktop-landing__sidebar-footer {
-    position: absolute;
-    inset-inline: 1.09375% 84.453125%;
-    inset-block: -1.25cqw 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 0.9cqw 1.15cqw 1.45cqw;
-    border: 1px solid #373a37;
-    border-block-start: 0;
-    border-radius: 0 0 clamp(8px, 1.4cqw, 18px) clamp(8px, 1.4cqw, 18px);
-    background: #151716;
-    color: #b7c1ba;
-    font-family: var(--font-sans-compat-face), sans-serif;
-    font-size: clamp(7px, 0.97cqw, 12px);
-    line-height: 1.4;
-  }
-
-  .desktop-landing__sidebar-extras,
-  .desktop-landing__sidebar-account {
-    display: flex;
-    align-items: center;
-    gap: 0.5cqw;
-    white-space: nowrap;
-  }
-
-  .desktop-landing__sidebar-account {
-    margin-top: 1cqw;
-    padding-top: 1cqw;
-    border-top: 1px solid #373a37;
-  }
-
-  .desktop-landing__sidebar-footer svg {
-    width: clamp(9px, 1.25cqw, 16px);
-    height: clamp(9px, 1.25cqw, 16px);
-    flex-shrink: 0;
-  }
-
-  .desktop-landing__sidebar-account svg:last-child {
-    width: clamp(7px, 0.95cqw, 12px);
-    margin-inline-start: auto;
-  }
-
-  .desktop-landing__essentials {
-    margin-inline: 16.7% 1.2%;
-    padding: 0.85cqw 1.2cqw;
-    border: 1px solid #343c37;
-    border-radius: clamp(4px, 0.5cqw, 6px);
-    background: #141715;
-    font-family: var(--font-sans-compat-face), sans-serif;
-  }
-
-  .desktop-landing__essentials h2 {
-    margin: 0 0 0.65cqw;
-    color: #dedfd8;
-    font-family: var(--font-display-face), sans-serif;
-    font-size: clamp(11px, 1.22cqw, 15px);
-    font-weight: 800;
-    line-height: 1.1;
-  }
-
-  .desktop-landing__essentials dl {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0;
-  }
-
-  .desktop-landing__essentials dl > div {
-    min-width: 0;
-    padding-inline: 1.1cqw;
-  }
-
-  .desktop-landing__essentials dl > div:first-child { padding-inline-start: 0; }
-  .desktop-landing__essentials dl > div:last-child { padding-inline-end: 0; }
-  .desktop-landing__essentials dl > div + div { border-inline-start: 1px solid #303831; }
-
-  .desktop-landing__essentials dt {
-    display: flex;
-    align-items: center;
-    gap: 0.5cqw;
-    color: #dedfd8;
-    font-size: clamp(10px, 0.99cqw, 12.25px);
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .desktop-landing__essentials dt svg {
-    width: clamp(12px, 1.3cqw, 16px);
-    height: clamp(12px, 1.3cqw, 16px);
-    flex-shrink: 0;
-    color: #8fa68f;
-  }
-
-  .desktop-landing__essentials dd {
-    margin: 0.4cqw 0 0;
-    color: #aab2ac;
-    font-size: clamp(9px, 1.02cqw, 12.64px);
-    line-height: 1.4;
   }
 
   @media (prefers-reduced-transparency: reduce), (prefers-reduced-data: reduce) {

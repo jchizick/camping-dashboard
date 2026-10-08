@@ -9,8 +9,11 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/image', () => ({
-  // eslint-disable-next-line @next/next/no-img-element
-  default: ({ alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => <img alt={alt ?? ''} {...props} />,
+  default: ({ alt, unoptimized, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { unoptimized?: boolean }) => {
+    void unoptimized;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img alt={alt ?? ''} {...props} />;
+  },
 }));
 
 import { SignedOutLanding } from './SignedOutLanding';
@@ -218,16 +221,20 @@ describe('desktop signed-out composition', () => {
     const image = preview?.querySelector('img');
     expect(image?.getAttribute('src')).toBe('/trips/desktop-workspace-preview.webp');
     expect(image?.getAttribute('width')).toBe('2560');
-    expect(image?.getAttribute('height')).toBe('1600');
+    expect(image?.getAttribute('height')).toBe('1551');
     expect(image?.getAttribute('loading')).toBe('eager');
+    const source = fs.readFileSync(path.join(process.cwd(), 'src/components/trips/DesktopSignedOutLanding.tsx'), 'utf8');
+    expect(source).toMatch(/height=\{1551\}\s+unoptimized/);
     expect(image?.getAttribute('alt')).toContain('Field Protocol trip workspace');
-    const essentials = within(preview as HTMLElement).getByRole('region', { name: 'Example trip essentials' });
-    expect(within(essentials).getByRole('heading', { name: 'Trip essentials' })).toBeTruthy();
-    expect(Array.from(essentials.querySelectorAll('dt')).map(item => item.textContent)).toEqual(['Gear', 'Meals', 'Crew']);
-    for (const status of ['Critical gear packed.', 'Meals planned for each day.', 'Gear and meal prep assigned.']) {
-      expect(within(essentials).getByText(status)).toBeTruthy();
-    }
-    expect(preview?.querySelectorAll('button, a, [tabindex]').length).toBe(0);
+    expect(preview?.querySelectorAll('img')).toHaveLength(1);
+    expect(image?.getAttribute('alt')).toContain('trip essentials for gear, meals and crew');
+    expect(image?.getAttribute('alt')).toContain('trip access controls');
+    expect(preview?.querySelectorAll('.desktop-landing__preview-bottom, .desktop-landing__essentials, .desktop-landing__sidebar-footer')).toHaveLength(0);
+    expect(preview?.querySelectorAll('[data-desktop-preview-essentials], [data-desktop-preview-sidebar-footer]')).toHaveLength(0);
+    expect(preview?.querySelectorAll('button, a, input, select, textarea, [tabindex]')).toHaveLength(0);
+    const instrument = container.querySelector('.desktop-landing__preview-instrument');
+    expect(instrument?.textContent).toBe('SYSTEM / TRIP READINESS');
+    expect(instrument?.getAttribute('aria-hidden')).toBe('true');
     expect(container.querySelector('[data-phone-signed-out]')).toBeNull();
     expect(container.textContent).not.toContain('Email');
   });
@@ -338,6 +345,10 @@ describe('desktop signed-out composition', () => {
     expect(css).not.toContain('--font-trip-display');
     expect(css).not.toContain('overflow: hidden');
     expect(css).toContain('min-height: 100svh');
+    expect(css).not.toMatch(/clip-path|preview-bottom|sidebar-footer|sidebar-extras|sidebar-account|desktop-landing__essentials|\.desktop-landing__preview::before/);
+    expect(css).toMatch(/\.desktop-landing__preview > img \{\s*display: block;\s*width: 100%;\s*height: auto;/);
+    expect(css).toContain('.desktop-landing__preview-instrument::before { inset: 22px auto auto -10px; }');
+    expect(css).toContain('.desktop-landing__preview-instrument::after { inset: auto -10px -10px auto; }');
   });
 });
 
