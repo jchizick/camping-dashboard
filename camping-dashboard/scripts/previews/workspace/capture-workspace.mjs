@@ -85,11 +85,58 @@ try {
     assert(Math.abs(geometry['.trip-access-invite'].width / capture.scale - 75.046875) < 0.1);
     assert(Math.abs(geometry['.trip-access-invite'].height / capture.scale - 36) < 0.01);
   }
+  let coverageGeometry = null;
+  if (!historical) {
+    coverageGeometry = await page.evaluate(() => {
+      const rect = element => element.getBoundingClientRect().toJSON();
+      const rail = document.querySelector('.workspace-preview__essentials');
+      const sidebar = document.querySelector('.trip-workspace-sidebar__surface');
+      const boundary = document.querySelector('[data-workspace-preview-capture]');
+      const modules = [...rail.querySelectorAll('[data-coverage-module]')].map(element => {
+        const copy = element.querySelector('.workspace-preview__coverage-copy');
+        const fraction = element.querySelector('.workspace-preview__coverage-fraction');
+        const meter = element.querySelector('[role="meter"]');
+        const chevron = element.querySelector('.workspace-preview__coverage-chevron');
+        const children = [...element.querySelectorAll('*')].map(child => ({ rect:rect(child),
+          overflow:child.scrollWidth > child.clientWidth + 1 || child.scrollHeight > child.clientHeight + 1 }));
+        return { id:element.dataset.coverageModule, rect:rect(element), copy:rect(copy), fraction:rect(fraction),
+          chevron:rect(chevron), meter:rect(meter), fill:rect(meter.firstElementChild),
+          counterFontSize:parseFloat(getComputedStyle(fraction).fontSize), annotationFontSize:parseFloat(getComputedStyle(fraction.querySelector('small')).fontSize),
+          count:Number(meter.getAttribute('aria-valuenow')), total:Number(meter.getAttribute('aria-valuemax')),
+          children };
+      });
+      return { sidebar:rect(sidebar), rail:rect(rail), boundary:rect(boundary), modules,
+        bottomDifference:Math.abs(rect(sidebar).bottom - rect(rail).bottom),
+        focusable:rail.querySelectorAll('a,button,input,select,textarea,[tabindex]').length };
+    });
+    const { sidebar, rail, boundary, modules, bottomDifference, focusable } = coverageGeometry;
+    const tolerance = capture.scale; // At most one source CSS pixel; normally exactly aligned.
+    assert(bottomDifference <= tolerance, 'Sidebar/coverage rail visible bottoms must align');
+    assert(rail.bottom < boundary.bottom && sidebar.bottom < boundary.bottom, 'Preserve the bottom capture inset');
+    assert(rail.left >= boundary.left && rail.right <= boundary.right, 'Rail must fit the capture width');
+    assert.equal(modules.length, 3); assert.equal(focusable, 0, 'Coverage illustration is inert');
+    assert(Math.max(...modules.map(module => module.rect.width)) - Math.min(...modules.map(module => module.rect.width)) < 1, 'Balanced coverage columns');
+    for (const coverageModule of modules) {
+      assert(coverageModule.counterFontSize >= 16 && coverageModule.annotationFontSize >= 10, 'Coverage type must remain legible at source scale');
+      assert(coverageModule.count >= 0 && coverageModule.total > 0 && coverageModule.count <= coverageModule.total, 'Valid fictional coverage');
+      assert(coverageModule.copy.right <= coverageModule.fraction.left + 1, 'Descriptor must not collide with the fraction');
+      assert(coverageModule.fraction.right < coverageModule.chevron.left, 'Fraction must not collide with the chevron');
+      assert(coverageModule.meter.bottom <= rail.bottom && coverageModule.meter.left >= rail.left && coverageModule.meter.right <= rail.right, 'Progress indicator containment');
+      assert(Math.abs(coverageModule.fill.width / coverageModule.meter.width - coverageModule.count / coverageModule.total) < 0.002, 'Progress fill must represent the displayed fraction');
+      for (const child of coverageModule.children) {
+        assert(!child.overflow, 'Coverage content must not overflow');
+        assert(child.rect.left >= coverageModule.rect.left - 1 && child.rect.right <= coverageModule.rect.right + 1 &&
+          child.rect.top >= rail.top && child.rect.bottom <= rail.bottom, 'Coverage content must remain inside its column and rail');
+      }
+    }
+  } else {
+    assert.equal(await page.locator('[data-coverage-module]').count(), 0, 'Historical mode has no Coverage Counters');
+  }
   const rawPng = await target.screenshot({ animations: 'disabled', caret: 'hide' });
   const rawMetadata = await sharp(rawPng).metadata();
   assert.equal(rawMetadata.width, historical ? 2880 : capture.width);
-  // Element screenshots enclose the 775.5px wrapper in 776 CSS pixels. Remove
-  // only that extra bottom device pixel, without rescaling the product geometry.
+  // Fractional wrappers can enclose one extra device pixel. Crop only that
+  // pixel when needed; never rescale the product geometry.
   assert(historical ? rawMetadata.height === 1800 : rawMetadata.height >= capture.height && rawMetadata.height <= capture.height + 1);
   const png = historical || rawMetadata.height === capture.height ? rawPng : await sharp(rawPng)
     .extract({ left: 0, top: 0, width: capture.width, height: capture.height }).png().toBuffer();
@@ -112,7 +159,7 @@ try {
     comparison = { byteIdentical: webp.equals(reference), meanAbsoluteChannelDifference: sum / a.length, channelsDifferingByMoreThan10Percent: changed / a.length * 100 };
   }
   assert.deepEqual(unexpected, [], 'Unexpected network request'); assert.deepEqual(errors, [], 'Capture runtime/resource error');
-  const report = { capture, historical, browser: browser.version(), encoder: sharp.versions, geometry,
+  const report = { capture, historical, browser: browser.version(), encoder: sharp.versions, geometry, coverageGeometry,
     dimensions: { width: metadata.width, height: metadata.height }, opaque: !metadata.hasAlpha, metadataStripped: true,
     bytes: webp.length, sha256, comparison, unexpected, errors,
     fonts };

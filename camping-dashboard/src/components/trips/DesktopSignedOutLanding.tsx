@@ -77,7 +77,7 @@ export function DesktopSignedOutLanding({ error, pending, onSignIn, onEmail }: P
             src="/trips/desktop-workspace-preview.webp"
             alt="Field Protocol trip workspace showing readiness, route, schedule, conditions, trip essentials for gear, meals and crew, and trip access controls."
             width={2560}
-            height={1551}
+            height={1594}
             unoptimized
             sizes="(min-width: 1304px) 1240px, (max-width: 1024px) calc(100vw - 48px), calc(100vw - 64px)"
             quality={92}
