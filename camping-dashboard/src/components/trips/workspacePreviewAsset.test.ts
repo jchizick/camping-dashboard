@@ -17,7 +17,7 @@ describe('unified workspace preview asset contract', () => {
       if (kind === 'VP8 ') {
         expect(bytes.subarray(offset + 11, offset + 14)).toEqual(Buffer.from([0x9d, 0x01, 0x2a]));
         expect(bytes.readUInt16LE(offset + 14) & 0x3fff).toBe(2560);
-        expect(bytes.readUInt16LE(offset + 16) & 0x3fff).toBe(1551);
+        expect(bytes.readUInt16LE(offset + 16) & 0x3fff).toBe(1594);
       }
       offset += 8 + length + (length % 2);
     }
@@ -26,7 +26,7 @@ describe('unified workspace preview asset contract', () => {
   });
   it('keeps the capture local with a fixed composition contract', () => {
     expect(capture).toMatchObject({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2,
-      wrapper: { width: 1280, height: 775.5 }, width: 2560, height: 1551, quality: 90,
+      wrapper: { width: 1280, height: 797 }, width: 2560, height: 1594, quality: 90,
       selector: '[data-workspace-preview-capture]', locale: 'en-US', timezoneId: 'America/Toronto' });
     expect(capture.scale).toBe(8 / 9);
     const root = process.cwd();

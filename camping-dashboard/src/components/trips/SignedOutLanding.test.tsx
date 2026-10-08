@@ -221,10 +221,10 @@ describe('desktop signed-out composition', () => {
     const image = preview?.querySelector('img');
     expect(image?.getAttribute('src')).toBe('/trips/desktop-workspace-preview.webp');
     expect(image?.getAttribute('width')).toBe('2560');
-    expect(image?.getAttribute('height')).toBe('1551');
+    expect(image?.getAttribute('height')).toBe('1594');
     expect(image?.getAttribute('loading')).toBe('eager');
     const source = fs.readFileSync(path.join(process.cwd(), 'src/components/trips/DesktopSignedOutLanding.tsx'), 'utf8');
-    expect(source).toMatch(/height=\{1551\}\s+unoptimized/);
+    expect(source).toMatch(/height=\{1594\}\s+unoptimized/);
     expect(image?.getAttribute('alt')).toContain('Field Protocol trip workspace');
     expect(preview?.querySelectorAll('img')).toHaveLength(1);
     expect(image?.getAttribute('alt')).toContain('trip essentials for gear, meals and crew');
